@@ -1,5 +1,5 @@
-# cd build; cmake ..
-# cmake -G Xcode ..
+# mkdir build && cd build && cmake ..
+# mkdir xcode_build && cd xcode_build && cmake -G Xcode ..
 
 cmake_minimum_required(VERSION 3.0.0)
 project(groho)
@@ -10,5 +10,5 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 include_directories(src)
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES "src/*.cpp" "src/*.hpp")
 add_executable(groho ${SOURCES})
