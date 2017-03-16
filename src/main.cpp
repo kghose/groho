@@ -10,7 +10,7 @@
 #include "cli.hpp"
 
 int main(int argc, char * argv[]) {
-    Options opts = parse_options(argc, argv);
+    sim::Options opts = sim::parse_options(argc, argv);
     std::cout << opts << std::endl;
     return 0;
 }

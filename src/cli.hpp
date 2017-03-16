@@ -3,6 +3,7 @@
  Even cxxopts was too complex for what I needed. So I just used my own, very simple parser.
  
  */
+namespace sim {
 
 struct Options {
     int debug_level;
@@ -15,8 +16,7 @@ struct Options {
     friend std::ostream& operator<<(std::ostream& os, const Options& opt);
 };
 
-std::ostream& operator<<(std::ostream& os, const Options& opt)
-{
+std::ostream& operator<<(std::ostream& os, const Options& opt) {
     os << "Debug level: " << opt.debug_level << std::endl
     << "Sim file: " << opt.simulation_file << std::endl
     << "T max: " << opt.t_max << std::endl;
@@ -52,4 +52,6 @@ Options parse_options(int argc, char *argv[]) {
         print_usage_string(argv);
         exit(0);
     }
+}
+
 }
