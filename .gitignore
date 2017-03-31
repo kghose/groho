@@ -1,3 +1,4 @@
 build/
 xcode_build/
 .DS_Store
+.idea
