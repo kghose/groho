@@ -4,4 +4,4 @@ The program aims to give the user intuitions about how inter-planetary travel, c
 
 The program focuses on fidelity to physical simulation and on making it easy to setup, run and save simulations. Results of simulations are primarily available as event logs and state checkpoints. Detailed visualizations and ersatz interpolations between events are easy to compute and display, making it possible to set up as colorful a front end display as one wants.
 
-Groho (গ্রহ)is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the word for planetary system but is more of a mouthful. 
+Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the word for planetary system but is more of a mouthful. 
