@@ -1,0 +1,3 @@
+[submodule "src/rebound"]
+	path = src/rebound
+	url = https://github.com/hannorein/rebound
