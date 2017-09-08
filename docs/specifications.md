@@ -1,3 +1,33 @@
+Use cases
+=========
+
+Transfer orbits
+---------------
+I want to understand GTOs and how satellites are launched first into a GTO and then raise themselves to a GSO using a kick motor. This is restricted to scenarios with one planet and may be the moon. In-homogeneities, which cause orbit precession, like the equatorial bulge, may need to be modeled. 
+
+Multi-planet transfers
+----------------------
+Scenarios where we launch a spaceship and then repeatedly fire engines to jump from one orbit to another. 
+
+Solar-system freeway
+--------------------
+Simulations at time scales long enough to simulate multi-year journeys across the solar system, including the "solar system freeway" that allows a spaceship to travel to the outer reaches of the solar system using very little fuel.
+
+Behavior of debris fields when spaceships collide
+-------------------------------------------------
+What kind of orbits do the debris fields follow? How does the debris spread? How long do collisions on "highways" between planets stay dangerous.
+
+
+
+Requirements/features
+=====================
+- Simulate multi-year journeys in reasonable time.
+- Compose multiple scenarios together to make a complex simulation from simpler ones
+- Reproducible simulations (seeded random number generators, stable numerical calculations)
+- Checkpoints
+
+
+
 Scope
 =====
 
@@ -28,6 +58,7 @@ The motions of planets, moons and larger asteroids are taken from existing ephem
 Relativistic effects will be simulated
 --------------------------------------
 An interesting question for me is how the finite speed of light over solar-system distances affects interactions as well as how relativistic effects come into play for constantly accelerating spaceships that achieve speeds significantly close to light speed. 
+
 
 
 Simulation Components
@@ -65,17 +96,36 @@ Spawn points are attached to spots or ships. They serve as origins and destinati
 Simulation concepts
 ===================
 
-Simulation branching
---------------------
-A simulation stops when a simulation-stop trigger condition is satisfied. The basic condition is a time-end trigger (one of which is set whenever a simulation is started) and more advanced conditions trigger based on simulation state (like proximity between simulation objects, a particular object achieving a particular state etc.) An existing smulation can be restarted from any point. This starts a new branch of the simulation. A set of 
+Simulation end
+--------------
+A simulation stops when a simulation-stop trigger condition is satisfied. The basic condition is a time-end trigger (one of which is set whenever a simulation is started) and more advanced conditions trigger based on simulation state (like proximity between simulation objects, a particular object achieving a particular state etc.) 
 
 
-In case the restart point is not the final simulation-stop trigger, a new simulation file is saved, acting as a new branch of the simulation. This allows us to try out multiple simulation scenarios at different points.
+Simulation trees
+----------------
+An existing smulation can be restarted from any point with altered parameters. This starts a new branch of the simulation. A set of such branches leading to a common start node constitute a simulation tree. 
+
+*Restarting a simulation with no changes will lead to the exact same simulation except for numerical instabilities. Care will be taken to minimize numerical instabilities*
+
+Tools will be provided that allow us to quickly navigate such a tree, inspecting simulation state at any point in the tree, reading and writing notes for branch-points and quickly seeing what was changed at a branch point.
+
+Simulation scenario
+-------------------
+This is a  
+
+
+
+
+Modifying simulations
+---------------------
+Both the AI and the scenario can be modified
+
+
 
 
 Training simulations
 --------------------
-The AI is trained on one or more scenarios repeatedly until it achieves a satisfactory performance. It is possible to run the training sessions in parallel, synching up the AI from different parallel instances when needed. Diagnostics from the simulations can be saved to be inspected later.
+The AI is trained on a scenario repeatedly until it achieves a satisfactory performance. It is possible to run the training sessions in parallel, synching up the AI from different parallel instances when needed. Diagnostics from the simulations can be saved to be inspected later.
 
 
 Test simulations
@@ -83,14 +133,10 @@ Test simulations
 These are typically longer and more elaborate than training simulations and are designed so we can organize complex scenarios into smaller, more manageable components.
 
 
-Simulation forking
-------------------
 
 
 
 
-
-Ideally we would like to be able to add and remove objects from the simulation at any time. We would like to be able to efficiently track a given object even for long simulations with many objects. We would like to be able to fork a simulation file efficiently (start a new branch of the simulation from a stop point) and keep track of all the forks. 
 
 
 
