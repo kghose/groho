@@ -2,3 +2,7 @@ build/
 xcode_build/
 .DS_Store
 .idea
+.project
+.cproject
+.settings
+.vscode
