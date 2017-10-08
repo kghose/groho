@@ -1,3 +1,41 @@
+Scripting (v0.0)
+=========
+
+In my dreams the space craft control is a very elaborate apparatus going all 
+the way up to AI controlled spacecraft. In reality, for the forseeable future, 
+spacecraft control will consist of linear scripts that indicate timed 
+engine and attitude state changes. 
+
+
+
+
+The interface should make it simple to fork a simulation 
+
+Spacecraft AI can be trained, but they will have to operate in batch fashion - executing scenarios
+
+
+that is programmed will have to work in batch fashion - 
+
+
+Simulation interaction (v0.0)
+==============
+Though nominally a non-interactive simulation there should be a mouse + keyboard
+interface that allows us to
+
+- Scroll backwards and forwards in time along a simulation
+- Select particular trajectories and objects to view
+- Fork simulations
+  - Change spacecraft scripts
+
+
+
+Spacecraft models (v0.0)
+=================
+
+
+
+
+
 Use cases
 =========
 
