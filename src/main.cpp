@@ -1,25 +1,15 @@
-#include "rebound.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
 
-void heartbeat(struct reb_simulation* r){
-	printf("%f\n",r->t);
-}
+#include "simplesolarsystem.hpp"
 
 int main(int argc, char* argv[]) {
-	struct reb_simulation* r = reb_create_simulation();
-	r->dt = 0.1;
-	r->heartbeat = heartbeat;
-	r->exact_finish_time = 1; // Finish exactly at tmax in reb_integrate(). Default is already 1.
+  sim::SimpleSolarSystem sol_sys;
+  sol_sys.load( "dummy" );
+  for(int i=0; i < 100; i++)
+  {
+    auto& body = sol_sys.compute( i );
+    std::cout << body[1]->pos << std::endl;
+  }
 
-	struct reb_particle p1 = {0};
-	p1.m = 1.;
-	reb_add(r, p1);
-
-	struct reb_particle p2 = {0};
-	p2.x = 1;
-	p2.vy = 1;
-	reb_add(r, p2);
-
-	reb_integrate(r,100.);
+  return 0;
 }
