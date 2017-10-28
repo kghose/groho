@@ -13,65 +13,32 @@
 #include <vector>
 //#include <string>
 
-#include "vector.hpp"
+#include "ballofmud.hpp"
+
 
 namespace sim {
 
-/*
-   40 AU (Pluto orbit) = 5.984e12 m
-   a double will give us 1m resolution with ease
- */
-struct BallOfMud 
-{
-  const std::string name;
-  const double GM,          // needed for gravity calculations 
-               radius,      // m needed surface calculations (launch/crash)
-               ra, dec,     // radians
-               rotation;    // radians / day
-               // https://en.wikipedia.org/wiki/Axial_tilt#Solar_System_bodies
 
-  Vector pos;
-
-  BallOfMud( 
-      std::string _name, 
-      double _GM, 
-      double _radius, double _ra, double _dec, double _rotation ) 
-    : name( _name ), 
-      GM( _GM ), 
-      radius( _radius ), ra( _ra ), dec( _dec ), rotation( _rotation ) 
-  { }
-
-  virtual void compute( double jd ) = 0;
-
-  // Given a surface position in (lat, lon) return the absolute
-  // position in the simulation space
-  Vector position_in_space( const LatLon &l ) 
-  {
-    // TODO: Need to figure out meanings of ra, dec
-    return Vector();
-  }
-
-  // Given a position in space return the projection of that point
-  // onto the surface of this ball of mud
-  LatLon lat_long( const Vector &v ) 
-  {
-    // TODO: Need to figure out meanings of ra, dec
-    return LatLon();
-  }
-};
-
-typedef std::vector<std::shared_ptr<BallOfMud>> vect_sptr_bom_t;
 // We need a pointer because we will subclass BallOfMud as needed
+typedef std::shared_ptr<BallOfMud> sptr_bom_t;
+typedef std::shared_ptr<const BallOfMud> sptr_const_bom_t;
+typedef std::vector<sptr_bom_t> vect_sptr_bom_t;
 
-
-class Orrery 
+class Orrery
 {
 protected:
   vect_sptr_bom_t body;
 
 public:
-  virtual void load( std::string config_file ) = 0;
-  virtual const vect_sptr_bom_t& compute( double jd ) = 0;
+  void load( Orrery o ) { body = o.body; }
+  void add_body( sptr_bom_t p ) { body.push_back( p ); }
+  size_t size() { return body.size(); }
+  sptr_const_bom_t operator[]( int i ) { return body[ i ]; }  
+  sptr_const_bom_t get_body( int i ) { return body[ i ]; }
+  void propagate( double jd )
+  {
+    for(int i = 1 ; i < body.size(); i++ ) { body[ i ]->propagate( jd ); }
+  }
 };
 
 } // namespace sim

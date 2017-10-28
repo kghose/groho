@@ -4,44 +4,46 @@
  */
 #pragma once
 
+#include "units.hpp"
 #include "orrery.hpp"
 
 namespace sim 
 {
 
-struct SimpleBallOfMud : public BallOfMud
+class SimpleBallOfMud : public BallOfMud
 {
-  const 
-  double orbital_radius,  // m
-         orbital_rate;   // radians / day
+public:
+  double orbit_radius,  // m
+         orbit_rate;    // radians / day
 
-  SimpleBallOfMud( 
-      std::string _name, 
-      double _GM, 
-      double _radius, double _ra, double _dec, double _rotation, 
-      double orb_rad, double orb_rate) 
-  : 
-  BallOfMud(
-    _name, 
-    _GM, 
-    _radius, _ra, _dec, _rotation
-  ) , 
-  orbital_radius( orb_rad ), orbital_rate( orb_rate ) { ; }
-
-  void compute( double jd );
+  SimpleBallOfMud(
+      std::string  name,
+      Vector        pos,      
+      double         GM,
+      double     radius,
+      double         ra,
+      double        dec,
+      double   rotation,
+      double   orbital_rate )
+      :
+      BallOfMud( name, pos, GM, radius, ra, dec, rotation ),
+      orbit_radius( pos.norm() ),
+      orbit_rate( orbital_rate )
+  {}
+               
+  void 
+  propagate( double jd )
+  {
+    pos.x = orbit_radius * std::cos( 2.0 * M_PI * orbit_rate * jd );
+    pos.y = orbit_radius * std::sin( 2.0 * M_PI * orbit_rate * jd );
+    pos.z = 0;
+  }
 
 };
 
 typedef std::shared_ptr<SimpleBallOfMud> sptr_sbom_t;
 
-
-class SimpleSolarSystem : public Orrery 
-{
-
-public:
-  void load( std::string config_file );
-  const vect_sptr_bom_t& compute( double tdb );
-
-};
+Orrery 
+load_simple_solar_system( std::string config_fname );
 
 }  // namespace sim
