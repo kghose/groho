@@ -1,13 +1,35 @@
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 
 #include "simplesolarsystem.hpp"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) 
+{
 
-  sim::Orrery orrery;
-  orrery.load( sim::load_simple_solar_system( "dummy" ) );
+  std::string scenario_file( argv[ 1 ] );
+  
+  sim::Simulation simulation( scenario_file );
+  sim::Display display( simulation );
+  sim::UserInterface user_interface( display, simulation );
+
+  std::thread simulation_thread( simulation.loop );
+  std::thread display_thread( display.loop );
+  std::thread user_interface_thread( user_interface.loop );
+  
+  user_interface_thread.join();
+  display_thread.join();
+  simulation_thread.join();
+
+}
+
 /*
+  sim::Orrery orrery;
+  orrery.load( scenario_file );
+
+  sim::SpaceShips spaceships;
+  spaceships.load( scenario_file );
+
   sim::SpaceShips spaceships;
   spaceships.load( "dummy ");  
 
@@ -22,18 +44,9 @@ int main(int argc, char* argv[]) {
   simulation.run( jd_start, jd_stop );  
 
   checkpoints.save( "dummy");
-*/
 
-  for(int i=0; i < 100000; i++)
-  {
-    orrery.propagate( i );
-    for(int j = 0; j < orrery.size(); j++)
-    {
-      std::cout << orrery[ j ]->pos;
-      if( j < orrery.size() - 1) std::cout << ", ";  
-    }
-    std::cout << std::endl;
-  }
+  for(int i=0; i < 100000; i++) { orrery.propagate( i ); }
 
   return 0;
 }
+*/
