@@ -1,7 +1,11 @@
 #include <iostream>
 #include <stdexcept>
 #include <thread>
+#include <condition_variable>
 
+#include "simulation.hpp"
+#include "display.hpp"
+#include "userinterface.hpp"
 #include "simplesolarsystem.hpp"
 
 int main(int argc, char* argv[]) 
@@ -13,9 +17,20 @@ int main(int argc, char* argv[])
   sim::Display display( simulation );
   sim::UserInterface user_interface( display, simulation );
 
-  std::thread simulation_thread( simulation.loop );
-  std::thread display_thread( display.loop );
-  std::thread user_interface_thread( user_interface.loop );
+  std::thread simulation_thread( 
+    &sim::Simulation::loop,
+    std::ref( simulation )
+  );
+  
+  std::thread display_thread( 
+    &sim::Display::loop,
+    std::ref( display )
+  );
+
+  std::thread user_interface_thread( 
+    &sim::UserInterface::loop,
+    std::ref( user_interface )
+  );
   
   user_interface_thread.join();
   display_thread.join();
