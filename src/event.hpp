@@ -2,7 +2,6 @@
   Class we use to flag events with
 */
 #pragma once
-#include <queue>
 
 namespace sim
 {
@@ -23,14 +22,11 @@ public:
   std::string          name;
   std::string       remarks;
 
-  Event( EventType et, double jd, std::string name, std::string remarks )
-    : event_type( et ),
-      julian_date( jd ),
-      name( name ),
-      remarks( remarks )
+  Event( 
+      EventType et, double jd, std::string name, std::string remarks )
+      : 
+      event_type( et ), julian_date( jd ), name( name ), remarks( remarks )
   {}
 };
-
-typedef std::queue<Event> eventqueue_t;
 
 } // namespace sim
