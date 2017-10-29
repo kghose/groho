@@ -10,20 +10,47 @@ struct Vector
 {
   double x, y, z;
 
-  inline 
   double norm_sq() { return x*x + y*y + z*z; }
-  
-  inline 
   double norm()    { return std::sqrt( norm_sq() ); }
+
+  Vector
+  operator+( const Vector& rhs )
+  {
+    return Vector {
+      .x = x + rhs.x,
+      .y = y + rhs.y,
+      .z = z + rhs.z
+    };
+  }
+
+  Vector
+  operator-( const Vector& rhs )
+  {
+    return Vector {
+      .x = x - rhs.x,
+      .y = y - rhs.y,
+      .z = z - rhs.z
+    };
+  }
+
+  Vector
+  operator/( const double rhs )
+  {
+    return Vector {
+      .x = x / rhs,
+      .y = y / rhs,
+      .z = z / rhs
+    };
+  }
   
-  inline Vector& 
+  Vector& 
   operator+=( const Vector& rhs )
   {
     x += rhs.x; y += rhs.y; z += rhs.z;
     return *this;
   }
 
-  inline Vector&
+  Vector&
   operator=( const Vector& rhs )
   {
     x = rhs.x; y = rhs.y; z = rhs.z;
