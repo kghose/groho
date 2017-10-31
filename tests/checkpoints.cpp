@@ -34,11 +34,11 @@ SCENARIO( "We can find data by time in checkpoints", "[checkpoints-find]" )
 {
   GIVEN( "An empty checkpoint vector" ) 
   {
-    checkpointvec_t v;
+    Checkpoints v;
     WHEN( "We look for data" ) 
     {
       double jd = 100;
-      size_t idx = find( jd, v );
+      size_t idx = v.find( jd );
       THEN( "Our index should always be 0" ) 
       {
         REQUIRE( idx == 0 );
@@ -50,7 +50,7 @@ SCENARIO( "We can find data by time in checkpoints", "[checkpoints-find]" )
   {
     int jd_min = 5, jd_max = 99;
 
-    checkpointvec_t v;
+    Checkpoints v;
     for( int i = jd_min; i < jd_max; i+=10 )
     {
       v.push_back( checkpointp_t( new Event( i ) ) );   
@@ -60,7 +60,7 @@ SCENARIO( "We can find data by time in checkpoints", "[checkpoints-find]" )
     WHEN( "We look for data after the last checkpoint" ) 
     {
       double jd = 110;
-      size_t idx = find( jd, v );
+      size_t idx = v.find( jd );
 
       THEN( "Our index should be size of array" ) 
       {
@@ -71,7 +71,7 @@ SCENARIO( "We can find data by time in checkpoints", "[checkpoints-find]" )
     WHEN( "We look for data before the first checkpoint" ) 
     {
       double jd = 0;
-      size_t idx = find( jd, v );
+      size_t idx = v.find( jd );
 
       THEN( "Our index should be 0" ) 
       {
@@ -85,7 +85,7 @@ SCENARIO( "We can find data by time in checkpoints", "[checkpoints-find]" )
       {
         for( double jd = jd_min; jd < jd_max; jd++ )
         {
-          size_t idx = find( jd, v );
+          size_t idx = v.find( jd );
           if( idx == v.size() ) 
           {
             REQUIRE( jd > v.back()->julian_date );            
@@ -108,7 +108,7 @@ SCENARIO( "We can discard checkpoints after a given time", "[checkpoints-discard
   GIVEN( "A checkpoint vector with a mixture of Events and SpaceShipState" ) 
   {
     int jd_min = 5, jd_max = 99;
-    checkpointvec_t v;
+    Checkpoints v;
     for( int i = jd_min; i < jd_max; i+=10 )
     {
       v.push_back( checkpointp_t( new Event( i ) ) );   
@@ -118,7 +118,7 @@ SCENARIO( "We can discard checkpoints after a given time", "[checkpoints-discard
     WHEN( "We ask to discard data after a given time point" ) 
     {
       double jd = 53;
-      discard_stale_data( jd, v );
+      v.discard_stale_data( jd );
       THEN( "Our last data point should end before that time" ) 
       {
         REQUIRE( v.back()->julian_date <= jd );
