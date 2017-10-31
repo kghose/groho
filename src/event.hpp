@@ -3,6 +3,8 @@
 */
 #pragma once
 
+#include "checkpoint.hpp"
+
 namespace sim
 {
 
@@ -14,18 +16,18 @@ enum class EventType {
   BingoFuel
 };
 
-class Event
+struct Event : public Checkpoint
 {
-public:
   EventType      event_type;
-  double        julian_date;
   std::string          name;
   std::string       remarks;
 
+  Event( double jd ): Checkpoint( jd ) {}
+
   Event( 
-      EventType et, double jd, std::string name, std::string remarks )
+      double jd, EventType et, std::string name, std::string remarks )
       : 
-      event_type( et ), julian_date( jd ), name( name ), remarks( remarks )
+      Checkpoint( jd ), event_type( et ), name( name ), remarks( remarks ) 
   {}
 };
 
