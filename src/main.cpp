@@ -6,10 +6,22 @@
 #include "simulation.hpp"
 #include "display.hpp"
 #include "userinterface.hpp"
-#include "simplesolarsystem.hpp"
+
+
+void print_usage()
+{
+  std::cout << "\nUsage:\n" <<  
+  "groho <scenario file>" << std::endl;
+}
+
 
 int main(int argc, char* argv[]) 
 {
+  if( argc < 2 ) 
+  {
+    print_usage();
+    exit(0);
+  }
 
   std::string scenario_file( argv[ 1 ] );
   
@@ -37,31 +49,3 @@ int main(int argc, char* argv[])
   simulation_thread.join();
 
 }
-
-/*
-  sim::Orrery orrery;
-  orrery.load( scenario_file );
-
-  sim::SpaceShips spaceships;
-  spaceships.load( scenario_file );
-
-  sim::SpaceShips spaceships;
-  spaceships.load( "dummy ");  
-
-  sim::Simulation simulation( orrery, spaceships );
-
-  float max_error = 1;  // Linear inter
-  sim::Checkpoints checkpoints( max_error ) ;
-  checkpoints.load( "dummy");
-
-  simulation.set_checkpoints( checkpoints );
-
-  simulation.run( jd_start, jd_stop );  
-
-  checkpoints.save( "dummy");
-
-  for(int i=0; i < 100000; i++) { orrery.propagate( i ); }
-
-  return 0;
-}
-*/
