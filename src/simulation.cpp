@@ -1,6 +1,9 @@
 #include <unistd.h>  // temporary will use condition variables instead
 #include <iostream>
 
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
 #include "simulation.hpp"
 
 namespace sim
@@ -27,6 +30,8 @@ Simulation::run( SimulationParameters sp )
 void 
 Simulation::simulation_loop( SimulationParameters sp )
 {
+  DLOG_S(INFO) << "Starting simulation: " << sp.jd_start << " - " << sp.jd_end;  
+
   double jd = sp.jd_start;
   while( !restart & !quit_now & ( jd < sp.jd_end ) ) 
   { 

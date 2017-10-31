@@ -6,6 +6,9 @@
 #include <memory>
 #include <vector>
 
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
 namespace sim
 {
 
@@ -51,6 +54,8 @@ public:
   inline void 
   discard_stale_data( double jd )
   {
+    DLOG_S(INFO) << "Discarding data from" << jd;
+    
     size_t i = this->find( jd );
     if( i == size() ) return;
     resize( i );

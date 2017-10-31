@@ -8,6 +8,7 @@
 #include "userinterface.hpp"
 
 #define LOGURU_IMPLEMENTATION 1
+#define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
 
 
@@ -25,7 +26,7 @@ int main(int argc, char* argv[])
     print_usage();
     exit(0);
   }
-  
+
   loguru::init(argc, argv);
 
   std::string scenario_file( argv[ 1 ] );
