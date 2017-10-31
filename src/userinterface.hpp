@@ -33,6 +33,9 @@ public:
         display.quit();
         quit_now = true;
       }
+      if(val == 'r') {
+        simulation.run( SimulationParameters(0, 100, 0.1) );
+      }      
     }
   }
 };
