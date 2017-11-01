@@ -5,6 +5,8 @@
 
 #include <atomic>
 #include <string>
+#include <mutex>
+#include <condition_variable>
 
 #include "checkpoint.hpp"
 
@@ -26,22 +28,27 @@ struct SimulationParameters
 
 class Simulation
 {
-  std::atomic<bool>     quit_now // complete exit
-                       , restart // stop current simulation (if running)
-                                 // and rerun with new time range supplied
-                       ;
+  // Paraphernalia needed for comminucating across threads
+  std::atomic<bool>     quit_now  // complete exit
+                       , restart  // stop current simulation (if running)
+                                  // and rerun with new time range supplied
+                                ;
+
+  bool                    action  // some action is required. Used to unblock `loop`
+                                ;
+  std::mutex m;
+  std::condition_variable cv;
 
   SimulationParameters  simulation_parameters;
   Checkpoints checkpoints;
 
 public:
-  Simulation( std::string scenario_file ) 
-  {
-    quit_now = false;
-    restart = false;
-  }
+  Simulation( std::string scenario_file );
 
-  void quit() { quit_now = true; }
+  // Block thread until we have something to do
+  void wait_for_action();
+
+  void quit();
   
   // wait until we are told to simulate then keep simulating until done
   // or told to resimulate. If done, return to waiting

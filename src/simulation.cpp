@@ -9,27 +9,59 @@
 namespace sim
 {
 
+Simulation::Simulation( std::string scenario_file ) 
+{
+  action = false;
+  quit_now = false;
+  restart = false;
+}
+
 void 
 Simulation::loop()
 {
   while( !quit_now )
   {
-    restart = false;
-    simulation_loop( simulation_parameters );
-    if( restart ) { checkpoints.discard_stale_data( simulation_parameters.jd_start ); }
+    wait_for_action();
+    if( quit_now ) return;
+    if( restart ) 
+    { 
+      checkpoints.discard_stale_data( simulation_parameters.jd_start );
+      simulation_loop( simulation_parameters );
+    }
   }
+}
+
+void
+Simulation::wait_for_action()
+{
+  std::unique_lock<std::mutex> lk(m);
+  cv.wait(lk, [this](){return action;});  // protects against spurious unblocks
+  action = false;
+}
+
+void
+Simulation::quit()
+{ 
+  std::lock_guard<std::mutex> lk(m);
+  action = true;
+  quit_now = true;
+  cv.notify_one();
 }
 
 void 
 Simulation::run( SimulationParameters sp )
 {
+  std::lock_guard<std::mutex> lk(m);
   simulation_parameters = sp;
+  action = true;  
   restart = true;
+  cv.notify_one();
 }
 
 void 
 Simulation::simulation_loop( SimulationParameters sp )
 {
+  restart = false;  
   DLOG_S(INFO) << "Starting simulation: " << sp.jd_start << " - " << sp.jd_end;  
 
   double jd = sp.jd_start;
