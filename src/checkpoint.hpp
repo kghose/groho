@@ -27,7 +27,7 @@ class Checkpoints : public checkpointvec_t
 public:
   // return first index that is on or after given date
   // return checkpoints.size() if past end of data
-  inline size_t 
+  size_t
   find( double jd )
   {
     if( size() == 0 )              return 0;
@@ -51,12 +51,12 @@ public:
   }
 
   // discard checkpoints on or after given date
-  inline void 
+  void 
   discard_stale_data( double jd )
   {
-    DLOG_S(INFO) << "Discarding data from" << jd;
-    
-    size_t i = this->find( jd );
+    DLOG_S(INFO) << "Discarding data from " << jd;
+
+    size_t i = find( jd );
     if( i == size() ) return;
     resize( i );
   }
