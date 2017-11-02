@@ -12,9 +12,14 @@ endif()
 #set( ALL_LIBS ${OPENGL_LIBRARY} glfw )
 #include_directories( src lib/glfw/include )
 
+find_package( glfw3 3.2 REQUIRED )
+find_package( OpenGL REQUIRED )
+set( ALL_LIBS ${OPENGL_gl_LIBRARY} glfw )
+
 set(CMAKE_CXX_COMPILER "g++")
-set(CMAKE_CXX_FLAGS "-std=c++14 -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS "-std=c++1z -pthread -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+# NDEBUG will suppress some loguru outputs in Release
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 file(GLOB SOURCES "src/*.cpp")
