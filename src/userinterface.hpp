@@ -34,7 +34,7 @@ public:
         quit_now = true;
       }
       if(val == 'r') {
-        simulation.run( SimulationParameters(0, 5, 0.1) );
+        simulation.run( SimulationParameters(0, 1000, 0.1) );
       }      
     }
   }
