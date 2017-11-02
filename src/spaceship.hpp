@@ -26,8 +26,6 @@ public:
   Vector                 accel;    // net acceleration ( engine + gravity )
   SpaceShipState         state;
 
-  bool              bingo_fuel;
-
   SpaceShip(
       std::string  name,
       double      max_f,      
@@ -43,10 +41,7 @@ public:
   {}
 
   void
-  set_attitude( const Vector& v )
-  {
-    state.attitude = v;
-  }
+  set_attitude( const Vector& v ) { state.attitude = v; }
   
   const Vector& 
   get_pos() { return state.pos; }
@@ -56,21 +51,12 @@ public:
   get_state() { return state; }
   // This is intended to fetch the state struct once we want to save a checkpoint
 
-  bool
-  bingo_fuel_event()
-  {
-    if( bingo_fuel ) {
-      bingo_fuel = false;
-      return true;
-    }
-    else
-    {
-      return false;      
-    }
-  }
+  void
+  set_state( SpaceShipState& ss ) { state = ss; }
+  // Reset an existing spaceship to a pre-determined state
 
   void
-  update_state( double dt, const Vector& g )
+  update_state( double dt, const Vector& g, bool& bingo_fuel )
   // update position and velocity and set flag for bingo fuel if needed 
   {    
     state.pos += dt * state.vel;
@@ -87,7 +73,6 @@ public:
     }
 
     accel = (( state.engine_level * max_acceleration ) * state.attitude) + g; 
-    
   }
 };
 
