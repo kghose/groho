@@ -40,18 +40,20 @@ int main(int argc, char* argv[])
     std::ref( simulation )
   );
   
-  std::thread display_thread( 
-    &sim::Display::loop,
-    std::ref( display )
-  );
+  // std::thread display_thread( 
+  //   &sim::Display::loop,
+  //   std::ref( display )
+  // );
 
   std::thread user_interface_thread( 
     &sim::UserInterface::loop,
     std::ref( user_interface )
   );
   
+  display.loop();
+
   user_interface_thread.join();
-  display_thread.join();
+  // display_thread.join();
   simulation_thread.join();
 
 }

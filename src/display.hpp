@@ -5,7 +5,9 @@
 
 #include <atomic>
 #include <string>
-#include <unistd.h>  // temporary will use condition variables instead
+#include <thread>
+
+#include <GLFW/glfw3.h>
 
 #include "simulation.hpp"
 
@@ -17,14 +19,20 @@ class Display
   std::atomic<bool> quit_now;
   Simulation& simulation;
 
+  GLFWwindow* window;
+
 public:
-  Display( Simulation& simulation ) : simulation( simulation ) {}
-  void quit() { quit_now = true; }
+  Display( Simulation& simulation );
+  ~Display();
+
+  void create_window();
+  void quit() { glfwSetWindowShouldClose(window, GL_TRUE); }
   void loop()
   {
-    while( !quit_now )
+    while(!glfwWindowShouldClose(window))
     {
-      usleep(1000);
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
   }
 };
