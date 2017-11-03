@@ -27,14 +27,9 @@ public:
 
   void create_window();
   void quit() { glfwSetWindowShouldClose(window, GL_TRUE); }
-  void loop()
-  {
-    while(!glfwWindowShouldClose(window))
-    {
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-  }
+  void loop();
+  void draw();
+
 };
 
 }
