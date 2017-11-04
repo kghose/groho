@@ -32,28 +32,16 @@ int main(int argc, char* argv[])
   std::string scenario_file( argv[ 1 ] );
   
   sim::Simulation simulation( scenario_file );
-  sim::Display display( simulation );
-  sim::UserInterface user_interface( display, simulation );
+  sim::Display display( simulation, 400, 400, "গ্রহ" );
 
   std::thread simulation_thread( 
     &sim::Simulation::loop,
     std::ref( simulation )
   );
-  
-  // std::thread display_thread( 
-  //   &sim::Display::loop,
-  //   std::ref( display )
-  // );
-
-  std::thread user_interface_thread( 
-    &sim::UserInterface::loop,
-    std::ref( user_interface )
-  );
-  
+    
+  display.show();
   display.loop();
-
-  user_interface_thread.join();
-  // display_thread.join();
+  simulation.quit();
+  
   simulation_thread.join();
-
 }
