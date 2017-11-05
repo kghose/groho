@@ -18,8 +18,17 @@ planetary system but is more of a mouthful.*
 
 Compilation
 ===========
-The code needs FLTK. This is `brew install fltk` on macOS, and something similarly
-simple on Linux systems.
+Dependencies: The code needs FLTK. This is `brew install fltk` on macOS, and something similarly simple on Linux systems.
+
+Compile:
+```
+git clone git@github.com:kghose/groho.git
+cd groho && \
+mkdir build && \
+cd build && \
+cmake -DCMAKE_BUILD_TYPE=Release .. && \
+make
+```
 
 
 [Tutorial](docs/tutorial.md)

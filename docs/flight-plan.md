@@ -4,7 +4,7 @@ Spaceship commands are placed in a separate script file (called a "flight plan")
 and a reference is put in the scenario file. Spaceship scripts are sequential 
 lists of actions. Each action has a time stamp. The action will not happen 
 before that time. Actions happen sequentially as they appear in the file. 
-It is illegal to have out of order time stamps in a flight plan.
+It is illegal to have out of order time stamps in a flight plan. 
 
 ## Header
 
@@ -16,9 +16,16 @@ max-fuel: 100                 # arbitrary units (u)
 fuel-consumption-rate: 0.1    # u / s / a 
 ```
 
-And initial position
+And initial state
 ```
-initial-pos: absolute: 150e6 0 0  # x, y, z in m relative to Solar System center
+state: Landed                 # One of Landed, Flying, Crashed
+pos: 150e6 0 0                # x, y, z in m relative to Solar System bary-center
+att: 1 0 0                    # attitude
+vel: 10 0 0                   # initial velocity
+gps: earth 38.728521, -77.251199  # Lat, Long relative to body
+                                  # only used if state is Landed 
+
+
 ```
 OR
 ```
@@ -27,7 +34,7 @@ initial-pos: earth: 38.728521, -77.251199  # Lat, Long relative to body
 
 Notes:
 1. If a `#` (octhrope) is encountered anywhere the rest of the line is ignored
-
+1. no variables can have spaces in them
 
 
 ## Actions
@@ -51,6 +58,32 @@ Description:   If there is a currently ongoing blocking action, that action is
 
 
 ```
+Action:        interaction-event
+Arguments:     spaceship s, float r, string id
+Description:   If the spaceship s comes within r m of us, on or after the action
+               timestamp create an event labeled with id
+Notes:         This causes this flight-plan to be *soft*-dependent on the 
+               flight-plan of s: If flight-plan s changes from a timestamp 
+               before this, this event check will be rerun.
+```
+
+
+```
+Action:        interaction-remove-event
+Arguments:     spaceship s, float r, string id
+Description:   If the spaceship s comes within r m of us, on or after the action
+               timestamp remove us from the simulation. Effective on or after 
+               time stamp of action. This creates an event labeled with id
+Notes:         This causes this flight-plan to be *soft*-dependent on the 
+               flight-plan of s: If flight-plan s changes from a timestamp 
+               before this, this event check will be rerun and the simulation
+               will be clipped at this point if needed.   
+```
+
+
+
+
+```
 Action:        launch
 Arguments:     float h, float p
 Description:   If the spaceship is "landed" on a body, then it takes off 
@@ -69,7 +102,7 @@ Termination:   This action terminates (stops blocking) when any of the following
 ```
 Action:        engine
 Arguments:     float l 
-Description:   Set engine level to l
+Description:   Set engine level to l  [0.0, 1.0]
 ```
 
 ```
