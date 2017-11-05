@@ -84,4 +84,4 @@ flightplan: durga.txt
 ==========
 For a detailed description of the flightplan file see [here][fp].
 
-[fp]: docs/flight-plan.md
+[fp]: flight-plan.md
