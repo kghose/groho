@@ -18,7 +18,8 @@ FIND_PACKAGE( FLTK REQUIRED )
 FIND_PACKAGE( OpenGL REQUIRED )
 
 
-file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES "src/*.cpp" )
 set(SOURCE_FILES ${SOURCES})
 add_executable( groho ${SOURCE_FILES} )
+include_directories( "src/external" )
 target_link_libraries( groho ${FLTK_LIBRARIES} ${OPENGL_LIBRARIES} )
