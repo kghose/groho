@@ -10,7 +10,7 @@ set(CMAKE_CXX_FLAGS "-std=c++1z -pthread -Wall")
 set( CATCH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 add_library( Catch INTERFACE )
 target_include_directories( Catch INTERFACE ${CATCH_INCLUDE_DIR} )
-include_directories( ../src )
+include_directories( ../src ../src/external )
 
 # Make test executable
 file( GLOB TEST_SOURCES *.cpp )
