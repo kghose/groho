@@ -19,17 +19,10 @@ Simulation::Simulation()
   quit_now = false;
   restart = false;
 }
-/*
+
 void 
-Simulation::event_loop()
-{
-  // Best to have this thread here, so that it is naturally destroyed when
-  // we exit the loop
-  std::thread file_watch_thread( 
-    &sim::Simulation::monitor_simulation_files,
-    std::ref( *this )
-  );
-  
+Simulation::run()
+{  
   while( !quit_now )
   {
     wait();
@@ -37,14 +30,11 @@ Simulation::event_loop()
     if( restart ) 
     { 
       checkpoints.discard_stale_data( simulation_parameters.jd_start );
-      run_simulation( simulation_parameters );
+      // run_simulation( simulation_parameters );
     }
   }
-
-  file_watch_thread.join();  
-  // This will have a max delay equal to the file watcher polling period
 }
-
+/*
 void
 Simulation::monitor_simulation_files()
 {

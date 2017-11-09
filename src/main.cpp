@@ -34,6 +34,11 @@ int main(int argc, char* argv[])
   sim::SimulationManager simulation_manager( scenario_file, simulation );
   sim::Display display( simulation_manager, 400, 400, "গ্রহ" );
 
+  std::thread simulation_thread( 
+    &sim::Simulation::run,
+    std::ref( simulation )
+  );
+
   std::thread simulation_manager_thread( 
     &sim::SimulationManager::run,
     std::ref( simulation_manager )
@@ -42,6 +47,9 @@ int main(int argc, char* argv[])
   display.show();
   display.run();
 
+  simulation.quit();  
+  simulation_thread.join();
+  
   simulation_manager.quit();  
   simulation_manager_thread.join();
 }
