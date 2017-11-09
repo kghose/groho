@@ -18,6 +18,8 @@ SimulationManager::SimulationManager( std::string scenario_fname )
 void
 SimulationManager::run()
 { 
+  loguru::set_thread_name("sim manager");
+
   Scenario scenario( scenario_fname );
   for( ;; )
   {
@@ -26,10 +28,10 @@ SimulationManager::run()
     // Spurious wake ups are not a problem here
     if( quit_now ) break;
 
-    scenario.load();
-    if( scenario.has_changed() )
+    scenario.reload_changes(); 
+    if( scenario.requires_recompute() )
     { 
-      DLOG_S(INFO) << "Rerunning simulation" " << scenario_fname";          
+      DLOG_S(INFO) << "Rerunning simulation";          
       simulation.rerun_with( scenario );
     }
   }
