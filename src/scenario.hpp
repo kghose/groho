@@ -63,7 +63,7 @@ struct Scenario
   bool         valid_scenario;
   std::string   error_message;
 
-  // Scenario() { valid_scenario = false; }
+  Scenario() { valid_scenario = false; }
   Scenario( std::string fname );
   
   bool is_valid() { return valid_scenario; }
