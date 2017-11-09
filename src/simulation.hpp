@@ -8,6 +8,7 @@
 #include <mutex>
 #include <condition_variable>
 
+#include "scenario.hpp"
 #include "checkpoint.hpp"
 #include "orrery.hpp"
 #include "spaceship.hpp"
@@ -49,24 +50,42 @@ class Simulation
   std::unordered_map<std::string, SpaceShip> space_fleet;
 
 public:
-  Simulation( std::string scenario_file );
+  Simulation();
 
-  void quit();
-  
-  void loop();
+  void run();
+  // Main loop. Wait until we are asked to run the simulation, then run
+
+  void rerun_with( Scenario scenario ) {}
+  // Interrupt current simulation and rerun with new scenario
+  // The new scenario carries information about what has changed from the
+  // existing scenario and we can be smart about what we resimulate.
+  // Can be called from different thread
+
+
+  // void event_loop();
   // wait until we are told to simulate then keep simulating until done
   // or told to resimulate. If done, return to waiting
 
-  void run( SimulationParameters sp );
-  // Execute simulation with given parameters
+
+  void quit();
+  // Sets quit_now to tell all simulation related threads to quit
 
   const Orrery& get_orrery() { return orrery; }
   // Meant for display routines who would like to display the solar system
 
 private:
 
-  void wait_for_user_command();  
-  // Block thread until we have something to do
+  bool simulation_files_have_changed();
+  // Return true if simulation files have changed
+
+  void load_orrery( std::string orrery_file );
+  // Load the Orrery description file
+
+  void load_flight_plan( std::string flight_plan_file );
+  // 
+  
+  void wait();  
+  // Block thread until we need to resimulate
 
   void simulation_loop( SimulationParameters sp );
   // Run simulation until all time steps are done, or we are asked to quit

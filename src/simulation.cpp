@@ -1,4 +1,5 @@
-#include <unistd.h>  // temporary will use condition variables instead
+#include <chrono>
+#include <thread>
 #include <iostream>
 
 #define LOGURU_WITH_STREAMS 1
@@ -12,32 +13,67 @@
 namespace sim
 {
 
-Simulation::Simulation( std::string scenario_file ) 
+Simulation::Simulation() 
 {
   user_command_received = false;
   quit_now = false;
   restart = false;
-
-  orrery.load( load_simple_solar_system( scenario_file ) );
 }
-
+/*
 void 
-Simulation::loop()
+Simulation::event_loop()
 {
+  // Best to have this thread here, so that it is naturally destroyed when
+  // we exit the loop
+  std::thread file_watch_thread( 
+    &sim::Simulation::monitor_simulation_files,
+    std::ref( *this )
+  );
+  
   while( !quit_now )
   {
-    wait_for_user_command();
-    if( quit_now ) return;
+    wait();
+    if( quit_now ) break;
     if( restart ) 
     { 
       checkpoints.discard_stale_data( simulation_parameters.jd_start );
-      simulation_loop( simulation_parameters );
+      run_simulation( simulation_parameters );
     }
   }
+
+  file_watch_thread.join();  
+  // This will have a max delay equal to the file watcher polling period
 }
 
 void
-Simulation::wait_for_user_command()
+Simulation::monitor_simulation_files()
+{
+  while( !quit_now )
+  {
+    if( simulation_files_have_changed() )
+    {
+      std::cerr << "Files changed" << std::endl;
+    }
+    else
+    {
+      std::cerr << "Files same" << std::endl;      
+      using namespace std::chrono_literals;
+      std::this_thread::sleep_for(500ms);
+    }  
+  }
+}
+*/
+bool
+Simulation::simulation_files_have_changed()
+{
+
+
+  return false;
+}
+
+
+void
+Simulation::wait()
 {
   std::unique_lock<std::mutex> lk( user_command_mutex );
   cv.wait(lk, [this](){ return user_command_received; });  // protects against spurious unblocks
@@ -53,6 +89,7 @@ Simulation::quit()
   cv.notify_one();
 }
 
+/*
 void 
 Simulation::run( SimulationParameters sp )
 {
@@ -62,6 +99,7 @@ Simulation::run( SimulationParameters sp )
   restart = true;
   cv.notify_one();
 }
+*/
 
 void 
 Simulation::simulation_loop( SimulationParameters sp )

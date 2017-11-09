@@ -7,22 +7,18 @@
 #include <string>
 #include <thread>
 
-//#include <GLFW/glfw3.h>
 #include <Fl/Fl_Gl_Window.h>
 
-#include "simulation.hpp"
+#include "simulationmanager.hpp"
 
 namespace sim
 {
 
-struct DisplayState
-// Neatly collects what we want to display and how we change that via
-// user interactions into one data structure
+struct Camera
 {
   Vector    camera_pos,
             camera_dir;
-
-  
+  double    fov;
 };
 
 
@@ -61,19 +57,18 @@ struct MouseDrag
 class Display : public Fl_Gl_Window
 {
   std::atomic<bool> quit_now;
-  Simulation& simulation;
+  SimulationManager& simulation_manager;
 
   //GLFWwindow* window;
 
 public:
-  Display( Simulation& simulation, int width, int height, char* title );
+  Display( SimulationManager& simulation_manager, int width, int height, char* title );
   ~Display();
 
   void create_window();
+  // void resize(int x, int y, int w, int h) { Fl_Gl_Window::resize(x, y, w, h); }
   void setup_ui_events();
-
-  void quit() { /*glfwSetWindowShouldClose(window, GL_TRUE);*/ }
-  void loop();
+  void run();
   void draw();
 
 };

@@ -7,12 +7,13 @@
 namespace sim
 {
 
-Display::Display( Simulation& simulation, int width, int height, char* title ) 
+Display::Display( SimulationManager& simulation_manager, int width, int height, char* title ) 
 : 
-Fl_Gl_Window( width, height, title ), simulation( simulation ) 
+Fl_Gl_Window( width, height, title ), simulation_manager( simulation_manager ) 
 {
   mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE);
-  
+  mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE | FL_MULTISAMPLE );
+  size_range( 400, 400); // This allows resizing. Without this window is fixed size
   /*
   LOG_S(INFO) << "Compiled against GLFW " 
     << GLFW_VERSION_MAJOR << "."
@@ -79,7 +80,7 @@ Display::setup_ui_events()
 
 
 void 
-Display::loop()
+Display::run()
 {
   Fl::run();
   // while(!glfwWindowShouldClose(window))
