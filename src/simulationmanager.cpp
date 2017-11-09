@@ -24,16 +24,14 @@ SimulationManager::run()
   Scenario scenario( scenario_fname );
   for( ;; )
   {
+    if( scenario.requires_recompute() ) { simulation.rerun_with( scenario ); }
+
     std::unique_lock<std::mutex> lk( user_command_mutex );
     cv.wait_for( lk, 500ms );
     // Spurious wake ups are not a problem here
     if( quit_now ) break;
 
     scenario.reload_changes(); 
-    if( scenario.requires_recompute() )
-    { 
-      simulation.rerun_with( scenario );
-    }
   }
 }
 
