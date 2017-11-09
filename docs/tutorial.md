@@ -41,7 +41,7 @@ Ok, how do we do this?
 
 User Interface
 ==============
-Groho's main window gives you a view of the simulation which you can rotate, zoom and translate with the mouse. The simulation is governed by scenario and fligh plan files, which are ordinary text files you can create and edit with your favorite text editor. When any of the simulation files are altered the simulation is re-run automatically and the display updates. 
+Groho's main window gives you a view of the simulation which you can navigate with the mouse and keyboard. The simulation is governed by scenario and flight plan files, which are ordinary text files you can create and edit with your favorite text editor. When any of the simulation files are altered the simulation is re-run automatically and the display updates. 
 
 Controls
 --------
@@ -61,7 +61,7 @@ When you start groho, you pass a scenario file, like so
 
 Here `earth-mars.txt` is a scenario file, and it tells Groho what Orrery model to use (The Orrery is the thing that simulates the solar system), what range of dates to run the simulation for and what flight plan files to include in the simulation. Flight plans are the biggest part of the simulation. Each spaceship has it's own flight plan which governs what it does in the simulation.
 
-`earth-mars.txt`, for example starts like this:
+`earth-mars.txt`, for example, starts like this:
 
 ```
 name: Earth to mars
@@ -69,19 +69,34 @@ description: Tutorial example showing how to build an Earth to mars transfer
 orrery: simplesolarsystem
 start: 2458061.5
 stop: 2458161.5
+step: 0.00001
 flightplan: durga.txt
 ```
 
-`orrery` can be `simplesolarsystem` which is what I use for debugging purposes, or, more typically, a JPL ephemeris kernel in `.bsp` format, like `de430.bsp`. You can have more than one `.bsp` file, by simply repeating the `orrery` line.
+`orrery` can be `simplesolarsystem` which is what I use for debugging purposes, or, more typically, a JPL ephemeris kernel in `.bsp` format, like `de430.bsp`. You can have more than one `.bsp` file, by simply repeating the `orrery` line. 
 
-`start` and `stop` are Julian Dates. The Navy has an useful [converter][jdc] to go between regular dates and Julian Dates.
+`start`, `stop` and `step` are Julian Dates. The Navy has an useful [converter][jdc] to go between regular dates and Julian Dates.
 
 [jdc]: http://aa.usno.navy.mil/data/docs/JulianDate.php
 
 `flightplan` is a flight plan text file. You can have as many flight plans as you want, one to a line. Ideally, the names of each spaceship should be unique. Clashing names will be renamed internally with suffixes like `II`, `III` but this may break any ship-ship interaction actions, so basically, name each ship uniquely. 
+
+Typically you will have the scenario file and flight plan files for a simulation in one folder with different folders for different simulations, to keep organized, while the JPL ephemeris kernels are kept in one fixed data directory. 
 
 [Flightplan][fp]
 ==========
 For a detailed description of the flightplan file see [here][fp].
 
 [fp]: flight-plan.md
+
+Diff mode
+=========
+
+In diff mode the display keeps track of the last N versions of the simulation
+you ran and displays them simultaneously. This allows you to see the effects
+of the changes you are making to the flight plan. 
+
+**This is especially useful when you use a version control system to version 
+your scenario files: once you load up the main scenario file, 
+you can use `git checkout` to switch to different versions of the simulation
+ond overlay them. Note that memory useage is proportional to N**
