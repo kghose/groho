@@ -32,6 +32,14 @@ struct Token
   std::string key, value;
 };
 
+
+enum class Expecting
+{
+  ExactlyOne,
+  ZeroOrMore,
+  OneOrMore
+};
+
 struct TokenizedScenario
 {
   std::vector<Token> header, program;
@@ -43,15 +51,30 @@ struct TokenizedScenario
   // We try not to crash on malformed inputs - that would be annoying
   // Instead we flag the scenario as corrupt and return an informative message
 
-  Token get_header_value( std::string key )
+
+  std::vector<std::string> 
+  get_header_value( std::string key, std::string def, Expecting exp = Expecting::ExactlyOne )
   {
-    for( auto& tk : header ) { if( tk.key == key ) return tk; }
-    return Token();  // empty key is sentinel for not found
+    std::vector<std::string> values;
+    for( auto& tk : header ) { if( tk.key == key ) values.push_back( tk.value ); }
+    
+    if( (values.size() == 0) & ( (exp == Expecting::ExactlyOne) | (exp == Expecting::OneOrMore) )) 
+    {
+      LOG_S(WARNING) << "Did not find \"" << key << "\": using default value " << def;
+      values.push_back( def );
+    }
+    if( (values.size() > 1) & (exp == Expecting::ExactlyOne) ) 
+    {
+      LOG_S(WARNING) << "Found multiple lines with \"" << key << "\"";
+    }
+
+    return values;
   }
 };
 
 
-std::string trim( const std::string& in )
+std::string 
+trim( const std::string& in )
 {
   size_t i0 = in.find_first_not_of(' '),
          i1 = in.find_last_not_of(' ');
@@ -61,7 +84,8 @@ std::string trim( const std::string& in )
 
 std::regex number_pattern("-?[0-9]+.?[0-9]+");
 
-std::istream& operator >> ( std::istream& scn_file, TokenizedScenario& ts )
+std::istream& 
+operator >> ( std::istream& scn_file, TokenizedScenario& ts )
 {
   size_t idx, line_ctr = 0;
   std::string line;
@@ -99,9 +123,6 @@ std::istream& operator >> ( std::istream& scn_file, TokenizedScenario& ts )
 
   return scn_file;
 }
-
-
-
 
 
 } // namespace sim

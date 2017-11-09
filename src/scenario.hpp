@@ -55,15 +55,22 @@ struct Scenario
   bool         valid_scenario;
   std::string   error_message;
 
-  Scenario() {}
-  Scenario( std::string fname ) { main_file_name = fname; }
+  Scenario() { valid_scenario = false; }
+  Scenario( std::string fname );
   
   bool is_valid() { return valid_scenario; }
   bool has_changed() { return scenario_has_changed; }
   
   time_t fetch_scenario_modification_time();
   // Check all scenario files and give us the most recently modified time
-  
+
+  void verify_program_is_sorted();
+  // The program must be sorted. We could easily sort it internally, but we
+  // choose to be explicit about it and warn the user to fix the arrangement
+  // it's possible that out of order statements in a flight plan indicates
+  // a planning error  
+
+
   Scenario& operator -( const Scenario &rhs );
   // fill in the recompute_from field based on what differences there are
   // between the two scenarios
@@ -74,8 +81,8 @@ struct Scenario
   void load();
   // Load and parse scenario file and included flight plan files
 
-  bool load_scenario_file();
-  // Load and parse scenario file. Return true if there are changes
+  bool load_main_file();
+  // Load and parse main scenario file. Return true if there are changes
 
   bool load_flight_plan();
   // Load and parse flight plan file. Return true if there are changes
