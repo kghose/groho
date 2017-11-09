@@ -44,6 +44,7 @@ class Simulation
   std::condition_variable cv;
 
   SimulationParameters  simulation_parameters;
+  Scenario new_scenario;
   Checkpoints checkpoints;
 
   Orrery orrery;
@@ -55,7 +56,7 @@ public:
   void run();
   // Main loop. Wait until we are asked to run the simulation, then run
 
-  void rerun_with( Scenario scenario ) {}
+  void rerun_with( const Scenario scenario );
   // Interrupt current simulation and rerun with new scenario
   // The new scenario carries information about what has changed from the
   // existing scenario and we can be smart about what we resimulate.
@@ -75,9 +76,6 @@ public:
 
 private:
 
-  bool simulation_files_have_changed();
-  // Return true if simulation files have changed
-
   void load_orrery( std::string orrery_file );
   // Load the Orrery description file
 
@@ -87,7 +85,7 @@ private:
   void wait();  
   // Block thread until we need to resimulate
 
-  void simulation_loop( SimulationParameters sp );
+  void simulation_loop( Scenario scenario );
   // Run simulation until all time steps are done, or we are asked to quit
 
   void step( double jd, double dt );

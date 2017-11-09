@@ -29,38 +29,21 @@ Simulation::run()
     if( quit_now ) break;
     if( restart ) 
     { 
-      checkpoints.discard_stale_data( simulation_parameters.jd_start );
-      // run_simulation( simulation_parameters );
+      checkpoints.discard_stale_data( new_scenario.start_jd ); // This should go inside loop
+      simulation_loop( new_scenario );
     }
   }
 }
-/*
+
 void
-Simulation::monitor_simulation_files()
+Simulation::rerun_with( const Scenario scenario )
 {
-  while( !quit_now )
-  {
-    if( simulation_files_have_changed() )
-    {
-      std::cerr << "Files changed" << std::endl;
-    }
-    else
-    {
-      std::cerr << "Files same" << std::endl;      
-      using namespace std::chrono_literals;
-      std::this_thread::sleep_for(500ms);
-    }  
-  }
+  std::lock_guard<std::mutex> lk( user_command_mutex );
+  user_command_received = true;
+  restart = true;
+  new_scenario = scenario;
+  cv.notify_one(); 
 }
-*/
-bool
-Simulation::simulation_files_have_changed()
-{
-
-
-  return false;
-}
-
 
 void
 Simulation::wait()
@@ -79,29 +62,18 @@ Simulation::quit()
   cv.notify_one();
 }
 
-/*
-void 
-Simulation::run( SimulationParameters sp )
-{
-  std::lock_guard<std::mutex> lk( user_command_mutex );
-  simulation_parameters = sp;
-  user_command_received = true;  
-  restart = true;
-  cv.notify_one();
-}
-*/
 
 void 
-Simulation::simulation_loop( SimulationParameters sp )
+Simulation::simulation_loop( Scenario scenario )
 {
   restart = false;  
-  DLOG_S(INFO) << "Starting simulation: " << sp.jd_start << " - " << sp.jd_end;  
+  DLOG_S(INFO) << "Starting simulation: " << scenario.start_jd << " - " << scenario.stop_jd;  
 
-  double jd = sp.jd_start;
-  while( !restart & !quit_now & ( jd < sp.jd_end ) ) 
+  double jd = scenario.start_jd;
+  while( !restart & !quit_now & ( jd < scenario.stop_jd ) ) 
   { 
-    step( jd, sp.dt);
-    jd += sp.dt;
+    step( jd, scenario.step_jd);
+    jd += scenario.step_jd;
     //std::cout << jd << std::endl;
   }
 

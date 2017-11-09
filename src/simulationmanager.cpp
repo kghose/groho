@@ -32,7 +32,6 @@ SimulationManager::run()
     scenario.reload_changes(); 
     if( scenario.requires_recompute() )
     { 
-      DLOG_S(INFO) << "Rerunning simulation";          
       simulation.rerun_with( scenario );
     }
   }
