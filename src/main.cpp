@@ -29,8 +29,9 @@ int main(int argc, char* argv[])
   loguru::init(argc, argv);
 
   std::string scenario_file( argv[ 1 ] );
-  
-  sim::SimulationManager simulation_manager( scenario_file );
+
+  sim::Simulation simulation;  
+  sim::SimulationManager simulation_manager( scenario_file, simulation );
   sim::Display display( simulation_manager, 400, 400, "গ্রহ" );
 
   std::thread simulation_manager_thread( 

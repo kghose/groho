@@ -12,7 +12,7 @@ class SimulationManager
 {
   std::string scenario_fname;
 
-  Simulation simulation;
+  Simulation& simulation;
   
   // Paraphernalia needed for communicating across threads
   std::atomic<bool>        quit_now  // complete exit
@@ -26,7 +26,7 @@ class SimulationManager
 
 public:
 
-  SimulationManager( std::string scenario_fname );
+  SimulationManager( std::string scenario_fname, Simulation& sim );
   
   void run();
   // Main loop. Wait for user commands and periodically check the 
