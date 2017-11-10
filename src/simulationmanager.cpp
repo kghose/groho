@@ -11,7 +11,7 @@ namespace sim
 
 SimulationManager::SimulationManager( 
   std::string scenario_fname, Simulation& sim )
-: simulation(sim), scenario_fname( scenario_fname )
+: scenario_fname( scenario_fname ), simulation(sim)
 {
   user_command_received = false;
 }
