@@ -24,12 +24,6 @@ att: 1 0 0                    # attitude
 vel: 10 0 0                   # initial velocity
 gps: earth 38.728521, -77.251199  # Lat, Long relative to body
                                   # only used if state is Landed 
-
-
-```
-OR
-```
-initial-pos: earth: 38.728521, -77.251199  # Lat, Long relative to body
 ```
 
 Notes:
@@ -41,7 +35,7 @@ Notes:
 The header is followed by a list of actions in the following format
 
 ```
-<timestamp> <action> <argument1> <argument2> ...
+<timestamp>: <action> <argument1> <argument2> ...
 ```
 
 1. Each field is separated by one or more white spaces
