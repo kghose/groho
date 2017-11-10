@@ -18,7 +18,11 @@ planetary system but is more of a mouthful.*
 
 Compilation
 ===========
-Dependencies: The code needs FLTK. This is `brew install fltk` on macOS, and something similarly simple on Linux systems.
+Dependencies: 
+  - FLTK 
+
+* macOS: `brew install fltk`
+* Linux: `sudo apt-get install fltk`
 
 Compile:
 ```
@@ -45,3 +49,10 @@ so I stubbornly rolled my own to my own (much more limited) specifications.
 
 [GMAT]: http://gmatcentral.org/display/GW/GMAT+Wiki+Home
 [GMAT-github]: https://github.com/haisamido/GMAT
+
+
+Thanks
+======
+Included in the code are the following fine pieces of software
+
+1. [loguru](https://github.com/emilk/loguru) from Emil Ernerfeldt
