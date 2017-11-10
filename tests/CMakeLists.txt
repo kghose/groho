@@ -3,8 +3,8 @@ cmake_minimum_required( VERSION 3.0.0 )
 project( groho_tests )
 
 set(CMAKE_CXX_COMPILER "g++")
-#set(CMAKE_CXX_FLAGS "-std=c++1z -fsanitize=address -pthread -Wall")
-set(CMAKE_CXX_FLAGS "-std=c++1z -pthread -Wall")
+set(CMAKE_CXX_FLAGS "-std=c++1z -fsanitize=address -Wall")
+#set(CMAKE_CXX_FLAGS "-std=c++1z -Wall")
 
 # Prepare "Catch" library for other executables
 set( CATCH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
