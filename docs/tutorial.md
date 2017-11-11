@@ -45,13 +45,32 @@ Groho's main window gives you a view of the simulation which you can navigate wi
 
 Controls
 --------
-Dragging with the mouse points the camera in different directions. The scroll wheel moves the camera forwards and backwards along the direction it is pointing. When the camera gets close to an object it's motion slows down. Holding the command key and scrolling changes the field of view of the camera. There are hotkeys that move the camera to some standard positions. The default hot keys are
+Mouse actions govern most of the important navigation options in the display
+
+| Action           |       Effect                         |
+|------------------|--------------------------------------|
+| Mouse drag       | Look                                 |
+| Mouse scroll     | Move forward/backward in sim time    |
+| CMD + scroll     | Move in and out of simulation        |
+| Shift + scroll   | Change camera FOV                    | 
+
+When the camera gets close to an object it's motion slows down. There are also 
+hotkeys that move the camera to some standard positions. The default hot keys are
 
 | Key       |        View                         |
 |-----------|-------------------------------------|
 | e         | Ecliptic at 40 AU                   |
 | p         | Polar at 40 AU                      |
 | 1 ... 9   | Go to the vicinity of Mercury, Venus, Earth, ... Pluto and look towards the sun |
+
+Display
+-------
+Initially the display shows the whole simulation (advancing as the simulation)
+progresses. At any time 
+
+shows the background objects (Orrery objects)
+
+
 
 Scenario file
 =============

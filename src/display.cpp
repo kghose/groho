@@ -172,7 +172,13 @@ Display::draw()
 void
 Display::draw_orrery()
 {
-  
+  std::vector<Vector> planets;
+  for( auto& planet : simulation.get_orrery() )
+  {
+
+  } 
+
+
 }
 
 struct MouseDrag
@@ -233,13 +239,22 @@ Display::handle(int event) {
       return 1;
 
     case  FL_MOUSEWHEEL:
-      if( FL_COMMAND & Fl::event_state() )
       {
-        camera.fov += Fl::event_dy();
-      }
-      else
-      {
-        camera.pos = camera.pos + (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
+        bool fov_scroll = FL_SHIFT & Fl::event_state(),
+             pos_scroll = FL_COMMAND & Fl::event_state(),
+             sim_scroll = !fov_scroll & !pos_scroll;
+
+        if( sim_scroll ) {
+          // scroll in time
+        }
+
+        if( pos_scroll ) {
+          camera.pos = camera.pos + (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
+        }
+        
+        if( fov_scroll ) {
+          camera.fov += Fl::event_dy();          
+        }
       }
       redraw();          
       return 1;
