@@ -51,9 +51,15 @@ struct TokenizedScenario
   // We try not to crash on malformed inputs - that would be annoying
   // Instead we flag the scenario as corrupt and return an informative message
 
+  std::string 
+  get_parameter( std::string key, std::string def )
+  {
+    return get_parameter_list( key, def, Expecting::ExactlyOne )[0];
+  }
+
 
   std::vector<std::string> 
-  get_header_value( std::string key, std::string def, Expecting exp = Expecting::ExactlyOne )
+  get_parameter_list( std::string key, std::string def, Expecting exp = Expecting::ZeroOrMore )
   {
     std::vector<std::string> values;
     for( auto& tk : header ) { if( tk.key == key ) values.push_back( tk.value ); }

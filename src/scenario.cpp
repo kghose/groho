@@ -98,43 +98,43 @@ Scenario::load_main_file()
 
   copy_new_params_and_diff(
     name, 
-    ts.get_header_value( "name", "No Name" )[0],
+    ts.get_parameter( "name", "No Name" ),
     ScnLabelsChange 
   );
 
   copy_new_params_and_diff(
     description, 
-    ts.get_header_value( "description", "No description" )[0],
+    ts.get_parameter( "description", "No description" ),
     ScnLabelsChange 
   );
   
   copy_new_params_and_diff(
     step_jd, 
-    std::stod( ts.get_header_value( "step",  "0.00001"   )[0] ),
+    std::stod( ts.get_parameter( "step",  "0.00001"   ) ),
     ScnNeedsFullRecompute 
   );
 
   copy_new_params_and_diff(
     start_jd, 
-    std::stod( ts.get_header_value( "start", "2458066.5" )[0] ),
+    std::stod( ts.get_parameter( "start", "2458066.5" ) ),
     ScnNeedsFullRecompute 
   );
 
   copy_new_params_and_diff(
     stop_jd, 
-    std::stod( ts.get_header_value( "stop",  "2458061.5" )[0] ),
+    std::stod( ts.get_parameter( "stop",  "2458061.5" ) ),
     ScnNeedsPartRecompute 
   );
 
   copy_new_params_and_diff(
     orrery_files, 
-    ts.get_header_value( "orrery", "", Expecting::ZeroOrMore ),
+    ts.get_parameter_list( "orrery", "", Expecting::ZeroOrMore ),
     ScnNeedsFullRecompute 
   );
 
   copy_new_params_and_diff(
     flight_plan_files, 
-    ts.get_header_value( "flightplan", "", Expecting::ZeroOrMore ),
+    ts.get_parameter_list( "flightplan", "", Expecting::ZeroOrMore ),
     ScnNeedsFullRecompute 
   );
 }
