@@ -20,7 +20,7 @@ Display::Display( SimulationManager& simulation_manager, int width, int height, 
 Fl_Gl_Window( width, height, title ), simulation_manager( simulation_manager ) 
 {
   camera.pos = Vector(10, 0, 0);
-  camera.dir = Vector(-10, 0, 0);
+  camera.dir = Vector(1, 0, 0);
   camera.up = Vector(0, 0, 1);
   camera.fov = 45;
   
@@ -33,12 +33,16 @@ Fl_Gl_Window( width, height, title ), simulation_manager( simulation_manager )
   std::random_device rd;
   std::mt19937 gen( rd() );
   std::uniform_real_distribution<> u_rand( -50.0, 50.0 );
-
+  std::uniform_real_distribution<> c_rand( 0.2, 1.0 );
+  
   dummy_data.clear();
   for(int i = 0; i < 1000; i++)
   {
     dummy_data.push_back(
-      Vector( u_rand( gen ), u_rand( gen ), u_rand( gen ) )
+      std::make_pair(
+        Vector( u_rand( gen ), u_rand( gen ), u_rand( gen ) ),
+        Vector( c_rand( gen ), c_rand( gen ), c_rand( gen ) )        
+      )
     );
   }
 
@@ -134,26 +138,31 @@ Display::draw()
     glViewport(0,0,w(),h());
   }
 
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);      // clear the color and depth buffer
 
-  // view transformations
+  // https://www.opengl.org/archives/resources/faq/technical/viewing.htm
+  // Think of the projection matrix as describing the attributes of your camera, 
+  // such as field of view, focal length, fish eye lens, etc. Think of the 
+  // ModelView matrix as where you stand with the camera and the direction you point it.
+
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();  
-  gluPerspective( camera.fov, (double) w() / (double) h(), 1, 100);
+  gluPerspective( camera.fov, (double) w() / (double) h(), .1, 100);
 
-  //glFrustum(-1, 1, -1, 1, 1, 100);
 
-  Vector scene_center = camera.pos + camera.dir;
+  glMatrixMode(GL_MODELVIEW);      
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);      // clear the color and depth buffer  
+  glLoadIdentity();  
+  Vector scene_center = camera.pos.norm() * camera.dir + camera.pos;  
   gluLookAt( 
     camera.pos.x, camera.pos.y, camera.pos.z, 
+    //camera.dir.x, camera.dir.y, camera.dir.z,
     scene_center.x, scene_center.y, scene_center.z, 
     camera.up.x, camera.up.y, camera.up.z);
-
-  glMatrixMode(GL_MODELVIEW);
   for( auto v : dummy_data )
   {
     glPushMatrix();
-    glTranslatef( v.x, v.y, v.z );
+    glColor3d( v.second.x, v.second.y, v.second.z );
+    glTranslatef( v.first.x, v.first.y, v.first.z );
     glutWireSphere(1, 20, 20);                
     glPopMatrix();
   }
@@ -186,26 +195,19 @@ struct MouseDrag
             phi   = - ( Fl::event_y() - initial_y ) / 500.0;
 
     new_camera = initial_camera;
-    // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+
     // Yaw
     new_camera.dir = rotate( initial_camera.dir, initial_camera.up, theta );
-
     // Pitch
     Vector right = cross( initial_camera.dir, initial_camera.up ).normed();
-    new_camera.dir = rotate( new_camera.dir, right, phi );
+    new_camera.dir = rotate( new_camera.dir, right, phi ).normed();
     new_camera.up = rotate( initial_camera.up, right, phi ).normed();
-
-    // new_camera.up = 
-    //     initial_camera.up * cosphi + 
-    //     ( right * initial_camera.up ) * sinphi + 
-    //     right * ( dot( right, initial_camera.up ) * (1 - cosphi) );
-    // new_camera.up = new_camera.up / new_camera.up.norm();
 
     return new_camera;
   }
 
-  int drag_dx( int x ) { return x - initial_x; }
-  int drag_dy( int y ) { return y - initial_y; }
+  //int drag_dx( int x ) { return x - initial_x; }
+  //int drag_dy( int y ) { return y - initial_y; }
   void end_drag( ) { dragging = false; }
 };
 
@@ -234,9 +236,10 @@ Display::handle(int event) {
     else
     {
       //Fl::event_dx() and Fl::event_dy()
-      Vector dpos = (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
-      camera.dir = camera.dir + dpos;
-      camera.pos = camera.pos - dpos;    
+      camera.pos = camera.pos + (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
+      //Vector dpos = (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
+      //camera.dir = camera.dir + dpos;
+      //camera.pos = camera.pos - dpos;    
       redraw();      
     }
     redraw();          
