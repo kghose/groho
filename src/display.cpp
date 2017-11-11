@@ -85,7 +85,6 @@ Display::run()
   Fl::run();
 }
 
-
 void
 draw_lines()
 {
@@ -121,22 +120,21 @@ glDisableVertexAttribArray(0);
 
 }
 
-
 void 
 Display::draw()
 {
-  static bool firstTime = true;
-  if (firstTime)
+  static bool needs_initialization = true;
+  if ( needs_initialization )
   {
-    glClearColor(.1f, .1f, .1f, 1);
-    glEnable(GL_DEPTH_TEST);
-    firstTime = false;
-  }// if
+    glClearColor( .1f, .1f, .1f, 1 );
+    glEnable( GL_DEPTH_TEST );
+    needs_initialization = false;
+  }
 
   // http://www.fltk.org/doc-1.1/Fl_Gl_Window.html
-  if (!valid()) 
+  if ( !valid() ) // something like a resize happened 
   {
-    glViewport(0,0,w(),h());
+    glViewport( 0, 0, w(), h() );
   }
 
 
@@ -145,20 +143,21 @@ Display::draw()
   // such as field of view, focal length, fish eye lens, etc. Think of the 
   // ModelView matrix as where you stand with the camera and the direction you point it.
 
-  glMatrixMode(GL_PROJECTION);
+  glMatrixMode( GL_PROJECTION );
   glLoadIdentity();  
   gluPerspective( camera.fov, (double) w() / (double) h(), .1, 100);
 
 
-  glMatrixMode(GL_MODELVIEW);      
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);      // clear the color and depth buffer  
+  glMatrixMode( GL_MODELVIEW );      
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); // clear the color and depth buffer  
   glLoadIdentity();  
   Vector scene_center = camera.pos.norm() * camera.dir + camera.pos;  
   gluLookAt( 
-    camera.pos.x, camera.pos.y, camera.pos.z, 
-    //camera.dir.x, camera.dir.y, camera.dir.z,
+    camera.pos.x,   camera.pos.y,   camera.pos.z, 
     scene_center.x, scene_center.y, scene_center.z, 
-    camera.up.x, camera.up.y, camera.up.z);
+    camera.up.x,    camera.up.y,    camera.up.z
+  );
+  
   for( auto v : dummy_data )
   {
     glPushMatrix();
@@ -170,6 +169,11 @@ Display::draw()
 
 }
 
+void
+Display::draw_orrery()
+{
+  
+}
 
 struct MouseDrag
 {
