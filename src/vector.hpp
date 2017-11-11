@@ -10,37 +10,40 @@ struct Vector
 {
   double x, y, z;
 
+  Vector() {}
+  Vector( double x, double y, double z ) : x(x), y(y), z(z) {}
+  
   double norm_sq() { return x*x + y*y + z*z; }
   double norm()    { return std::sqrt( norm_sq() ); }
 
   Vector
   operator+( const Vector& rhs )
   {
-    return Vector {
-      .x = x + rhs.x,
-      .y = y + rhs.y,
-      .z = z + rhs.z
-    };
+    return Vector(
+      x + rhs.x,
+      y + rhs.y,
+      z + rhs.z
+    );
   }
 
   Vector
   operator-( const Vector& rhs )
   {
-    return Vector {
-      .x = x - rhs.x,
-      .y = y - rhs.y,
-      .z = z - rhs.z
-    };
+    return Vector(
+      x - rhs.x,
+      y - rhs.y,
+      z - rhs.z
+    );
   }
 
   Vector
   operator/( const double rhs )
   {
-    return Vector {
-      .x = x / rhs,
-      .y = y / rhs,
-      .z = z / rhs
-    };
+    return Vector(
+      x / rhs,
+      y / rhs,
+      z / rhs
+    );
   }
   
   Vector& 
@@ -57,6 +60,25 @@ struct Vector
     return *this;
   }
 };
+
+inline double 
+dot( const Vector& u, const Vector& v )
+{
+  return u.x * v.x + u.y * v.y + u.z * v.z;
+}
+
+inline Vector 
+operator*( const Vector& u, const Vector& v )
+{
+  return Vector(
+    u.y * v.z - u.z * v.y, 
+    u.z * v.x - u.x * v.z,
+    u.x * v.y - u.y * v.x
+  );
+}
+
+inline Vector
+cross( const Vector& u, const Vector& v ) { return u * v; }
 
 inline Vector 
 operator*( double lhs, const Vector& rhs )
