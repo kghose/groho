@@ -1,7 +1,14 @@
+#include <cmath>
+
+#include <Fl/Fl.h>
+#include <Fl/Gl.h>
+#include <Fl/Glu.h>
+#include <Fl/Glut.h>
+
+#include "display.hpp"
+
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
-#include "display.hpp"
-#include <Fl/Fl.h>
 
 
 namespace sim
@@ -11,9 +18,15 @@ Display::Display( SimulationManager& simulation_manager, int width, int height, 
 : 
 Fl_Gl_Window( width, height, title ), simulation_manager( simulation_manager ) 
 {
-  mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE);
+  camera.pos = Vector(10, 0, 0);
+  camera.dir = Vector(-10, 0, 0);
+  camera.up = Vector(0, 0, 1);
+  camera.fov = 45;
+  
+  //mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE);
   mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE | FL_MULTISAMPLE );
   size_range( 400, 400); // This allows resizing. Without this window is fixed size
+
   /*
   LOG_S(INFO) << "Compiled against GLFW " 
     << GLFW_VERSION_MAJOR << "."
@@ -46,59 +59,180 @@ Display::~Display()
 }
 
 void 
-Display::create_window()
-{
-  /*
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-  
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-  
-  window = glfwCreateWindow(800, 600, "Groho ( গ্রহ )", nullptr, nullptr); // Windowed
-  //window =
-  //    glfwCreateWindow(800, 600, "Groho ( গ্রহ )", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
-  glfwMakeContextCurrent(window);
-  glfwSwapInterval(1);
-  */
-}
-
-// How to neatly pass a member function from https://stackoverflow.com/a/28660673/2512851
-void
-Display::setup_ui_events()
-{
-  /*
-  glfwSetWindowUserPointer( window, this );
-  auto func = [](GLFWwindow* w, int, int, int)
-  {
-      static_cast<Display*>(glfwGetWindowUserPointer(w))->mouseButtonPressed());
-  };
-  glfwSetMouseButtonCallback( window, func );
-  */
-}
-
-
-void 
 Display::run()
 {
   Fl::run();
-  // while(!glfwWindowShouldClose(window))
-  // {
-  //   draw();
-  //   glfwSwapBuffers(window);
-  //   glfwPollEvents();
-  // }
 }
+
+
+void
+draw_lines()
+{
+  GLfloat vertices[] =
+  {
+      1.0f, 1.0f, 1.0f, 1.0f,
+      0.0f, 0.0f, 0.0f, 1.0f,
+      1.0f, 0.0f, 0.0f, 1.0f
+  };
+
+  // This is the identifier for your vertex buffer
+GLuint vbo;
+// This creates our identifier and puts it in vbo
+glGenBuffers(1, &vbo);
+// This binds our vbo
+glBindBuffer(GL_ARRAY_BUFFER, vbo);
+// This hands the vertices into the vbo and to the rendering pipeline    
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+// "Enable a port" to the shader pipeline
+glEnableVertexAttribArray(0);
+glBindBuffer(GL_ARRAY_BUFFER, vbo);
+// pass information about how vertex array is composed
+glVertexAttribPointer(0, // same as in glEnableVertexAttribArray(0)
+                      4, // # of coordinates that build a vertex
+                      GL_FLOAT, // data type
+                      GL_FALSE, // normalized?
+                      0,        // stride
+                      (void*)0);// vbo offset
+
+glDrawArrays(GL_LINES, 0, 2);
+glDisableVertexAttribArray(0);
+
+}
+
 
 void 
 Display::draw()
 {
-  /*
-  int width, height;
-  glfwGetFramebufferSize(window, &width, &height);
-  glViewport(0, 0, width, height);
-  */
+  static bool firstTime = true;
+  if (firstTime)
+  {
+    glClearColor(.1f, .1f, .1f, 1);
+    glEnable(GL_DEPTH_TEST);
+    firstTime = false;
+  }// if
+
+  // http://www.fltk.org/doc-1.1/Fl_Gl_Window.html
+  if (!valid()) 
+  {
+    glViewport(0,0,w(),h());
+  }
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);      // clear the color and depth buffer
+
+  // view transformations
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();  
+  gluPerspective( camera.fov, (double) w() / (double) h(), 1, 100);
+
+  //glFrustum(-1, 1, -1, 1, 1, 100);
+
+  Vector scene_center = camera.pos + camera.dir;
+  gluLookAt( 
+    camera.pos.x, camera.pos.y, camera.pos.z, 
+    scene_center.x, scene_center.y, scene_center.z, 
+    camera.up.x, camera.up.y, camera.up.z);
+
+  glMatrixMode(GL_MODELVIEW);
+
+  glutWireSphere(1, 20, 20);
+
+}
+
+
+struct MouseDrag
+{
+  bool dragging;
+  int initial_x, initial_y;
+  Camera initial_camera;
+
+  MouseDrag() { dragging = false; }
+
+  void start_drag( int x, int y, Camera camera )
+  {
+    if( !dragging )
+    {
+      initial_x = x;
+      initial_y = y;
+      initial_camera = camera;
+    }
+  }
+
+  Camera drag( int x, int y )
+  {
+    Camera  new_camera;
+    double  theta = - drag_dx( Fl::event_x() ) / 500.0,
+            costheta = std::cos( theta ),
+            sintheta = std::sin( theta );
+
+    new_camera = initial_camera;
+    // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+    new_camera.dir = 
+          initial_camera.dir * costheta + 
+          ( initial_camera.up * initial_camera.dir ) * sintheta + 
+          initial_camera.up * ( dot( initial_camera.up, initial_camera.dir ) * (1 - costheta) );
+    return new_camera;
+  }
+
+  int drag_dx( int x ) { return x - initial_x; }
+  int drag_dy( int y ) { return y - initial_y; }
+  void end_drag( ) { dragging = false; }
+};
+
+
+int 
+Display::handle(int event) {
+  static MouseDrag md;
+
+  switch(event) {
+  case FL_PUSH:
+    //... mouse down event ...
+    //... position in Fl::event_x() and Fl::event_y()
+    md.start_drag( Fl::event_x(), Fl::event_y(), camera );
+    return 1;
+  case FL_DRAG:
+    //... mouse moved while down event ...
+    camera = md.drag( Fl::event_x(), Fl::event_y() );
+    redraw();      
+    return 1;
+
+  case  FL_MOUSEWHEEL:
+    if( FL_COMMAND & Fl::event_state() )
+    {
+      camera.fov += Fl::event_dy();
+    }
+    else
+    {
+      //Fl::event_dx() and Fl::event_dy()
+      Vector dpos = (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
+      camera.dir = camera.dir + dpos;
+      camera.pos = camera.pos - dpos;    
+      std::cerr <<  camera.dir << std::endl;
+      redraw();      
+    }
+    redraw();          
+    return 1;
+
+  case FL_RELEASE:   
+    //... mouse up event ...
+    md.end_drag();    
+    return 1;
+  case FL_FOCUS :
+  case FL_UNFOCUS :
+    //... Return 1 if you want keyboard events, 0 otherwise
+    return 1;
+  case FL_KEYBOARD:
+    //... keypress, key is in Fl::event_key(), ascii in Fl::event_text()
+    //... Return 1 if you understand/use the keyboard event, 0 otherwise...
+    return 1;
+  case FL_SHORTCUT:
+    //... shortcut, key is in Fl::event_key(), ascii in Fl::event_text()
+    //... Return 1 if you understand/use the shortcut event, 0 otherwise...
+    return 1;
+  default:
+    // pass other events to the base class...
+    return Fl_Gl_Window::handle(event);
+  }
 }
 
 } // namespace sim
