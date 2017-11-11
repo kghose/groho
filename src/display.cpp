@@ -15,18 +15,19 @@
 namespace sim
 {
 
-Display::Display( SimulationManager& simulation_manager, int width, int height, char* title ) 
+Display::Display( Simulation& simulation, int width, int height, char* title ) 
 : 
-Fl_Gl_Window( width, height, title ), simulation_manager( simulation_manager ) 
+Fl_Gl_Window( width, height, title ), simulation( simulation ) 
 {
   camera.pos = Vector(10, 0, 0);
   camera.dir = Vector(1, 0, 0);
   camera.up = Vector(0, 0, 1);
   camera.fov = 45;
   
-  //mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE);
   mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE | FL_MULTISAMPLE );
-  size_range( 400, 400); // This allows resizing. Without this window is fixed size
+  // FL_MULTISAMPLE = anti-aliasing. WFM.
+  size_range( 400, 400); 
+  // This allows resizing. Without this window is fixed size
 
 
   /* completely dummy testing code take out!!!! */
@@ -206,8 +207,6 @@ struct MouseDrag
     return new_camera;
   }
 
-  //int drag_dx( int x ) { return x - initial_x; }
-  //int drag_dy( int y ) { return y - initial_y; }
   void end_drag( ) { dragging = false; }
 };
 
@@ -216,54 +215,50 @@ int
 Display::handle(int event) {
   static MouseDrag md;
 
-  switch(event) {
-  case FL_PUSH:
-    //... mouse down event ...
-    //... position in Fl::event_x() and Fl::event_y()
-    md.start_drag( Fl::event_x(), Fl::event_y(), camera );
-    return 1;
-  case FL_DRAG:
-    //... mouse moved while down event ...
-    camera = md.drag( Fl::event_x(), Fl::event_y() );
-    redraw();      
-    return 1;
-
-  case  FL_MOUSEWHEEL:
-    if( FL_COMMAND & Fl::event_state() )
-    {
-      camera.fov += Fl::event_dy();
-    }
-    else
-    {
-      //Fl::event_dx() and Fl::event_dy()
-      camera.pos = camera.pos + (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
-      //Vector dpos = (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
-      //camera.dir = camera.dir + dpos;
-      //camera.pos = camera.pos - dpos;    
+  switch(event) 
+  {
+    case FL_PUSH:
+      //... mouse down event ...
+      //... position in Fl::event_x() and Fl::event_y()
+      md.start_drag( Fl::event_x(), Fl::event_y(), camera );
+      return 1;
+    case FL_DRAG:
+      //... mouse moved while down event ...
+      camera = md.drag( Fl::event_x(), Fl::event_y() );
       redraw();      
-    }
-    redraw();          
-    return 1;
+      return 1;
 
-  case FL_RELEASE:   
-    //... mouse up event ...
-    md.end_drag();    
-    return 1;
-  case FL_FOCUS :
-  case FL_UNFOCUS :
-    //... Return 1 if you want keyboard events, 0 otherwise
-    return 1;
-  case FL_KEYBOARD:
-    //... keypress, key is in Fl::event_key(), ascii in Fl::event_text()
-    //... Return 1 if you understand/use the keyboard event, 0 otherwise...
-    return 1;
-  case FL_SHORTCUT:
-    //... shortcut, key is in Fl::event_key(), ascii in Fl::event_text()
-    //... Return 1 if you understand/use the shortcut event, 0 otherwise...
-    return 1;
-  default:
-    // pass other events to the base class...
-    return Fl_Gl_Window::handle(event);
+    case  FL_MOUSEWHEEL:
+      if( FL_COMMAND & Fl::event_state() )
+      {
+        camera.fov += Fl::event_dy();
+      }
+      else
+      {
+        camera.pos = camera.pos + (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
+      }
+      redraw();          
+      return 1;
+
+    case FL_RELEASE:   
+      //... mouse up event ...
+      md.end_drag();    
+      return 1;
+    case FL_FOCUS :
+    case FL_UNFOCUS :
+      //... Return 1 if you want keyboard events, 0 otherwise
+      return 1;
+    case FL_KEYBOARD:
+      //... keypress, key is in Fl::event_key(), ascii in Fl::event_text()
+      //... Return 1 if you understand/use the keyboard event, 0 otherwise...
+      return 1;
+    case FL_SHORTCUT:
+      //... shortcut, key is in Fl::event_key(), ascii in Fl::event_text()
+      //... Return 1 if you understand/use the shortcut event, 0 otherwise...
+      return 1;
+    default:
+      // pass other events to the base class...
+      return Fl_Gl_Window::handle(event);
   }
 }
 

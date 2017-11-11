@@ -9,7 +9,7 @@
 
 #include <Fl/Fl_Gl_Window.h>
 
-#include "simulationmanager.hpp"
+#include "simulation.hpp"
 
 namespace sim
 {
@@ -25,19 +25,21 @@ struct Camera
 class Display : public Fl_Gl_Window
 {
   std::atomic<bool> quit_now;
-  SimulationManager& simulation_manager;
+  Simulation& simulation;
   Camera camera;
-  //GLFWwindow* window;
 
   std::vector<std::pair<Vector, Vector>> dummy_data;
   
 public:
-  Display( SimulationManager& simulation_manager, int width, int height, char* title );
+  Display( Simulation& simulation, int width, int height, char* title );
   ~Display();
 
   void run();
   void draw();
   int handle( int );
+
+private:
+  void draw_orrery();
 };
 
 }

@@ -3,7 +3,7 @@
 #include <thread>
 #include <condition_variable>
 
-#include "simulationmanager.hpp"
+#include "simulation.hpp"
 #include "display.hpp"
 
 #define LOGURU_IMPLEMENTATION 1
@@ -30,18 +30,12 @@ int main(int argc, char* argv[])
 
   std::string scenario_file( argv[ 1 ] );
 
-  sim::Simulation simulation;  
-  sim::SimulationManager simulation_manager( scenario_file, simulation );
-  sim::Display display( simulation_manager, 400, 400, "গ্রহ" );
+  sim::Simulation simulation( scenario_file );  
+  sim::Display display( simulation, 400, 400, "গ্রহ" );
 
   std::thread simulation_thread( 
     &sim::Simulation::run,
     std::ref( simulation )
-  );
-
-  std::thread simulation_manager_thread( 
-    &sim::SimulationManager::run,
-    std::ref( simulation_manager )
   );
     
   display.show();
@@ -50,6 +44,4 @@ int main(int argc, char* argv[])
   simulation.quit();  
   simulation_thread.join();
   
-  simulation_manager.quit();  
-  simulation_manager_thread.join();
 }

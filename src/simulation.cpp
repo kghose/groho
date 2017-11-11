@@ -13,8 +13,9 @@
 namespace sim
 {
 
-Simulation::Simulation() 
+Simulation::Simulation( std::string _scenario_fname ) 
 {
+  scenario_fname = _scenario_fname;
   user_command_received = false;
   quit_now = false;
   restart = false;
@@ -23,26 +24,50 @@ Simulation::Simulation()
 void 
 Simulation::run()
 {  
-  while( !quit_now )
+  using namespace std::chrono_literals;
+  
+  loguru::set_thread_name("sim manager");
+  
+  Scenario scenario( scenario_fname );
+  for( ;; )
   {
-    wait();
+    if( scenario.requires_recompute() ) { rerun_with( scenario ); }
+
+    std::unique_lock<std::mutex> lk( user_command_mutex );
+    cv.wait_for( lk, 500ms );
+    // Spurious wake ups are not a problem here
     if( quit_now ) break;
-    if( restart ) 
-    { 
-      checkpoints.discard_stale_data( new_scenario.start_jd ); // This should go inside loop
-      simulation_loop( new_scenario );
-    }
+
+    scenario.reload_changes(); 
   }
+   
+  if( compute_thread.joinable() ) compute_thread.join();
+  
+  // while( !quit_now )
+  // {
+  //   wait();
+  //   if( quit_now ) break;
+  //   if( restart ) 
+  //   { 
+  //     checkpoints.discard_stale_data( new_scenario.start_jd ); // This should go inside loop
+  //     simulation_loop( new_scenario );
+  //   }
+  // }
 }
 
+
 void
-Simulation::rerun_with( const Scenario scenario )
+Simulation::rerun_with( const Scenario new_scenario )
 {
-  std::lock_guard<std::mutex> lk( user_command_mutex );
-  user_command_received = true;
   restart = true;
-  new_scenario = scenario;
-  cv.notify_one(); 
+  if( compute_thread.joinable() ) compute_thread.join();
+
+  // once more unto the breach
+  compute_thread = std::thread( 
+    &sim::Simulation::compute,
+    std::ref( *this ),
+    new_scenario
+  );
 }
 
 void
@@ -62,10 +87,12 @@ Simulation::quit()
   cv.notify_one();
 }
 
-
 void 
-Simulation::simulation_loop( Scenario scenario )
+Simulation::compute( Scenario new_scenario )
 {
+  loguru::set_thread_name("compute");
+ 
+  scenario = new_scenario;
   restart = false;  
   DLOG_S(INFO) << "Starting simulation: " << scenario.start_jd << " - " << scenario.stop_jd;  
 
