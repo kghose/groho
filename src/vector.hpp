@@ -15,6 +15,7 @@ struct Vector
   
   double norm_sq() { return x*x + y*y + z*z; }
   double norm()    { return std::sqrt( norm_sq() ); }
+  Vector normed()  { return Vector( *this ) / norm(); }
 
   Vector
   operator+( const Vector& rhs )
@@ -90,6 +91,15 @@ inline Vector
 operator*( const Vector& lhs, double rhs )
 {
   return Vector { rhs * lhs.x, rhs * lhs.y, rhs * lhs.z };
+}
+
+inline Vector 
+rotate( const Vector& v, Vector k, double th )
+// Rotate v about k by th
+// https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+{
+  k = k / k.norm();
+  return v * std::cos( th ) + cross( k, v ) * std::sin( th ) + k * dot( k, v ) * ( 1 - std::cos( th ));
 }
 
 inline std::ostream& 
