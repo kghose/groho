@@ -1,3 +1,4 @@
+#include <random>  /// only for testing XXX
 #include <cmath>
 
 #include <Fl/Fl.h>
@@ -26,6 +27,21 @@ Fl_Gl_Window( width, height, title ), simulation_manager( simulation_manager )
   //mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE);
   mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE | FL_MULTISAMPLE );
   size_range( 400, 400); // This allows resizing. Without this window is fixed size
+
+
+  /* completely dummy testing code take out!!!! */
+  std::random_device rd;
+  std::mt19937 gen( rd() );
+  std::uniform_real_distribution<> u_rand( -50.0, 50.0 );
+
+  dummy_data.clear();
+  for(int i = 0; i < 1000; i++)
+  {
+    dummy_data.push_back(
+      Vector( u_rand( gen ), u_rand( gen ), u_rand( gen ) )
+    );
+  }
+
 
   /*
   LOG_S(INFO) << "Compiled against GLFW " 
@@ -134,8 +150,13 @@ Display::draw()
     camera.up.x, camera.up.y, camera.up.z);
 
   glMatrixMode(GL_MODELVIEW);
-
-  glutWireSphere(1, 20, 20);
+  for( auto v : dummy_data )
+  {
+    glPushMatrix();
+    glTranslatef( v.x, v.y, v.z );
+    glutWireSphere(1, 20, 20);                
+    glPopMatrix();
+  }
 
 }
 
@@ -161,16 +182,25 @@ struct MouseDrag
   Camera drag( int x, int y )
   {
     Camera  new_camera;
-    double  theta = - drag_dx( Fl::event_x() ) / 500.0,
-            costheta = std::cos( theta ),
-            sintheta = std::sin( theta );
+    double  theta = - ( Fl::event_x() - initial_x ) / 500.0,
+            phi   = - ( Fl::event_y() - initial_y ) / 500.0;
 
     new_camera = initial_camera;
     // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-    new_camera.dir = 
-          initial_camera.dir * costheta + 
-          ( initial_camera.up * initial_camera.dir ) * sintheta + 
-          initial_camera.up * ( dot( initial_camera.up, initial_camera.dir ) * (1 - costheta) );
+    // Yaw
+    new_camera.dir = rotate( initial_camera.dir, initial_camera.up, theta );
+
+    // Pitch
+    Vector right = cross( initial_camera.dir, initial_camera.up ).normed();
+    new_camera.dir = rotate( new_camera.dir, right, phi );
+    new_camera.up = rotate( initial_camera.up, right, phi ).normed();
+
+    // new_camera.up = 
+    //     initial_camera.up * cosphi + 
+    //     ( right * initial_camera.up ) * sinphi + 
+    //     right * ( dot( right, initial_camera.up ) * (1 - cosphi) );
+    // new_camera.up = new_camera.up / new_camera.up.norm();
+
     return new_camera;
   }
 
@@ -207,7 +237,6 @@ Display::handle(int event) {
       Vector dpos = (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
       camera.dir = camera.dir + dpos;
       camera.pos = camera.pos - dpos;    
-      std::cerr <<  camera.dir << std::endl;
       redraw();      
     }
     redraw();          

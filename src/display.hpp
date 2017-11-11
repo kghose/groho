@@ -29,6 +29,8 @@ class Display : public Fl_Gl_Window
   Camera camera;
   //GLFWwindow* window;
 
+  std::vector<Vector> dummy_data;
+  
 public:
   Display( SimulationManager& simulation_manager, int width, int height, char* title );
   ~Display();
