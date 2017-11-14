@@ -81,10 +81,6 @@ Simulation::compute( Scenario scenario )
 {
   loguru::set_thread_name("compute");
  
-  // Clear display buffers. XXX do properly
-  orrery_buffer.clear();
-  ship_buffer.clear();
-
   load( scenario );
   
   restart = false;  

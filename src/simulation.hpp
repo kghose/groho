@@ -12,7 +12,6 @@
 #include "checkpoint.hpp"
 #include "orrery.hpp"
 #include "spaceship.hpp"
-#include "displaybuffer.hpp"
 
 
 namespace sim
@@ -26,12 +25,7 @@ class Simulation
 
   Orrery orrery;
   std::unordered_map<std::string, SpaceShip> space_fleet;
-
-  //Display buffers
-  cdbuf_map_t orrery_buffer;
-  dbuf_map_t ship_buffer;
   
-
   std::thread compute_thread;  // The simulation loop runs in yet another thread
 
   // Paraphernalia needed for comminucating across threads
