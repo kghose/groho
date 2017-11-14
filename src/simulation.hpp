@@ -12,6 +12,7 @@
 #include "checkpoint.hpp"
 #include "orrery.hpp"
 #include "spaceship.hpp"
+#include "displaybuffer.hpp"
 
 
 namespace sim
@@ -21,11 +22,15 @@ namespace sim
 class Simulation
 {
   std::string scenario_fname;  
-  Scenario scenario;
   Checkpoints checkpoints;
 
   Orrery orrery;
   std::unordered_map<std::string, SpaceShip> space_fleet;
+
+  //Display buffers
+  cdbuf_map_t orrery_buffer;
+  dbuf_map_t ship_buffer;
+  
 
   std::thread compute_thread;  // The simulation loop runs in yet another thread
 
@@ -47,7 +52,7 @@ public:
   // Main loop. Periodically check for scenario file changes. Rerun sim if needed
   // Respond immediately to external events
 
-  void rerun_with( const Scenario scenario );
+  void rerun_with( const Scenario& scenario );
   // Interrupt current simulation and rerun with new scenario
   // The new scenario carries information about what has changed from the
   // existing scenario and we can be smart about what we resimulate.
@@ -57,14 +62,16 @@ public:
   void quit();
   // Sets quit_now to tell all simulation related threads to quit
 
-  const Orrery& get_orrery() { return orrery; }
-  // Meant for display routines who would like to display the solar system
+  const cdbuf_map_t& get_orrery_buffer() { return orrery_buffer; }
 
 private:
 
   void compute( Scenario scenario );
   // Do computations until all time steps are done, we need to restart or quit
   
+  void load( Scenario& new_scenario );
+  // Load scenario files
+
   void load_orrery( std::string orrery_file );
   // Load the Orrery description file
 
@@ -76,6 +83,9 @@ private:
 
   void step( double jd, double dt );
   // Run simulation for one time-step and collect checkpoints as needed
+
+  void propagate_orrery( double jd, double dt );
+  // Update spaceship positions, collect checkpoints as needed
 
   void propagate_space_fleet( double jd, double dt );
   // Update spaceship positions, collect checkpoints as needed

@@ -34,30 +34,19 @@ Simulation::run()
     if( scenario.requires_recompute() ) { rerun_with( scenario ); }
 
     std::unique_lock<std::mutex> lk( user_command_mutex );
-    cv.wait_for( lk, 500ms );
+    cv.wait_for( lk, 500ms ); 
     // Spurious wake ups are not a problem here
     if( quit_now ) break;
 
     scenario.reload_changes(); 
   }
    
-  if( compute_thread.joinable() ) compute_thread.join();
-  
-  // while( !quit_now )
-  // {
-  //   wait();
-  //   if( quit_now ) break;
-  //   if( restart ) 
-  //   { 
-  //     checkpoints.discard_stale_data( new_scenario.start_jd ); // This should go inside loop
-  //     simulation_loop( new_scenario );
-  //   }
-  // }
+  if( compute_thread.joinable() ) compute_thread.join();  
 }
 
 
 void
-Simulation::rerun_with( const Scenario new_scenario )
+Simulation::rerun_with( const Scenario& new_scenario )
 {
   restart = true;
   if( compute_thread.joinable() ) compute_thread.join();
@@ -88,11 +77,16 @@ Simulation::quit()
 }
 
 void 
-Simulation::compute( Scenario new_scenario )
+Simulation::compute( Scenario scenario )
 {
   loguru::set_thread_name("compute");
  
-  scenario = new_scenario;
+  // Clear display buffers. XXX do properly
+  orrery_buffer.clear();
+  ship_buffer.clear();
+
+  load( scenario );
+  
   restart = false;  
   DLOG_S(INFO) << "Starting simulation: " << scenario.start_jd << " - " << scenario.stop_jd;  
 
@@ -110,9 +104,20 @@ Simulation::compute( Scenario new_scenario )
 void
 Simulation::step( double jd, double dt )
 {
-  orrery.propagate( jd );
+  propagate_orrery( jd, dt );
   propagate_space_fleet( jd, dt );
   resolve_actions( jd );
+}
+
+void
+Simulation::propagate_orrery( double jd, double dt )
+{
+  orrery.propagate( jd );  
+  for( const auto & [ name, b ] : orrery ) 
+  { 
+    // XXXX probably need some kind of lock for this
+    // orrery_buffer[ name ].add( b->pos ); 
+  }  
 }
 
 void 
@@ -140,4 +145,11 @@ Simulation::resolve_actions( double jd )
 
 }
 
+void
+Simulation::load( Scenario& new_scenario )
+{
+  // XXX Just for testing
+  orrery = load_simple_solar_system( "" );  
 }
+
+} // namespace sim
