@@ -1,8 +1,15 @@
-# mkdir build && cd build && cmake ..
-# mkdir xcode_build && cd xcode_build && cmake -G Xcode ..
+# cmake -DCMAKE_BUILD_TYPE=Debug ..
+# cmake -DSANITIZE=ON -DCMAKE_BUILD_TYPE=Debug ..
+# cmake -DCMAKE_BUILD_TYPE=Release ..
 
 cmake_minimum_required( VERSION 3.0.0 )
 project( groho )
+
+# cmake -D SANITIZE=ON ..
+option(SANITIZE "Sanitize" OFF)
+if(SANITIZE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+endif()
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )
 message( FATAL_ERROR "Please make an out of source build: create a build directory and invoke cmake from there." )
@@ -12,7 +19,6 @@ set(CMAKE_CXX_COMPILER "g++")
 set(CMAKE_CXX_FLAGS "-std=c++1z -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 # NDEBUG will suppress some loguru outputs in Release
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 FIND_PACKAGE( FLTK REQUIRED )
 FIND_PACKAGE( OpenGL REQUIRED )
