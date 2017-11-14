@@ -56,8 +56,6 @@ public:
   void quit();
   // Sets quit_now to tell all simulation related threads to quit
 
-  const cdbuf_map_t& get_orrery_buffer() { return orrery_buffer; }
-
 private:
 
   void compute( Scenario scenario );
