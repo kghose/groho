@@ -73,12 +73,6 @@ Display::draw()
 void
 Display::draw_orrery()
 {
-  for( const auto& [name, b] : simulation.get_orrery_buffer() )
-  {
-    glBegin(GL_LINE_STRIP);
-    for( const auto& v : b.vertices ) glVertex3d( v.x, v.y, v.z );
-    glEnd();
-  }
 }
 
 struct MouseDrag
