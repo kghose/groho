@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 # include "vector.hpp"
 
 namespace sim
@@ -10,10 +12,11 @@ public:
   std::string   name;
   Vector         pos;
 
-  double          GM, // needed for gravity calculations 
-              radius,      // m needed surface calculations (launch/crash)
-             ra, dec,     // radians
-            rotation;    // radians / day
+  double          GM,  // needed for gravity calculations 
+              radius,  // m needed surface calculations (launch/crash)
+//              period,  // 
+             ra, dec,  // radians
+            rotation;  // radians / day
             // https://en.wikipedia.org/wiki/Axial_tilt#Solar_System_bodies
   BallOfMud(
       std::string  name,
@@ -32,9 +35,10 @@ public:
       dec( dec ),
       rotation( rotation )
   {}
-      
+    
   virtual void 
   propagate( double jd ) = 0;
+  // Move the body to where it would be on this date. 
 
   // Given a surface position in (lat, lon) return the absolute
   // position in the simulation space

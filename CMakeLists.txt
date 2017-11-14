@@ -23,10 +23,16 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 FIND_PACKAGE( FLTK REQUIRED )
 FIND_PACKAGE( OpenGL REQUIRED )
 
-file(GLOB SOURCES "src/*.cpp" )
+file(GLOB SOURCES 
+    "src/*.cpp" 
+    "src/opengl/*.cpp" )
 set(SOURCE_FILES ${SOURCES})
 add_executable( groho ${SOURCE_FILES} )
-include_directories( "src/external" )
+include_directories(
+    "src/" 
+    "src/external" 
+    "src/opengl"
+)
 target_link_libraries( 
     groho 
     ${FLTK_LIBRARIES} 

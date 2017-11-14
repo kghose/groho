@@ -2,9 +2,8 @@
 #include <cmath>
 
 #include <Fl/Fl.h>
-#include <Fl/Gl.h>
-#include <Fl/Glu.h>
-#include <Fl/Glut.h>
+//#include <Fl/Glu.h>
+//#include <Fl/Glut.h>
 
 #include "display.hpp"
 
@@ -18,65 +17,19 @@ namespace sim
 Display::Display( Simulation& simulation, int width, int height, char* title ) 
 : 
 Fl_Gl_Window( width, height, title ), simulation( simulation ) 
-{
-  camera.pos = Vector(10, 0, 0);
-  camera.dir = Vector(1, 0, 0);
-  camera.up = Vector(0, 0, 1);
-  camera.fov = 45;
-  
-  mode(FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE | FL_MULTISAMPLE );
-  // FL_MULTISAMPLE = anti-aliasing. WFM.
+{  
+  mode( FL_OPENGL3 | FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE | FL_MULTISAMPLE );
+  // FL_OPENGL3 -> 
+  // http://www.fltk.org/doc-1.3/opengl.html ("Using OpenGL 3.0 (or higher versions)")
+  // https://github.com/IngwiePhoenix/FLTK/blob/master/examples/OpenGL3-glut-test.cxx
+  // FL_MULTISAMPLE -> anti-aliasing. WFM.
+
   size_range( 400, 400); 
   // This allows resizing. Without this window is fixed size
-
-
-  /* completely dummy testing code take out!!!! */
-  std::random_device rd;
-  std::mt19937 gen( rd() );
-  std::uniform_real_distribution<> u_rand( -50.0, 50.0 );
-  std::uniform_real_distribution<> c_rand( 0.2, 1.0 );
-  
-  dummy_data.clear();
-  for(int i = 0; i < 1000; i++)
-  {
-    dummy_data.push_back(
-      std::make_pair(
-        Vector( u_rand( gen ), u_rand( gen ), u_rand( gen ) ),
-        Vector( c_rand( gen ), c_rand( gen ), c_rand( gen ) )        
-      )
-    );
-  }
-
-
-  /*
-  LOG_S(INFO) << "Compiled against GLFW " 
-    << GLFW_VERSION_MAJOR << "."
-    << GLFW_VERSION_MINOR << "."
-    << GLFW_VERSION_REVISION;
-  
-  int major, minor, revision;
-  glfwGetVersion(&major, &minor, &revision);
-  LOG_S(INFO) << " Running against GLFW " 
-    << major << "."
-    << minor << "."
-    << revision;
-
-  if (!glfwInit())
-  {
-    DLOG_S(FATAL) << "GLFW initialization failed";  
-    exit(1);
-  }
-  create_window();
-  setup_ui_events();*/
 }
 
 Display::~Display()
 {
-  /*
-  glfwDestroyWindow(window);
-  glfwTerminate();  
-  DLOG_S(INFO) << "Display terminated";
-  */
 }
 
 void 
@@ -85,40 +38,15 @@ Display::run()
   Fl::run();
 }
 
+
 void
-draw_lines()
+Display::setup_opengl()
 {
-  GLfloat vertices[] =
-  {
-      1.0f, 1.0f, 1.0f, 1.0f,
-      0.0f, 0.0f, 0.0f, 1.0f,
-      1.0f, 0.0f, 0.0f, 1.0f
-  };
-
-  // This is the identifier for your vertex buffer
-GLuint vbo;
-// This creates our identifier and puts it in vbo
-glGenBuffers(1, &vbo);
-// This binds our vbo
-glBindBuffer(GL_ARRAY_BUFFER, vbo);
-// This hands the vertices into the vbo and to the rendering pipeline    
-glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-// "Enable a port" to the shader pipeline
-glEnableVertexAttribArray(0);
-glBindBuffer(GL_ARRAY_BUFFER, vbo);
-// pass information about how vertex array is composed
-glVertexAttribPointer(0, // same as in glEnableVertexAttribArray(0)
-                      4, // # of coordinates that build a vertex
-                      GL_FLOAT, // data type
-                      GL_FALSE, // normalized?
-                      0,        // stride
-                      (void*)0);// vbo offset
-
-glDrawArrays(GL_LINES, 0, 2);
-glDisableVertexAttribArray(0);
-
+  glClearColor( .1f, .1f, .1f, 1 );
+  //glEnable( GL_DEPTH_TEST );
+  scene.init();
 }
+
 
 void 
 Display::draw()
@@ -126,8 +54,7 @@ Display::draw()
   static bool needs_initialization = true;
   if ( needs_initialization )
   {
-    glClearColor( .1f, .1f, .1f, 1 );
-    glEnable( GL_DEPTH_TEST );
+    setup_opengl();
     needs_initialization = false;
   }
 
@@ -137,84 +64,47 @@ Display::draw()
     glViewport( 0, 0, w(), h() );
   }
 
+  glClearColor(0, 0, 0, 1); // black
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-  // https://www.opengl.org/archives/resources/faq/technical/viewing.htm
-  // Think of the projection matrix as describing the attributes of your camera, 
-  // such as field of view, focal length, fish eye lens, etc. Think of the 
-  // ModelView matrix as where you stand with the camera and the direction you point it.
-
-  glMatrixMode( GL_PROJECTION );
-  glLoadIdentity();  
-  gluPerspective( camera.fov, (double) w() / (double) h(), .1, 100);
-
-
-  glMatrixMode( GL_MODELVIEW );      
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); // clear the color and depth buffer  
-  glLoadIdentity();  
-  Vector scene_center = camera.pos.norm() * camera.dir + camera.pos;  
-  gluLookAt( 
-    camera.pos.x,   camera.pos.y,   camera.pos.z, 
-    scene_center.x, scene_center.y, scene_center.z, 
-    camera.up.x,    camera.up.y,    camera.up.z
-  );
-  
-  for( auto v : dummy_data )
-  {
-    glPushMatrix();
-    glColor3d( v.second.x, v.second.y, v.second.z );
-    glTranslatef( v.first.x, v.first.y, v.first.z );
-    glutWireSphere(1, 20, 20);                
-    glPopMatrix();
-  }
-
+  scene.render();
 }
 
 void
 Display::draw_orrery()
 {
-  std::vector<Vector> planets;
-  for( auto& planet : simulation.get_orrery() )
+  for( const auto& [name, b] : simulation.get_orrery_buffer() )
   {
-
-  } 
-
-
+    glBegin(GL_LINE_STRIP);
+    for( const auto& v : b.vertices ) glVertex3d( v.x, v.y, v.z );
+    glEnd();
+  }
 }
 
 struct MouseDrag
 {
   bool dragging;
-  int initial_x, initial_y;
-  Camera initial_camera;
+  int initial_x, initial_y, initial_phi, initial_theta;
 
   MouseDrag() { dragging = false; }
 
-  void start_drag( int x, int y, Camera camera )
+  void start_drag( int x, int y, sgl::Camera &camera )
   {
     if( !dragging )
     {
       initial_x = x;
       initial_y = y;
-      initial_camera = camera;
+      initial_phi = camera.get_phi();
+      initial_theta = camera.get_theta();
     }
   }
 
-  Camera drag( int x, int y )
+  void drag( int x, int y, sgl::Camera& camera )
   {
-    Camera  new_camera;
-    double  theta = - ( Fl::event_x() - initial_x ) / 500.0,
-            phi   = - ( Fl::event_y() - initial_y ) / 500.0;
+    double  theta = initial_theta - ( Fl::event_x() - initial_x ) / 500.0,
+            phi   = initial_phi   - ( Fl::event_y() - initial_y ) / 500.0;
 
-    new_camera = initial_camera;
-
-    // Yaw
-    new_camera.dir = rotate( initial_camera.dir, initial_camera.up, theta );
-    // Pitch
-    Vector right = cross( initial_camera.dir, initial_camera.up ).normed();
-    new_camera.dir = rotate( new_camera.dir, right, phi ).normed();
-    new_camera.up = rotate( initial_camera.up, right, phi ).normed();
-
-    return new_camera;
+    camera.pan_to( phi, theta );
   }
 
   void end_drag( ) { dragging = false; }
@@ -230,11 +120,11 @@ Display::handle(int event) {
     case FL_PUSH:
       //... mouse down event ...
       //... position in Fl::event_x() and Fl::event_y()
-      md.start_drag( Fl::event_x(), Fl::event_y(), camera );
+      md.start_drag( Fl::event_x(), Fl::event_y(), scene.camera );
       return 1;
     case FL_DRAG:
       //... mouse moved while down event ...
-      camera = md.drag( Fl::event_x(), Fl::event_y() );
+      md.drag( Fl::event_x(), Fl::event_y(), scene.camera );
       redraw();      
       return 1;
 
@@ -249,11 +139,11 @@ Display::handle(int event) {
         }
 
         if( pos_scroll ) {
-          camera.pos = camera.pos + (0.5 * Fl::event_dy() / camera.dir.norm() ) * camera.dir;
+          scene.camera.dolly_by( 0.5 * Fl::event_dy() );
         }
         
         if( fov_scroll ) {
-          camera.fov += Fl::event_dy();          
+          scene.camera.change_fov( Fl::event_dy() );
         }
       }
       redraw();          

@@ -12,8 +12,7 @@ namespace sim
   {
     Orrery orrery;
 
-    orrery.add_body( 
-      "star",       
+    orrery["star"] =  
       sptr_sbom_t( new SimpleBallOfMud(
         "Star",
         {0, 0, 0},
@@ -21,29 +20,29 @@ namespace sim
         7e8,              // radius
         0.0, 0.0, 0.5,    // ra, dec, rotation
         0.0               // orbital rate
-    ) ) );
+    ) );
 
-    orrery.add_body(
-      "planet1", 
+    orrery["planet1"] =  
       sptr_sbom_t( new SimpleBallOfMud(
         "Planet1",         // name
-        {1.0_AU, 0, 0},
+        //{1.0_AU, 0, 0},
+        {10, 0, 0},
         0.3986e15,         // GM
         6.4e6,             // radius
         0.0, 0.0, 6.2832,  // ra, dec, rotation
         1e-3               // orbital rate rad/day
-    ) ) );            
+    ) );            
     
-    orrery.add_body( 
-      "planet2",
+    orrery["planet2"] =
       sptr_sbom_t( new SimpleBallOfMud(
         "Planet2",         // name
-        {2.0_AU, 0, 0},
+        //{2.0_AU, 0, 0},
+        {20, 0, 0},
         0.04e15,           // GM
         3.4e6,             // radius
         0.0, 0.0, 6.2832,  // ra, dec, rotation
         0.5e-3             // orbital rate
-    ) ) );
+    ) );
 
     return orrery;            
   }

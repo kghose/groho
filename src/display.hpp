@@ -10,26 +10,14 @@
 #include <Fl/Fl_Gl_Window.h>
 
 #include "simulation.hpp"
+#include "scene.hpp"
+
 
 namespace sim
 {
 
-struct Camera
-{
-  Vector    pos,
-            dir,
-            up;
-  double    fov;
-};
-
 class Display : public Fl_Gl_Window
 {
-  std::atomic<bool> quit_now;
-  Simulation& simulation;
-  Camera camera;
-
-  std::vector<std::pair<Vector, Vector>> dummy_data;
-  
 public:
   Display( Simulation& simulation, int width, int height, char* title );
   ~Display();
@@ -39,7 +27,12 @@ public:
   int handle( int );
 
 private:
+  void setup_opengl();
   void draw_orrery();
+
+  std::atomic<bool> quit_now;
+  Simulation& simulation;
+  sgl::Scene scene;
 };
 
 }
