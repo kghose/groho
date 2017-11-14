@@ -69,12 +69,12 @@ struct ShaderProgram
 {
   GLuint id;
 
-  GLuint
+  void
   create( std::vector<Shader> shaders )
   {
-    GLuint id = glCreateProgram();
+    id = glCreateProgram();
     if( id == 0)
-      throw std::runtime_error("glCreateProgram failed");
+      throw std::runtime_error( "glCreateProgram failed" );
 
     for( auto shader : shaders )
       glAttachShader( id, shader.id );
