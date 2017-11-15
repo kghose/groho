@@ -59,6 +59,27 @@ we want to read/write
 
 OpenGL
 ======
+After a lot of thrashing around and getting bits and pieces, I found Tom Dalling's
+[Modern OpenGL tutorial][dalling], which I find has the right pace and level of
+description. One issue with the code is that he hides some of the opengl code
+behind some abstractions which makes it a little hard to figure out what the
+opengl calls actually are.
+
+[dalling]: https://www.tomdalling.com/blog/modern-opengl/01-getting-started-in-xcode-and-visual-cpp/
+
+There is the very popular [OpenGL tutorial][ogl] which is also good, and I refer
+to this also but I found the ordering of Dalling's tutorial better.
+
+[ogl]: http://www.opengl-tutorial.org/
+
+
+FLTK and OpenGL 3 on mac
+------------------------
+  - http://www.fltk.org/doc-1.3/opengl.html  ("Using OpenGL 3.0 (or higher versions)")
+  - https://github.com/IngwiePhoenix/FLTK/blob/master/examples/OpenGL3-glut-test.cxx
+  - In order for resizing to work properly (and on the retina display) I needed
+    - to set `size_range`
+    - to use `pixel_h()` and `pixel_w()`
 
 Misc
 ----
@@ -67,7 +88,9 @@ Misc
   - FLTK gives us C++ windowing system
   - Can draw text
   - Gives us glu and glut!!
-  - Nice tutorial exists (http://web.cecs.pdx.edu/~fliu/courses/cs447/tutorial6.html)
+  - Nice tutorials exist
+    - http://web.cecs.pdx.edu/~fliu/courses/cs447/tutorial6.html
+    - https://solarianprogrammer.com/2013/05/13/opengl-101-drawing-primitives/
 
 
 Passing member function pointers to callbacks
@@ -85,3 +108,11 @@ From https://stackoverflow.com/a/28660673/2512851
 
 If you use a frame work without this, you effectively need to have a globally
 accessible pointer to your object.
+
+The use of "f" in code using OpenGL
+-----------------------------------
+This annoyed the heck out of me until I ran into a compile error and read [this](https://www.opengl.org/discussion_boards/showthread.php/175108-Scaling-a-vec3?p=1224244&viewfull=1#post1224244). It explains that 2.0 is interpreted as a double 
+
+which explains that C++ templates are strict and since
+the underlying functions operate of floats, passing a number like 2.0 
+
