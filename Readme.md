@@ -21,8 +21,8 @@ Compilation
 Dependencies: 
   - FLTK 
 
-* macOS: `brew install fltk`
-* Linux: `sudo apt-get install fltk`
+macOS: `brew install fltk`  
+Linux: `sudo apt-get install fltk`  
 
 Compile:
 ```
@@ -42,6 +42,10 @@ The tutorial is the launch point for learning more
 
 Related software
 ================
+
+NASA's GMAT
+-----------
+
 NASA's [GMAT] software ([github][GMAT-github]) is probably the be-all and end-all 
 of spacecraft simulation. It would probably have sufficed for my needs 
 but I like to program computers and learn math, 
@@ -49,6 +53,11 @@ so I stubbornly rolled my own to my own (much more limited) specifications.
 
 [GMAT]: http://gmatcentral.org/display/GW/GMAT+Wiki+Home
 [GMAT-github]: https://github.com/haisamido/GMAT
+
+Bussard by Phil Hagelberg
+-------------------------
+[Bussard](https://technomancy.itch.io/bussard) is a cool hacking/spaceflight game
+where you write complex programs to fly your spaceship to solve puzzles.
 
 
 Thanks
