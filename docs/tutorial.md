@@ -65,11 +65,10 @@ hotkeys that move the camera to some standard positions. The default hot keys ar
 
 Display
 -------
-Initially the display shows the whole simulation (advancing as the simulation)
-progresses. At any time 
-
-shows the background objects (Orrery objects)
-
+Initially the display shows the whole simulation (advancing as the simulation
+computation progresses). At any point we can move backwards/forwards in 
+simulation time. Orrery objects paths are shown to one complete orbit while 
+spacecraft paths are shown from start to finish. 
 
 
 Scenario file
