@@ -65,3 +65,4 @@ Thanks
 Included in the code are the following fine pieces of software
 
 1. [loguru](https://github.com/emilk/loguru) from Emil Ernerfeldt
+2. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash
