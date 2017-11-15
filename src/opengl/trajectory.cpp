@@ -4,30 +4,44 @@
 namespace sgl
 {
 
+
+Trajectory::Trajectory( ShaderProgram* shdr ) :
+    shader_program( shdr ), 
+    vbo( 0 ),
+    vao( 0 ),
+    draw_type( GL_LINE_STRIP ),
+    //draw_type( GL_TRIANGLES ),
+    draw_start( 0 ),
+    draw_count( 0 )
+{}
+
 void 
 Trajectory::update_trajectory()
 {
   glDeleteBuffers( 1, &vbo );  
   // "silently ignores 0's and names that do not correspond to existing buffer objects."
 
-  glGenBuffers( 1, &vbo );
   glGenVertexArrays( 1, &vao );
-
   glBindVertexArray( vao );
+
+  glGenBuffers( 1, &vbo );
   glBindBuffer( GL_ARRAY_BUFFER, vbo );
 
-  glBufferData( GL_ARRAY_BUFFER, vertices.size(), vertices.data(), GL_DYNAMIC_DRAW );
+  glBufferData( GL_ARRAY_BUFFER, 
+                sizeof(GLfloat) * vertices.size(), vertices.data(), 
+                GL_DYNAMIC_DRAW );
 
-  glEnableVertexAttribArray( shader_program.get_attrib_loc( "vert" ) );
+  glEnableVertexAttribArray( shader_program->get_attrib_loc( "vert" ) );
   glVertexAttribPointer( 
-    shader_program.get_attrib_loc( "vert" ), 
+    shader_program->get_attrib_loc( "vert" ), 
     3, 
     GL_FLOAT, 
     GL_FALSE, 
-    3 * sizeof( GLfloat ), 
+    0, //3 * sizeof( GLfloat ), 
     NULL);
 
-  glBindVertexArray( 0 );  // unbind the VAO
+  glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
+  glBindVertexArray( 0 );
 } 
 
 void 

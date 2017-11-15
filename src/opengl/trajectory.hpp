@@ -25,7 +25,7 @@ namespace sgl
 
 struct Trajectory
 {
-  ShaderProgram&   shader_program;
+  ShaderProgram*   shader_program;
 
   GLuint        vbo;  // might consider using two buffers
   GLuint        vao;
@@ -34,15 +34,8 @@ struct Trajectory
   GLint  draw_count;
 
   std::vector<GLfloat> vertices;
-
-  Trajectory( ShaderProgram& shader_program ) :
-      shader_program( shader_program ), 
-      vbo( 0 ),
-      vao( 0 ),
-      draw_type( GL_LINE_SMOOTH ),
-      draw_start( 0 ),
-      draw_count( 0 )
-  {}
+  
+  Trajectory( ShaderProgram* shdr=nullptr );
   
   void add_point( sim::Vector& v )  
   // Add this point to our internal buffer

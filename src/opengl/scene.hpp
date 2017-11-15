@@ -19,14 +19,16 @@ class Scene
 public:
   Camera camera;
 
-  std::unordered_map<std::string, Trajectory>    ships;
-  std::unordered_map<std::string, Trajectory>  planets;
-
   void init();
   void render();
 
+  void add_planet( std::string name );
+  Trajectory& planet( std::string name ) { return planets[ name ]; }
+
 private:
   ShaderProgram shader_program;
+  std::unordered_map<std::string, Trajectory>    ships;
+  std::unordered_map<std::string, Trajectory>  planets;
 };
 
 } // namespace opengl

@@ -2,8 +2,6 @@
 #include <cmath>
 
 #include <Fl/Fl.h>
-//#include <Fl/Glu.h>
-//#include <Fl/Glut.h>
 
 #include "display.hpp"
 
@@ -23,6 +21,7 @@ Fl_Gl_Window( width, height, title ), simulation( simulation )
   // http://www.fltk.org/doc-1.3/opengl.html ("Using OpenGL 3.0 (or higher versions)")
   // https://github.com/IngwiePhoenix/FLTK/blob/master/examples/OpenGL3-glut-test.cxx
   // FL_MULTISAMPLE -> anti-aliasing. WFM.
+  Fl::use_high_res_GL(1);
 
   size_range( 400, 400); 
   // This allows resizing. Without this window is fixed size
@@ -45,6 +44,10 @@ Display::setup_opengl()
   glClearColor( .1f, .1f, .1f, 1 );
   //glEnable( GL_DEPTH_TEST );
   scene.init();
+  scene.add_planet( "Companion Cube" );
+  scene.planet( "Companion Cube" ).vertices = companion_cube; // for testing
+  scene.planet( "Companion Cube" ).draw_count = companion_cube.size() / 3;
+  scene.planet( "Companion Cube" ).update_trajectory();
 }
 
 
@@ -61,11 +64,13 @@ Display::draw()
   // http://www.fltk.org/doc-1.1/Fl_Gl_Window.html
   if ( !valid() ) // something like a resize happened 
   {
-    glViewport( 0, 0, w(), h() );
+    glViewport( 0, 0, pixel_w(), pixel_h() );
+    scene.camera.set_aspect_ratio( (float)pixel_w() / (float)pixel_h() );
   }
 
   glClearColor(0, 0, 0, 1); // black
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  glClear( GL_COLOR_BUFFER_BIT );
 
   scene.render();
 }
@@ -95,8 +100,8 @@ struct MouseDrag
 
   void drag( int x, int y, sgl::Camera& camera )
   {
-    double  theta = initial_theta - ( Fl::event_x() - initial_x ) / 500.0,
-            phi   = initial_phi   - ( Fl::event_y() - initial_y ) / 500.0;
+    double  theta = initial_theta - ( Fl::event_y() - initial_y ) / 10.0,
+            phi   = initial_phi   + ( Fl::event_x() - initial_x ) / 10.0;
 
     camera.pan_to( phi, theta );
   }

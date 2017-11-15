@@ -16,8 +16,10 @@
 #  include <GL/glew.h>
 #endif
 
+#include <vector>
 
-const GLfloat companion_cube[] = {  // For testing. Get it?
+
+const std::vector<GLfloat> companion_cube = {  // For testing. Get it?
     //  X     Y     Z
     // bottom
     -1.0f,-1.0f,-1.0f,  

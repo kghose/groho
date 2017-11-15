@@ -1,10 +1,14 @@
 #include "camera.hpp"
 
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
+
 namespace sgl
 {
 
 Camera::Camera() :
-    pos( 0, 0, 1.0 ),
+    pos( 0, 0, 3.0 ),
     phi( 0 ),
     theta( 0 ),
     fov( 55 ),
@@ -15,31 +19,30 @@ Camera::Camera() :
 }
 
 glm::mat4
+Camera::matrix() const
+// https://stackoverflow.com/a/11404171/2512851
+{
+  glm::mat4 projection = 
+    glm::perspective( glm::radians( fov ), aspect_ratio, near_plane, far_plane );
+  
+  glm::mat4 view = glm::translate( rotation_mat(), -pos );
+  
+  return projection * view;
+}
+
+glm::vec3
+Camera::direction() const
+{
+  return glm::vec3( glm::inverse( rotation_mat() ) * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f ) );
+}
+
+glm::mat4
 Camera::rotation_mat() const
 {
-  glm::mat4 dir;
-  dir = glm::rotate( dir, glm::radians( theta ), glm::vec3( 1, 0, 0 ) );
-  dir = glm::rotate( dir, glm::radians(  phi  ), glm::vec3( 0, 1, 0 ) );
-  return dir;
-}
-
-glm::mat4 
-Camera::projection_mat() const 
-{
-  return glm::perspective( 
-      glm::radians( fov ), aspect_ratio, near_plane, far_plane );
-}
-
-glm::mat4 
-Camera::view_mat() const 
-{
-  return rotation_mat() * glm::translate( glm::mat4(),  -pos );
-}
-
-glm::mat4 
-Camera::full_mat() const 
-{
-    return projection_mat() * view_mat();
+  glm::mat4 rot(1.0f);
+  rot = glm::rotate( rot, glm::radians( theta ), glm::vec3( -1.0f, 0.0f, 0.0f ) );
+  rot = glm::rotate( rot, glm::radians(  phi  ), glm::vec3(  0.0f, 1.0f, 0.0f ) );
+  return rot;
 }
 
 void 
@@ -48,18 +51,10 @@ Camera::set_position( glm::vec3 _pos )
   pos = _pos; 
 }
 
-glm::vec3 
-Camera::orientation() const
-{
-  return glm::vec3(
-    glm::inverse( rotation_mat() ) * glm::vec4( 0, 0, -1, 1 )
-  );
-}
-
 void 
 Camera::dolly_by( float x )
 {
-  pos += x * orientation();
+  pos += x * direction();
 }
 
 void 
