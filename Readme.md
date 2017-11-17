@@ -39,6 +39,10 @@ make
 =========
 The tutorial is the launch point for learning more
 
+[Docs for Devs](docs/dev/Readme.md)
+===============
+Notes, mostly for me six months in the future, about code design and algorithms
+
 
 Related software
 ================
