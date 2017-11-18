@@ -32,11 +32,9 @@ The data now has an additional float value for the timestep, so each point now
 costs us 16 bytes. We need to save less than 75% of the original number of 
 timesteps for this to be an advantage.
 
-
-Scaling data for display
-------------------------
-
-
+As we can see from a [quick experiment](adaptive-display-points.ipynb) the savings
+can be tremendous if our simulation is finegrained. In the example shown with
+just 1% of the original points we get a very smooth display.
 
 
 Checkpoints
@@ -50,4 +48,18 @@ The simplest scheme, which we will start with, is to save checkpoints when the m
 This means that we need to store one extra double (the julian date) so we have 32 bytes per checkpoint.
 
 _Note that this discussion is about serialization (saving data) and display. The simulation time step is independent of this discussion, and in this first iteration there is just a constant simulation time step._
+
+
+Scaling data for display
+========================
+If we wish for 1m resolution at solar system distances (40 AU for pluto) we need
+to use doubles assuming 1 unit represents 1m. A float would give us  
+
+
+OpenGL accepts data as floats
+
+
+
+
+
 
