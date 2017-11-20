@@ -25,8 +25,8 @@ public:
   void run();
   // Main FLTK loop
   
-  void refresh_simulation_data();          
-  // Runs in separate thread, periodically polls simulation for fresh data
+  static void refresh_simulation_data( void* );          
+  // Called periodically to poll simulation for fresh data
   
   void draw();                
   

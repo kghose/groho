@@ -9,6 +9,12 @@
 #include "loguru.hpp"
 
 
+namespace config
+{
+  const float sim_poll_interval = 0.1;
+}
+
+
 namespace sim
 {
 
@@ -26,6 +32,10 @@ Fl_Gl_Window( width, height, title ), simulation( simulation )
 
   size_range( 400, 400); 
   // This allows resizing. Without this window is fixed size
+
+  Fl::add_timeout( config::sim_poll_interval, 
+                   Display::refresh_simulation_data, this );
+  // Poll simulation for new data periodically
 }
 
 Display::~Display()
@@ -51,9 +61,11 @@ Display::setup_opengl()
 }
 
 void
-Display::refresh_simulation_data()
+Display::refresh_simulation_data( void* ptr )
 {
-
+  DLOG_S(INFO) << "Polling simulation";
+  Fl::repeat_timeout( config::sim_poll_interval, 
+                      Display::refresh_simulation_data, ptr );
 }
 
 void 
