@@ -1,198 +1,205 @@
 /*
-  We need 
-    - To store simulation data so that OpenGL can efficiently get at them.
-    - To break up the data so that as the simulation progressed or when 
-      we recomputed the simulation we didn't have to recopy all the data.
-    - To synchronize a suitable simulation checkpoint so that we can rerun
-      simulations at the granularity of a segment size.
+  The simulation buffer takes care of position and event history for each
+  simulation object.
+
+  There are no synchronization locks here. This is because the simulation will 
+  only write to segments that are invisible to the reader, and no writes
+  will ever take place to segments visible to the reader.
+
+  It's upto the Simulation to lock access to the entire list/dict of buffers when
+  a restart occurs and such locking is not handled at this level.
+
+  See the "Data" writeup in docs for the rationale for this design
+
+  Notes:
+    How to instrument a class for the range based for loop apparatus is explained
+    in http://antonym.org/2014/02/c-plus-plus-11-range-based-for-loops.html
 */
 #pragma once
 
 #include <vector>
-#include <unordered_map>
+#include <array>
+#include <cassert>
 
-#include "timestamps.hpp"
+//#include "timestamps.hpp"
 #include "event.hpp"
 #include "vector.hpp"
+
+
+namespace config  // some of these may later be read from config files
+{
+
+const size_t scratch_buffer_size = 1000;
+const size_t buffer_size = 1000;
+
+}
 
 
 namespace sim
 {
 
-struct SimulationBufferSegment;
-struct SimulationBuffer;
-
-class SimulationBufferPartIterator
+class SimulationBufferSegment
 {
 public:
-
-    SimulationBufferPartIterator( const SimulationBuffer& sb, size_t idx = 0 ) : 
-        simulation_buffer( sb ), idx( idx )
-    {}
-
-    bool operator!=( const SimulationBufferPartIterator& other )
-    {
-      return( idx != other.idx );
-    }
-
-    const SimulationBufferPartIterator& operator++()
-    {
-        idx++;
-        return *this;
-    }
-
-    const SimulationBufferSegment& operator*() const;
-
-private:
-    const SimulationBuffer&   simulation_buffer;
-    size_t                                  idx;
-};
-
-
-class SimulationBufferPart
-{
-public:
-  SimulationBufferPart( const SimulationBuffer& sb, size_t start, size_t stop ) :
-      simulation_buffer( sb ), start( start ), stop( stop )
-  {}
-
-  SimulationBufferPartIterator begin() const
+  bool add( float jd, Vector& v )
+  // return true if we need a new buffer segment because this is filled up
   {
-      return SimulationBufferPartIterator( simulation_buffer, start );
+    time_stamps[ buffer_index         ] = jd;
+    buffer_data[ 3 * buffer_index     ] = v.x;
+    buffer_data[ 3 * buffer_index + 1 ] = v.y;
+    buffer_data[ 3 * buffer_index + 2 ] = v.z;
+    buffer_index++;
+    //std::cerr << buffer_index << ", ";
+    return buffer_index == config::buffer_size;
   }
 
-  SimulationBufferPartIterator end() const
+  void add( Event& e )
   {
-      return SimulationBufferPartIterator( simulation_buffer, stop );
+    events.push_back( e );
   }
 
 private:
-  const SimulationBuffer& simulation_buffer;
+  std::array<float, 3 * config::buffer_size>  buffer_data;  //   x,y,z, x,y,z, ...  
+  std::array<float, config::buffer_size>  time_stamps;      //   t0,    t1,    t2, ....
 
-  size_t   start, 
-           stop;
+  size_t buffer_index;
+  // next available location in the index for insertion
+
+  std::vector<Event>  events;
 };
 
-struct SimulationBufferSegment
-// One segment of data that grows as needed
+
+struct SBSNode
 {
-  std::vector<float>    vertices;  // flattened 3D buffer x,y,z, x,y,z, ...
-  Timestamps<float>  time_stamps;  //                     t0,    t1,    t2, ....
-  Timestamps<Event>       events;
-  // Need a checkpoint object here
-  // probably should just be a copy of the spaceship object
-   
-  void add( float jd, Vector& v )
+  SimulationBufferSegment buffer;
+  bool ready;  // this segment is ready to be read from
+  SBSNode* next;
+
+  SBSNode() { ready = false; next = nullptr; }
+
+  SBSNode* append_new_segment()
   {
-    vertices.push_back( v.x );
-    vertices.push_back( v.y );
-    vertices.push_back( v.z );
-    time_stamps.push_back( jd );
-  }
-
-  // void set_interval( float jd0, float jd1 )
-  // {
-  //   start = time_stamps.find( jd0 );
-  //   stop  = time_stamps.find( jd1 );    
-  // }
-};
-
-struct SimulationBuffer
-// Collection of data segments 
-{
-  std::vector<SimulationBufferSegment> segments;
-  SimulationBufferSegment* last_segment;
-  // We keep a pointer to the last segment for convenience
-
-  size_t max_segment_size;
-  // When a segment reaches this size, we create a new one.
-  size_t changed_from;
-  // This is for who ever is shadowing this data buffer.
-  // When a new segment is added since the last copy, we
-  // set this value.
-  // When segments are dumped, because we are re-doing the
-  // simulation from a certain segment, we set this value.
-  // When it goes to copy the data the shadower then knows
-  // from which segment to copy.
-  // We only have one shadower, so we use a single variable
-  // If we had many we would have created a list and a 
-  // register shadower function to manage them
-
-  SimulationBuffer( size_t seg_size=1000 )
-  {
-    segments.push_back( SimulationBufferSegment() );
-    last_segment = &segments.back();
-    max_segment_size = seg_size;
-    changed_from = 0;
-  }
-
-  void add( float jd, Vector& v )
-  {
-    if( last_segment->time_stamps.size() == max_segment_size )
-    {
-      segments.push_back( SimulationBufferSegment() );
-      last_segment = &segments.back();      
-    }
-    last_segment->add( jd, v );
-  }
-
-  void add_event( Event& e )
-  {
-    last_segment->events.push_back( e );
-  }
-
-  void truncate( float jd )
-  // Remove all data from after jd. Segments whose start > jd are simply
-  // discarded. The segment whose start < jd and end > jd is truncated to
-  // jd. Don't forget to do this for three data structures
-  // 1. The vertices
-  // 2. The events
-  // 3. the time_stamps
-  {
-    std::runtime_error("Not implemented");
-  }
-
-  SimulationBufferPart copy()
-  {
-    SimulationBufferPart sbp( *this, changed_from, segments.size() );
-    changed_from = segments.size();
-    return sbp;
+    ready = true;
+    SBSNode* new_segment = new SBSNode;
+    next = new_segment;
+    return new_segment;
   }
 };
 
-const SimulationBufferSegment& 
-SimulationBufferPartIterator::operator*() const
+class SBSNodeIter
 {
-  return simulation_buffer.segments[ idx ];
+public:
+  SBSNodeIter( SBSNode* const node ) : node( node ) {}
+
+  bool operator!=( const SBSNodeIter& other )
+  // We have our own way of flagging if the iteration should stop here
+  // basically we stop at a node that is not ready
+  {
+    if( node == nullptr ) return false;
+    return node->ready;
+  }
+
+  const SBSNodeIter& operator++()
+  { 
+    node = node->next;    
+    return *this;
+    // the_end is checked differently
+  }
+
+  const SimulationBufferSegment& operator*() const;
+
+private:
+  SBSNode*            node;
+};
+
+const SimulationBufferSegment& SBSNodeIter::operator*() const
+// Note that we don't give access to the linked list, just the buffer
+{
+    return node->buffer;
 }
 
 
-
-
-/*
-struct CircularDisplayBuffer
-// fixed size buffer that efficiently mimics a circular buffer
+class SimulationBuffer
 {
-  std::vector<Vector> vertices;
-  void add( Vector& v )
+public:
+  SimulationBuffer()
   {
-    vertices.push_back( v );
+    head_segment = new SBSNode;
+    last_segment = head_segment;
+    node_count = 1;
   }
-};
-*/
-// struct CircularDisplayBuffer
-// // fixed size buffer that efficiently mimics a circular buffer
-// {
-//   std::vector<GLfloat> vertices;
-//   void add( Vector& v )
-//   {
-//     vertices.push_back( v.x );
-//     vertices.push_back( v.y );
-//     vertices.push_back( v.z );    
-//   }
-// };
 
-// typedef std::unordered_map<std::string, DisplayBuffer> dbuf_map_t;
-// typedef std::unordered_map<std::string, CircularDisplayBuffer> cdbuf_map_t;
+  ~SimulationBuffer()
+  {
+    while( head_segment != nullptr )
+    {
+      SBSNode* next = head_segment->next;
+      delete head_segment;
+      head_segment = next;
+    }
+  }
+  
+  void add( float jd, Vector& v, float tolerance_sq=1.0 )
+  {
+    assert( !last_segment->ready );
+    if( scratch_buffer_index > 1 )
+    {
+      if( ( scratch_buffer_index == config::scratch_buffer_size ) |
+          ( deviation_from_interpolation_sq( v ) > tolerance_sq ) )
+      {
+        if( last_segment->buffer.add( jd, v ) ) {  
+          last_segment = last_segment->append_new_segment();
+          node_count++; 
+        }
+        scratch_buffer_index = 0;
+      }
+    }
+    scratch_buffer[ scratch_buffer_index ] = v;
+    scratch_buffer_index++;
+    // std::cerr << scratch_buffer_index << ", ";
+  }
+
+  size_t size() { return node_count; }
+  void finalize() { last_segment->ready = true; }
+
+  SBSNodeIter begin() const
+  {
+    return SBSNodeIter( head_segment );
+  }  
+
+  SBSNodeIter end() const
+  {
+    return SBSNodeIter( last_segment ); // not really used
+  }
+
+private:
+  float deviation_from_interpolation_sq( Vector& Z )
+  {
+    Vector X = scratch_buffer[ 0 ],
+           Y = scratch_buffer[ scratch_buffer_index / 2 ],
+           A = Y - X,
+           B = Y - Z,
+           L = Z - X;
+    
+    double a2 = dot( A, A ),
+           b2 = dot( B, B ),
+           l2 = dot( L, L ),
+           l  = std::sqrt( l2 ),
+           q  = ( a2 - b2 + l2 ) / ( 2 * l ),
+           q2 = q * q;
+
+    return a2 - q2;    
+  }
+
+private:
+  std::array<Vector, config::scratch_buffer_size> scratch_buffer;
+  size_t scratch_buffer_index = 0;
+
+  SBSNode*   head_segment;
+  SBSNode*   last_segment;
+
+  size_t     node_count;
+};
+
 
 } // namespace sim
