@@ -116,17 +116,12 @@ public:
     // the_end is checked differently
   }
 
-  const SimulationBufferSegment& operator*() const;
+  const SimulationBufferSegment& operator*() const { return node->buffer; }
+  // Note that we don't give access to the linked list, just the buffer
 
 private:
   SBSNode*            node;
 };
-
-const SimulationBufferSegment& SBSNodeIter::operator*() const
-// Note that we don't give access to the linked list, just the buffer
-{
-    return node->buffer;
-}
 
 
 class SimulationBuffer

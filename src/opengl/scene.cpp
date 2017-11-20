@@ -48,10 +48,15 @@ Scene::render()
 }
 
 void 
-Scene::add_planet( std::string name )
+Scene::mirror_orrery( sim::Simulation& simulation )
 {
+
+  for( const auto & [ name, body ] : simulation.get_orrery() ) 
+  { 
+  }   
+
   //planets.emplace( name, std::ref(shader_program) );
-  planets[ name ] = Trajectory( &shader_program );
+  //planets[ name ] = Trajectory( &shader_program, dbuf );
 }
 
 }

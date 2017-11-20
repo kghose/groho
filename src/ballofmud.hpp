@@ -1,7 +1,9 @@
 #pragma once
 #include <vector>
 
-# include "vector.hpp"
+#include "vector.hpp"
+#include "simulationbuffer.hpp"
+
 
 namespace sim
 {
@@ -18,6 +20,9 @@ public:
              ra, dec,  // radians
             rotation;  // radians / day
             // https://en.wikipedia.org/wiki/Axial_tilt#Solar_System_bodies
+
+  SimulationBuffer simulation_buffer;
+
   BallOfMud(
       std::string  name,
       Vector        pos,
@@ -57,6 +62,9 @@ public:
     // TODO: Need to figure out meanings of ra, dec
     return LatLon();
   }
+
+private:
+  //DisplayBuffer  trajectory;
 };
   
 }

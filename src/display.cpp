@@ -22,6 +22,7 @@ Fl_Gl_Window( width, height, title ), simulation( simulation )
   // https://github.com/IngwiePhoenix/FLTK/blob/master/examples/OpenGL3-glut-test.cxx
   // FL_MULTISAMPLE -> anti-aliasing. WFM.
   Fl::use_high_res_GL(1);
+  // TODO: Without this macOS Retina display is a bit wonky TODO: CHECK!!
 
   size_range( 400, 400); 
   // This allows resizing. Without this window is fixed size
@@ -31,12 +32,11 @@ Display::~Display()
 {
 }
 
-void 
+void
 Display::run()
-{
-  Fl::run();
+{ 
+  Fl::run(); 
 }
-
 
 void
 Display::setup_opengl()
@@ -44,12 +44,17 @@ Display::setup_opengl()
   glClearColor( .1f, .1f, .1f, 1 );
   //glEnable( GL_DEPTH_TEST );
   scene.init();
-  scene.add_planet( "Companion Cube" );
-  scene.planet( "Companion Cube" ).vertices = companion_cube; // for testing
-  scene.planet( "Companion Cube" ).draw_count = companion_cube.size() / 3;
-  scene.planet( "Companion Cube" ).update_trajectory();
+  // scene.add_planet( "Companion Cube" );
+  // scene.planet( "Companion Cube" ).vertices = companion_cube; // for testing
+  // scene.planet( "Companion Cube" ).draw_count = companion_cube.size() / 3;
+  // scene.planet( "Companion Cube" ).update_trajectory();
 }
 
+void
+Display::refresh_simulation_data()
+{
+
+}
 
 void 
 Display::draw()
@@ -138,11 +143,11 @@ Display::handle(int event) {
         }
 
         if( pos_scroll ) {
-          scene.camera.dolly_by( 0.5 * Fl::event_dy() );
+          scene.camera.dolly_by( Fl::event_dy() );
         }
         
         if( fov_scroll ) {
-          scene.camera.change_fov( Fl::event_dy() );
+          scene.camera.change_fov( Fl::event_dx() );
         }
       }
       redraw();          

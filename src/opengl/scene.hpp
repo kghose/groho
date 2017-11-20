@@ -9,6 +9,7 @@
 #include "opengl.hpp"
 #include "camera.hpp"
 #include "trajectory.hpp"
+#include "simulation.hpp"
 
 
 namespace sgl
@@ -22,8 +23,9 @@ public:
   void init();
   void render();
 
-  void add_planet( std::string name );
-  Trajectory& planet( std::string name ) { return planets[ name ]; }
+  //Todo: better information hiding on part of simulation
+  void mirror_orrery( sim::Simulation& simulation );
+  //Trajectory& planet( std::string name ) { return planets[ name ]; }
 
 private:
   ShaderProgram shader_program;

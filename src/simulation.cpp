@@ -31,7 +31,7 @@ Simulation::run()
   Scenario scenario( scenario_fname );
   for( ;; )
   {
-    if( scenario.requires_recompute() ) { rerun_with( scenario ); }
+    if( scenario.requires_recompute() ) { recompute_with( scenario ); }
 
     std::unique_lock<std::mutex> lk( user_command_mutex );
     cv.wait_for( lk, 500ms ); 
@@ -46,7 +46,7 @@ Simulation::run()
 
 
 void
-Simulation::rerun_with( const Scenario& new_scenario )
+Simulation::recompute_with( const Scenario& new_scenario )
 {
   restart = true;
   if( compute_thread.joinable() ) compute_thread.join();
@@ -125,12 +125,12 @@ Simulation::propagate_space_fleet( double jd, double dt )
     v.update_state( dt, orrery.compute_g( v.get_pos() ), bingo_fuel);
     if( bingo_fuel )
     {
-      checkpoints.push_back( checkpointp_t( new Event( 
-        jd,
-        EventType::BingoFuel,
-        v.name,
-        ""
-      )));
+      // checkpoints.push_back( checkpointp_t( new Event( 
+      //   jd,
+      //   EventType::BingoFuel,
+      //   v.name,
+      //   ""
+      // )));
     }
   }
 }
@@ -144,8 +144,13 @@ Simulation::resolve_actions( double jd )
 void
 Simulation::load( Scenario& new_scenario )
 {
+  copy_mutex.lock();
+  // This changes the simulation contents, so we need to lock/unlock
+
   // XXX Just for testing
   orrery = load_simple_solar_system( "" );  
+
+  copy_mutex.unlock();
 }
 
 } // namespace sim

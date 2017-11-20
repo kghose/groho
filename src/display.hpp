@@ -23,13 +23,24 @@ public:
   ~Display();
 
   void run();
-  void draw();
-  int handle( int );
+  // Main FLTK loop
+  
+  void refresh_simulation_data();          
+  // Runs in separate thread, periodically polls simulation for fresh data
+  
+  void draw();                
+  
+  int handle( int );       
+  // User event handling
 
 private:
+  
   void setup_opengl();
+  // Misc OpenGL initialization
+
   void draw_orrery();
 
+private:
   std::atomic<bool> quit_now;
   Simulation& simulation;
   sgl::Scene scene;

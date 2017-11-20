@@ -37,6 +37,8 @@ public:
     pos.x = orbit_radius * std::cos( 2.0 * M_PI * orbit_rate * jd );
     pos.y = orbit_radius * std::sin( 2.0 * M_PI * orbit_rate * jd );
     pos.z = 0;
+
+    simulation_buffer.add( jd, pos, 0.1 );
   }
 
 };

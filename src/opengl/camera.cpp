@@ -75,7 +75,8 @@ Camera::set_fov( float _fov )
 void 
 Camera::change_fov( float dfov ) 
 { 
-  fov += dfov; 
+  fov += dfov;
+  fov = fov <= 1 ? 1 : fov;
 }
 
 void 

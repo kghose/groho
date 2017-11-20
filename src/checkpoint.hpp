@@ -1,5 +1,6 @@
 /*
-  This handles storing checkpoints
+  The base checkpoint is meant as a lightweight way of transfering data from
+  
 */
 #pragma once
 
