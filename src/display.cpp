@@ -34,7 +34,7 @@ Fl_Gl_Window( width, height, title ), simulation( simulation )
   // This allows resizing. Without this window is fixed size
 
   Fl::add_timeout( config::sim_poll_interval, 
-                   Display::refresh_simulation_data, this );
+                   Display::mirror_simulation, this );
   // Poll simulation for new data periodically
 }
 
@@ -58,14 +58,6 @@ Display::setup_opengl()
   // scene.planet( "Companion Cube" ).vertices = companion_cube; // for testing
   // scene.planet( "Companion Cube" ).draw_count = companion_cube.size() / 3;
   // scene.planet( "Companion Cube" ).update_trajectory();
-}
-
-void
-Display::refresh_simulation_data( void* ptr )
-{
-  DLOG_S(INFO) << "Polling simulation";
-  Fl::repeat_timeout( config::sim_poll_interval, 
-                      Display::refresh_simulation_data, ptr );
 }
 
 void 
@@ -185,6 +177,14 @@ Display::handle(int event) {
       // pass other events to the base class...
       return Fl_Gl_Window::handle(event);
   }
+}
+
+void
+Display::mirror_simulation( void* ptr )
+{
+  ( (Display*) ptr )->scene.mirror_simulation( ( (Display*) ptr )->simulation );
+  Fl::repeat_timeout( config::sim_poll_interval, 
+                      Display::mirror_simulation, ptr );
 }
 
 } // namespace sim

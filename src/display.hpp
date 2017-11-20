@@ -25,13 +25,14 @@ public:
   void run();
   // Main FLTK loop
   
-  static void refresh_simulation_data( void* );          
-  // Called periodically to poll simulation for fresh data
-  
   void draw();                
   
   int handle( int );       
   // User event handling
+
+  static void mirror_simulation( void* );          
+  // Called periodically to poll simulation for fresh data
+
 
 private:
   

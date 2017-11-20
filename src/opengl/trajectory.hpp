@@ -17,7 +17,7 @@
 
 #include "opengl.hpp"
 #include "shader.hpp"
-#include "simulationbuffer.hpp"
+#include "simulationobject.hpp"
 
 
 namespace sgl
@@ -49,8 +49,9 @@ private:
 class Trajectory
 {
 public:
+  Trajectory() {} // needed for unordered_map
   Trajectory( ShaderProgram* shdr ) : shader_program( shdr ) {};
-  void copy_simulation_buffer( sim::SimulationBuffer& sb );
+  void copy_simulation_buffer( const sim::SimulationBuffer& sb );
   void render();
 
 

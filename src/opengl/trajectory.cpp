@@ -61,7 +61,7 @@ TrajectorySegment::render()
 
 
 void 
-Trajectory::copy_simulation_buffer( sim::SimulationBuffer& sb )
+Trajectory::copy_simulation_buffer( const sim::SimulationBuffer& sb )
 {
   int i = segments.size();
   for( auto& buf_segment : sb )

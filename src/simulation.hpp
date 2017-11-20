@@ -3,13 +3,16 @@
 */
 #pragma once
 
-#include <atomic>
 #include <string>
+#include <functional>
+#include <atomic>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 
 #include "scenario.hpp"
+#include "simulationobject.hpp"
+
 #include "checkpoint.hpp"
 #include "orrery.hpp"
 #include "spaceship.hpp"
@@ -31,9 +34,11 @@ public:
   void quit();
   // Sets quit_now to tell all simulation related threads to quit
 
-  void lock_before_reading()  { copy_mutex.lock(); }
-  const Orrery& get_orrery()  { return orrery; }
-  void unlock_after_reading() { copy_mutex.unlock(); }
+  void lock_before_mirror()      const { copy_mutex.lock(); }
+  int  get_sim_version()         const { return sim_version_no; }
+  const simobj_map_t& 
+       get_simulation_objects()  const { return simulation_objects; }
+  void unlock_after_mirror()     const { copy_mutex.unlock(); }
 
 private:
 
@@ -76,6 +81,8 @@ private:
   std::string scenario_fname;  
   Checkpoints checkpoints;
 
+  simobj_map_t  simulation_objects;
+
   Orrery orrery;
   std::unordered_map<std::string, SpaceShip> space_fleet;
   
@@ -89,12 +96,20 @@ private:
 
   bool     user_command_received  // some action is required. Used to unblock `loop`
                                 ;
-  std::mutex user_command_mutex;
-  std::condition_variable cv;
+  std::mutex                user_command_mutex;
+  std::condition_variable   cv;
 
-  // Needed to lock the Orrery and space_fleet for reading. This lock only
-  // prevents the destruction of these dictionaries during a simulation restart
+  // Stuff needed for the mirroring
+  int     sim_version_no;
+  // A counter that we increment each time we re-run. Any one who is mirroring
+  // the simulation can check this to see if they need to completely re-copy
+  // everything or just do a simple update
+
   mutable std::mutex copy_mutex;
+  // This lock prevents the destruction of the simulation objects during 
+  // a simulation restart and prevents mirroring while simulation objects are
+  // being destroyed for a simulation restart
+  
   //std::unique_lock<std::mutex> copy_lock;
 };
 

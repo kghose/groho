@@ -48,15 +48,24 @@ Scene::render()
 }
 
 void 
-Scene::mirror_orrery( sim::Simulation& simulation )
+Scene::mirror_simulation( const sim::Simulation& simulation )
 {
+  simulation.lock_before_mirror();
+  if( sim_version_no != simulation.get_sim_version() )
+  {
+    simulation_objects.clear();
+    for( const auto& [ name, body ] : simulation.get_simulation_objects() )
+    {
+      simulation_objects.insert( { name, Trajectory( &shader_program ) } );
+    }
+    sim_version_no = simulation.get_sim_version();
+  }
 
-  for( const auto & [ name, body ] : simulation.get_orrery() ) 
-  { 
-  }   
-
-  //planets.emplace( name, std::ref(shader_program) );
-  //planets[ name ] = Trajectory( &shader_program, dbuf );
+  for( const auto& [ name, body ] : simulation.get_simulation_objects() )
+  {
+    simulation_objects[ name ].copy_simulation_buffer( body->simulation_buffer );
+  }
+  simulation.unlock_after_mirror();
 }
 
 }

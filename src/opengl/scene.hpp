@@ -23,12 +23,14 @@ public:
   void init();
   void render();
 
-  //Todo: better information hiding on part of simulation
-  void mirror_orrery( sim::Simulation& simulation );
-  //Trajectory& planet( std::string name ) { return planets[ name ]; }
+  void mirror_simulation( const sim::Simulation& simulation );
 
 private:
   ShaderProgram shader_program;
+
+  std::unordered_map<std::string, Trajectory>    simulation_objects;
+  int  sim_version_no = -1;
+
   std::unordered_map<std::string, Trajectory>    ships;
   std::unordered_map<std::string, Trajectory>  planets;
 };
