@@ -7,7 +7,9 @@
   will ever take place to segments visible to the reader.
 
   It's upto the Simulation to lock access to the entire list/dict of buffers when
-  a restart occurs and such locking is not handled at this level.
+  a restart occurs and such locking is not handled at this level. What I envision
+  is a read lock at the dictionary level that only locks dictionary deletion
+  during simulation restarts.
 
   See the "Data" writeup in docs for the rationale for this design
 
@@ -58,13 +60,21 @@ public:
     events.push_back( e );
   }
 
+  const float* buffer_ptr( size_t& buf_size ) const
+  {
+    buf_size = buffer_index;
+    return buffer_data.data();
+  }
+
+  const std::array<float, config::buffer_size> copy_of_time_stamps() const { return time_stamps; }
+  const std::vector<Event> copy_of_events() const { return events; }
+
+
 private:
   std::array<float, 3 * config::buffer_size>  buffer_data;  //   x,y,z, x,y,z, ...  
-  std::array<float, config::buffer_size>  time_stamps;      //   t0,    t1,    t2, ....
-
+  std::array<float, config::buffer_size>      time_stamps;      //   t0,    t1,    t2, ....
   size_t buffer_index;
   // next available location in the index for insertion
-
   std::vector<Event>  events;
 };
 
