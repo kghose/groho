@@ -1,4 +1,6 @@
 /*
+  This copies trajectory data 
+
   Represents trajectory data for a spacecraft. For spacecraft the data array
   keeps track of all data points for the whole simulation while for Orrery
   objects one orbit is kept. 
@@ -13,43 +15,48 @@
 */
 #pragma once
 
-#include <vector>
-
 #include "opengl.hpp"
 #include "shader.hpp"
-#include "vector.hpp"
+#include "simulationbuffer.hpp"
 
 
 namespace sgl
 {
 
-struct Trajectory
+class TrajectorySegment
 {
+public:
+  TrajectorySegment( ShaderProgram* shdr, const sim::SimulationBufferSegment& sim_buf );
+  ~TrajectorySegment();
+  void render();
+  // wraps the GL calls needed to render this trajectory
+
+private:
   ShaderProgram*   shader_program;
 
-  GLuint        vbo;  // might consider using two buffers
+  GLuint        vbo;
   GLuint        vao;
   GLenum  draw_type;
   GLint  draw_start;
   GLint  draw_count;
+  size_t num_points;
 
-  std::vector<GLfloat> vertices;
-  
-  Trajectory( ShaderProgram* shdr=nullptr );
-  
-  void add_point( sim::Vector& v )  
-  // Add this point to our internal buffer
-  {
-    vertices.push_back( v.x );  // what happens with the float double conversion?
-    vertices.push_back( v.y );
-    vertices.push_back( v.z );
-  }
+  std::array<float, config::buffer_size>  time_stamps;
+  // next available location in the index for insertion
+  std::vector<sim::Event>  events;  
+};
 
-  void update_trajectory();  
-  // when we are ready, we make the latest data the display data
-
+class Trajectory
+{
+public:
+  Trajectory( ShaderProgram* shdr ) : shader_program( shdr ) {};
+  void copy_simulation_buffer( sim::SimulationBuffer& sb );
   void render();
-  // wraps the GL calles needed to render this trajectory
+
+
+private:
+  ShaderProgram*   shader_program;
+  std::vector<TrajectorySegment> segments;
 };
 
 }
