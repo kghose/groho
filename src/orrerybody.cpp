@@ -1,4 +1,6 @@
 #include "orrerybody.hpp"
+#include "units.hpp"
+
 
 namespace sim
 {
@@ -28,13 +30,22 @@ orrery_body_vec_t  load_debugging_orrery()
       0.0               // orbital rate
     },
     {
+      "Planet0",
+      "A barren wasteland",
+      1,                // GM
+      1,                // radius
+      0.0, 0.0, 0.5,    // ra, dec, rotation
+      1.0_AU,              // orbit radius
+      0.1               // orbital rate
+    },
+    {
       "Planet1",
       "The first warring clan",
       0.1,              // GM
       0.1,              // radius
       0.0, 0.0, 0.5,    // ra, dec, rotation
-      1.0,              // orbit radius
-      1.0               // orbital rate
+      10.0_AU,              // orbit radius
+      0.05               // orbital rate
     },
     {
       "Planet2",
@@ -42,8 +53,8 @@ orrery_body_vec_t  load_debugging_orrery()
       0.1,              // GM
       0.05,              // radius
       0.0, 0.0, 0.5,    // ra, dec, rotation
-      2.0,              // orbit radius
-      0.5               // orbital rate
+      40.0_AU,              // orbit radius
+      0.01               // orbital rate
     },    
   };
 
