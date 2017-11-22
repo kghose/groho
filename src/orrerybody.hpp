@@ -47,15 +47,6 @@ public:
       SimulationObject( name, description )
   {}
 
-  // The degugging version
-  void 
-  update_state( double jd, double dt )
-  {
-    pos.x = orbit_radius * std::cos( 2.0 * M_PI * orbit_rate * jd );
-    pos.y = orbit_radius * std::sin( 2.0 * M_PI * orbit_rate * jd );
-    pos.z = 0;
-  }
-
   // Given a surface position in (lat, lon) return the absolute
   // position in the simulation space
   Vector 
@@ -72,6 +63,16 @@ public:
   {
     // TODO: Need to figure out meanings of ra, dec
     return LatLon();
+  }
+
+private:
+  // The degugging version
+  void 
+  update_state( double jd, double dt )
+  {
+    pos.x = orbit_radius * std::cos( 2.0 * M_PI * orbit_rate * jd );
+    pos.y = orbit_radius * std::sin( 2.0 * M_PI * orbit_rate * jd );
+    pos.z = 0;
   }
 };
 

@@ -9,6 +9,14 @@
 #include "loguru.hpp"
 
 
+namespace config  // some of these may later be read from config files
+{
+
+const float threshold = 0.01;
+
+}
+
+
 namespace sim
 {
 
@@ -110,7 +118,7 @@ void
 Simulation::propagate_orrery( double jd, double dt )
 {
   for( auto& b : orrery_bodies ) 
-    b.update_state( jd, dt );
+    b.step( jd, dt );
 }
 
 void
@@ -167,6 +175,7 @@ Simulation::load( Scenario& new_scenario )
 
   // XXX Just for testing
   orrery_bodies = load_debugging_orrery();
+  for( auto& b : orrery_bodies ) { b.tolerance_sq = 0.01; }
 
   copy_mutex.unlock();
 }
