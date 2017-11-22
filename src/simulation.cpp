@@ -139,7 +139,7 @@ Simulation::propagate_space_fleet( double jd, double dt )
   for( auto& s : space_ships )
   {
     //bool bingo_fuel = false;
-    s.update_state( jd, dt);
+    s.step( jd, dt);
     // if( bingo_fuel )
     // {
     //   // checkpoints.push_back( checkpointp_t( new Event( 
@@ -171,6 +171,11 @@ Simulation::load( Scenario& new_scenario )
 {
   copy_mutex.lock();
   // This changes the simulation contents, so we need to lock/unlock
+
+  // Safest to explicitly delete 
+  orrery_bodies.clear();
+  space_ships.clear();
+
   sim_version_no++;
 
   // XXX Just for testing
