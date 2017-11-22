@@ -28,6 +28,9 @@
 #include "event.hpp"
 #include "vector.hpp"
 
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
 
 namespace config  // some of these may later be read from config files
 {
@@ -87,14 +90,14 @@ typedef std::shared_ptr<SBSNode> SBSNode_ptr_t;
 struct SBSNode
 {
   SimulationBufferSegment buffer;
-  bool ready = false;  // this segment is ready to be read from
+  std::atomic<bool> ready = false;  // this segment is ready to be read from
   SBSNode_ptr_t next;
 
   SBSNode_ptr_t append_new_segment()
   {
-    ready = true;
     SBSNode_ptr_t new_segment = SBSNode_ptr_t( new SBSNode );
     next = new_segment;
+    ready.store(true, std::memory_order_release);
     return new_segment;
   }
 };
@@ -109,7 +112,7 @@ public:
   // basically we stop at a node that is not ready
   {
     if( node == nullptr ) return false;
-    return node->ready;
+    return node->ready.load( std::memory_order_acquire );
   }
 
   const SBSNodeIter& operator++()
@@ -167,7 +170,6 @@ public:
     }
     scratch_buffer[ scratch_buffer_index ] = v;
     scratch_buffer_index++;
-    // std::cerr << scratch_buffer_index << ", ";
   }
 
   size_t size() { return node_count; }
