@@ -8,12 +8,12 @@ namespace sgl
 {
 
 Camera::Camera() :
-    pos( 0, 0, 3.0 ),
+    pos( 0, 0, 120.0 ),
     phi( 0 ),
     theta( 0 ),
-    fov( 55 ),
-    near_plane( 0.1 ),
-    far_plane( 100.0 ),
+    fov( 40 ),
+    near_plane( 10 ),
+    far_plane( 1000.0 ),
     aspect_ratio( 3.0 / 4.0 )
 {
 }
