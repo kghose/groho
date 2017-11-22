@@ -19,7 +19,7 @@ TrajectorySegment::TrajectorySegment(
 {
   GLfloat *vertex_buf = (GLfloat*) sim_buf.buffer_ptr( num_points );
   time_stamps = sim_buf.copy_of_time_stamps();
-  // events = sim_buf.copy_of_events();  XXXXX DEBUGGING
+  events = sim_buf.copy_of_events();
 
   glGenVertexArrays( 1, &vao );
   glBindVertexArray( vao );
