@@ -48,6 +48,8 @@ public:
       SimulationObject( name, description )
   {}
 
+private:
+
   void
   update_state( double jd, double dt )
   // update position and velocity and set flag for bingo fuel if needed 
