@@ -28,7 +28,7 @@ TrajectorySegment::TrajectorySegment(
   glBindBuffer( GL_ARRAY_BUFFER, vbo );
 
   glBufferData( GL_ARRAY_BUFFER, 
-                sizeof(GLfloat) * 3 * num_points , 
+                sizeof(GLfloat) * 3 * num_points, 
                 vertex_buf, 
                 GL_DYNAMIC_DRAW );
 
@@ -55,7 +55,7 @@ void
 TrajectorySegment::render()
 {
   draw_start = 0;
-  draw_count = 3 * num_points;
+  draw_count = num_points;
   // make draw_start, draw_count settable based on where in the sim we want to be
 
   glBindVertexArray( vao );
@@ -76,7 +76,7 @@ Trajectory::copy_simulation_buffer( const sim::SimulationBuffer& sb )
     segments.push_back( TrajectorySegment( shader_program, sb[ i ] ) );
     copy_happened = true;
   }
-  
+
   return copy_happened;
 }
 
