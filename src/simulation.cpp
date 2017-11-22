@@ -93,16 +93,17 @@ Simulation::compute( Scenario scenario )
   restart = false;  
   DLOG_S(INFO) << "Starting simulation: " << scenario.start_jd << " - " << scenario.stop_jd;  
 
+  int simulation_steps = 0;
   double jd = scenario.start_jd;
   while( !restart & !quit_now & ( jd < scenario.stop_jd ) ) 
   { 
     step( jd, scenario.step_jd);
     jd += scenario.step_jd;
-    //std::cout << jd << std::endl;
+    simulation_steps++;
   }
   mark_sim_buffers_as_ready();
 
-  DLOG_S(INFO) << "Stopping simulation: " << jd;    
+  DLOG_S(INFO) << "Stopping simulation: " << jd << " (" << simulation_steps << " steps)";    
 }
  
 void
