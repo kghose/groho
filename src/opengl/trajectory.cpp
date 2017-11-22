@@ -68,13 +68,15 @@ bool
 Trajectory::copy_simulation_buffer( const sim::SimulationBuffer& sb )
 {
   bool copy_happened = false;
-  int i = segments.size();
-  for( auto& buf_segment : sb )
+  
+  int already_copied_count = segments.size();
+  int available_count = sb.available_size();
+  for( int i = already_copied_count; i < available_count; i++ )
   {
-    if( i > 0 ) { i--; continue; } // Already copied these
-    segments.push_back( TrajectorySegment( shader_program, buf_segment ) );
+    segments.push_back( TrajectorySegment( shader_program, sb[ i ] ) );
     copy_happened = true;
   }
+  
   return copy_happened;
 }
 

@@ -19,7 +19,6 @@
 */
 #pragma once
 
-#include <memory>
 #include <vector>
 #include <array>
 #include <cassert>
@@ -77,7 +76,7 @@ public:
 private:
   std::array<float, 3 * config::buffer_size>  buffer_data;  //   x,y,z, x,y,z, ...  
   std::array<float, config::buffer_size>      time_stamps;      //   t0,    t1,    t2, ....
-  size_t buffer_index;
+  size_t buffer_index = 0;
   // next available location in the index for insertion
   std::vector<Event>  events;
 };
@@ -90,43 +89,14 @@ typedef std::shared_ptr<SBSNode> SBSNode_ptr_t;
 struct SBSNode
 {
   SimulationBufferSegment buffer;
-  std::atomic<bool> ready = false;  // this segment is ready to be read from
   SBSNode_ptr_t next;
 
   SBSNode_ptr_t append_new_segment()
   {
     SBSNode_ptr_t new_segment = SBSNode_ptr_t( new SBSNode );
     next = new_segment;
-    ready.store(true, std::memory_order_release);
     return new_segment;
   }
-};
-
-class SBSNodeIter
-{
-public:
-  SBSNodeIter( SBSNode_ptr_t const node ) : node( node ) {}
-
-  bool operator!=( const SBSNodeIter& other )
-  // We have our own way of flagging if the iteration should stop here
-  // basically we stop at a node that is not ready
-  {
-    if( node == nullptr ) return false;
-    return node->ready.load( std::memory_order_acquire );
-  }
-
-  const SBSNodeIter& operator++()
-  { 
-    node = node->next;    
-    return *this;
-    // the_end is checked differently
-  }
-
-  const SimulationBufferSegment& operator*() const { return node->buffer; }
-  // Note that we don't give access to the linked list, just the buffer
-
-private:
-  SBSNode_ptr_t  node;
 };
 
 
@@ -141,21 +111,12 @@ public:
     head_segment = SBSNode_ptr_t( new SBSNode);
     last_segment = head_segment;
     node_count = 1;
+    available_node_count = 0;
   }
 
-  // ~SimulationBuffer()
-  // {
-  //   while( head_segment != nullptr )
-  //   {
-  //     SBSNode* next = head_segment->next;
-  //     delete head_segment;
-  //     head_segment = next;
-  //   }
-  // }
-  
   void add( float jd, Vector& v )
   {
-    assert( !last_segment->ready );
+    assert( node_count != available_node_count );  // we should not have finalized it
     if( scratch_buffer_index > 1 )
     {
       if( ( scratch_buffer_index == config::scratch_buffer_size ) |
@@ -164,6 +125,7 @@ public:
         if( last_segment->buffer.add( jd, v ) ) {  
           last_segment = last_segment->append_new_segment();
           node_count++; 
+          available_node_count++;
         }
         scratch_buffer_index = 0;
       }
@@ -172,17 +134,25 @@ public:
     scratch_buffer_index++;
   }
 
-  size_t size() { return node_count; }
-  void finalize() { last_segment->ready = true; }
+  size_t available_size() const { return available_node_count; }
+  void finalize() { available_node_count = node_count; }
 
-  SBSNodeIter begin() const
+  const SimulationBufferSegment& operator[] ( size_t index ) const
   {
-    return SBSNodeIter( head_segment );
-  }  
-
-  SBSNodeIter end() const
-  {
-    return SBSNodeIter( last_segment ); // not really used
+    if( index < available_node_count )
+    {
+      SBSNode_ptr_t  this_node = head_segment;
+      while( index > 0 ) {
+        this_node = this_node->next;
+        index--;
+      }
+      assert( this_node != nullptr );
+      return this_node->buffer;
+    }
+    else
+    {
+      std::runtime_error( "Index : "+ std::to_string(index) + "is out of range!" );
+    }
   }
 
 private:
@@ -212,6 +182,10 @@ private:
   SBSNode_ptr_t   last_segment;
 
   size_t     node_count;
+  size_t     available_node_count;  
+             // The ones that are safe to copy. usually node_count - 1 
+             // unless finalized
+
 };
 
 
