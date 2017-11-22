@@ -2,13 +2,12 @@
 #include <thread>
 #include <iostream>
 
-#define LOGURU_WITH_STREAMS 1
-#include "loguru.hpp"
-
 #include "simulation.hpp"
 #include "event.hpp"
 
-#include "simplesolarsystem.hpp"  // just for testing
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
 
 namespace sim
 {
