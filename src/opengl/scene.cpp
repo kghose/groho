@@ -48,8 +48,6 @@ Scene::render()
   for( auto& trajectory : orrery_bodies ) trajectory.render();
   for( auto& trajectory : space_ships ) trajectory.render();
   glUseProgram( 0 );
-
-  DLOG_S(INFO) << "Renderng!";
 }
 
 bool

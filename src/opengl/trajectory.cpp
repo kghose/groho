@@ -58,8 +58,6 @@ TrajectorySegment::render()
   draw_count = 3 * num_points;
   // make draw_start, draw_count settable based on where in the sim we want to be
 
-  DLOG_S(INFO) << "Rendering!";
-
   glBindVertexArray( vao );
   glDrawArrays( draw_type, draw_start, draw_count ); 
   glBindVertexArray( 0 );
@@ -84,7 +82,6 @@ void
 Trajectory::render()
 {
   for( auto& segment : segments ) segment.render();
-  DLOG_S(INFO) << "Rendering!";
 }
 
 
