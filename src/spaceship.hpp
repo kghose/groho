@@ -8,72 +8,67 @@
 #include <string>
 #include <vector>
 #include "vector.hpp"
-#include "spaceshipstate.hpp"
+#include "simulationobject.hpp"
 
 namespace sim
 {
 
-class SpaceShip
+class SpaceShip : public SimulationObject
 {
+  enum class FlightState { Landed, Crashed, Flying };
+  
 public:
+  // Spaceship characteristics
+  const double  max_fuel;
+  const double  max_acceleration;
+  const double  fuel_consumption_rate;
 
-  std::string             name;
+  // Spaceship specific state 
+  Vector        attitude;
+  double        fuel;
+  double        engine_level;
+  Vector        accel;  // We accumulate total acceleration here (engine + gravity)
+                        // and apply it when we update the position
 
-  double              max_fuel,  
-              max_acceleration,
-         fuel_consumption_rate;
+  FlightState   flight_state;
+  LatLon        surface_ll;   // Only valid if ship is landed or crashed               
 
-  Vector                 accel;    // net acceleration ( engine + gravity )
-  SpaceShipState         state;
+  bool          fuel_event = false;
 
   SpaceShip(
       std::string  name,
-      double      max_f,      
-      double      max_a,
-      double        fcr,
-      SpaceShipState ss)
+      std::string  description,
+      double       max_f,      
+      double       max_a,
+      double       fcr) 
       :
-      name( name ),
       max_fuel( max_f ),
       max_acceleration( max_a ),
       fuel_consumption_rate( fcr ),
-      state( ss )
+      SimulationObject( name, description )
   {}
 
   void
-  set_attitude( const Vector& v ) { state.attitude = v; }
-  
-  const Vector& 
-  get_pos() { return state.pos; }
-  // This is needed by the simulator to compute g (accel due to gravity)
-
-  const SpaceShipState
-  get_state() { return state; }
-  // This is intended to fetch the state struct once we want to save a checkpoint
-
-  void
-  set_state( SpaceShipState& ss ) { state = ss; }
-  // Reset an existing spaceship to a pre-determined state
-
-  void
-  update_state( double dt, const Vector& g, bool& bingo_fuel )
+  update_state( double jd, double dt )
   // update position and velocity and set flag for bingo fuel if needed 
-  {    
-    state.pos += dt * state.vel;
-    state.vel += dt * accel;
-
-    if( state.fuel > 0 )
-    {
-      state.fuel -= state.engine_level * fuel_consumption_rate;
-      if( state.fuel <= 0 ) 
-      { 
-        state.engine_level = 0;
-        bingo_fuel = true;
+  { 
+    // at this point we've computed acceleration due to gravity
+    // and placed it in accel
+    fuel_event = false;
+    if( fuel > 0 ) {
+      accel += ( engine_level * max_acceleration ) * attitude; 
+      fuel -= engine_level * fuel_consumption_rate;
+      if( fuel <= 0 ) { 
+        engine_level = 0;
+        fuel_event = true;
       }
     }
-
-    accel = (( state.engine_level * max_acceleration ) * state.attitude) + g; 
+    pos += dt * vel;
+    vel += dt * accel;
+    accel = {0, 0, 0};
   }
 };
+
+typedef std::vector<SpaceShip>  space_ship_vec_t;
 
 } // namespace sim

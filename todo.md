@@ -1,6 +1,10 @@
 TODO
 ====
 
+- write timestamps tests
+- write displaybuffer tests
+
+
 double v float
 --------------
 We use `double` in simuluation but `float` for display. There should be a

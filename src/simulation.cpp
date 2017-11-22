@@ -101,6 +101,7 @@ void
 Simulation::step( double jd, double dt )
 {
   propagate_orrery( jd, dt );
+  compute_g();
   propagate_space_fleet( jd, dt );
   resolve_actions( jd );
 }
@@ -108,30 +109,38 @@ Simulation::step( double jd, double dt )
 void
 Simulation::propagate_orrery( double jd, double dt )
 {
-  orrery.propagate( jd );  
-  for( const auto & [ name, b ] : orrery ) 
-  { 
-    // XXXX probably need some kind of lock for this
-    // orrery_buffer[ name ].add( b->pos ); 
-  }  
+  for( auto& b : orrery_bodies ) 
+    b.update_state( jd, dt );
+}
+
+void
+Simulation::compute_g()
+{
+  for( auto& b : orrery_bodies ) {
+    for( auto& s : space_ships ) {
+      Vector R = b.pos - s.pos;
+      // Good time to check for collisions too! TODO
+      s.accel += (b.GM / R.norm_sq()) * R / R.norm();
+    }
+  }
 }
 
 void 
 Simulation::propagate_space_fleet( double jd, double dt )
 {
-  for( auto& [k, v] : space_fleet )
+  for( auto& s : space_ships )
   {
-    bool bingo_fuel = false;
-    v.update_state( dt, orrery.compute_g( v.get_pos() ), bingo_fuel);
-    if( bingo_fuel )
-    {
-      // checkpoints.push_back( checkpointp_t( new Event( 
-      //   jd,
-      //   EventType::BingoFuel,
-      //   v.name,
-      //   ""
-      // )));
-    }
+    //bool bingo_fuel = false;
+    s.update_state( jd, dt);
+    // if( bingo_fuel )
+    // {
+    //   // checkpoints.push_back( checkpointp_t( new Event( 
+    //   //   jd,
+    //   //   EventType::BingoFuel,
+    //   //   v.name,
+    //   //   ""
+    //   // )));
+    // }
   }
 }
 
@@ -148,7 +157,7 @@ Simulation::load( Scenario& new_scenario )
   // This changes the simulation contents, so we need to lock/unlock
 
   // XXX Just for testing
-  orrery = load_simple_solar_system( "" );  
+  orrery_bodies = load_debugging_orrery();
 
   copy_mutex.unlock();
 }

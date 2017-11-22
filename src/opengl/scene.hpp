@@ -4,7 +4,7 @@
 */
 #pragma once
 
-#include <unordered_map>
+#include <vector>
 
 #include "opengl.hpp"
 #include "camera.hpp"
@@ -28,12 +28,11 @@ public:
 private:
   ShaderProgram shader_program;
 
-  std::unordered_map<std::string, Trajectory>    simulation_objects;
-  int  sim_version_no = -1;
+  std::vector<Trajectory>    orrery_bodies;
+  std::vector<Trajectory>    space_ships;
 
-  std::unordered_map<std::string, Trajectory>    ships;
-  std::unordered_map<std::string, Trajectory>  planets;
+  int  sim_version_no = -1;
 };
 
-} // namespace opengl
+} // namespace sgl
 

@@ -67,9 +67,9 @@ Display
 -------
 Initially the display shows the whole simulation (advancing as the simulation
 computation progresses). At any point we can move backwards/forwards in 
-simulation time. Orrery objects paths are shown to one complete orbit while 
-spacecraft paths are shown from start to finish. 
-
+simulation time. Orrery objects paths are shown to one complete orbit round the
+sun while spacecraft paths are shown from start to finish. This means that 
+planetary paths look "normal" (like circles) but lunar paths resemble epicycles.
 
 Scenario file
 =============

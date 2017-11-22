@@ -7,3 +7,6 @@ xcode_build/
 .settings
 .vscode
 sandbox
+release_build
+debug_build
+.ipynb_checkpoints

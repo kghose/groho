@@ -127,6 +127,9 @@ private:
 class SimulationBuffer
 {
 public:
+  float tolerance_sq = 0;
+
+public:
   SimulationBuffer()
   {
     head_segment = new SBSNode;
@@ -144,7 +147,7 @@ public:
     }
   }
   
-  void add( float jd, Vector& v, float tolerance_sq=1.0 )
+  void add( float jd, Vector& v )
   {
     assert( !last_segment->ready );
     if( scratch_buffer_index > 1 )

@@ -42,8 +42,8 @@ Scene::render()
 {
   glUseProgram( shader_program.id );
   shader_program.set_camera( camera.matrix() );
-  for( auto& [ name, trajectory ] : planets ) trajectory.render();
-  for( auto& [ name, trajectory ] : ships ) trajectory.render();
+  for( auto& trajectory : orrery_bodies ) trajectory.render();
+  for( auto& trajectory : space_ships ) trajectory.render();
   glUseProgram( 0 );
 }
 
@@ -51,20 +51,29 @@ void
 Scene::mirror_simulation( const sim::Simulation& simulation )
 {
   simulation.lock_before_mirror();
+
+  const sim::orrery_body_vec_t& ob = simulation.get_orrery_bodies();
+  const sim::space_ship_vec_t& ss = simulation.get_space_ships();
+
   if( sim_version_no != simulation.get_sim_version() )
   {
-    simulation_objects.clear();
-    for( const auto& [ name, body ] : simulation.get_simulation_objects() )
-    {
-      simulation_objects.insert( { name, Trajectory( &shader_program ) } );
-    }
+    orrery_bodies.clear();
+    for( int i = 0; i < ob.size(); i++ )
+      orrery_bodies.push_back( Trajectory( &shader_program ) );
+
+    space_ships.clear();
+    for( int i = 0; i < ss.size(); i++ )
+      space_ships.push_back( Trajectory( &shader_program ) );
+
     sim_version_no = simulation.get_sim_version();
   }
 
-  for( const auto& [ name, body ] : simulation.get_simulation_objects() )
-  {
-    simulation_objects[ name ].copy_simulation_buffer( body->simulation_buffer );
-  }
+  for( int i = 0; i < ob.size(); i++ )
+    orrery_bodies[ i ].copy_simulation_buffer( ob[ i ].simulation_buffer );
+
+  for( int i = 0; i < ss.size(); i++ )
+    space_ships[ i ].copy_simulation_buffer( ss[ i ].simulation_buffer );
+
   simulation.unlock_after_mirror();
 }
 

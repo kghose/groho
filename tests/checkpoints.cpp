@@ -1,3 +1,5 @@
+// DEPRECATED IN FAVOR OF TIMESTAMPS.HPP
+/*
 #include "catch.hpp"
 
 #include "event.hpp"
@@ -126,3 +128,4 @@ SCENARIO( "We can discard checkpoints after a given time", "[checkpoints-discard
     }
   }
 }
+*/

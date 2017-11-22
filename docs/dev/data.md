@@ -36,6 +36,17 @@ As we can see from a [quick experiment](adaptive-display-points.ipynb) the savin
 can be tremendous if our simulation is finegrained. In the example shown with
 just 1% of the original points we get a very smooth display.
 
+What are we saving data to?
+---------------------------
+Do we want to be general and save the simulation data to a serialization format
+that can then be used by the built in display as well as any external program
+that we choose? Or, do we say YAGNI and stick to an internal format specific for
+OpenGL? 
+
+In my head, at some point, I would like to print out simulations as vector graphics
+but that seems to be pretty involved. In all likelihood that should be a separate
+feature that reruns the simulation and re-renders it to a SVG backend.
+
 
 Checkpoints
 -----------

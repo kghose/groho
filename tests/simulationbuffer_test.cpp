@@ -8,6 +8,7 @@ using namespace sim;
 TEST_CASE( "Simulation buffer", "[simulationbuffer]" )
 {
   SimulationBuffer sb;
+  sb.tolerance_sq = 0;
   REQUIRE( sb.size() == 1 );
   
   int sgn = -1;
@@ -15,15 +16,15 @@ TEST_CASE( "Simulation buffer", "[simulationbuffer]" )
   {
     Vector v( i, sgn * i, 0 );
     sgn *= -1;
-    sb.add( i, v, 0.0 );
+    sb.add( i, v );
     // we want to make sure the interpolation downsampler triggers at each time
-    // step, so we zig-zag the points and set a very low threshold
+    // step, so we zig-zag the points and set tolerance to 0
   }
   REQUIRE( sb.size() == 1 );
 
   SECTION( "Adding past the size of a buffer should increase the number of segments" ) {
     Vector v(0, +200, -200);
-    sb.add( 1000, v, 0.0 );
+    sb.add( 1000, v );
     REQUIRE( sb.size() == 2 );
 
     SECTION( "When we ask to iterate over the segments we should only get "
@@ -41,7 +42,7 @@ TEST_CASE( "Simulation buffer", "[simulationbuffer]" )
     {
       Vector v( i, sgn * i, 0 );
       sgn *= -1;
-      sb.add( i, v, 0.0 );
+      sb.add( i, v );
     }
     REQUIRE( sb.size() == 2 );
     

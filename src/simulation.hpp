@@ -11,10 +11,7 @@
 #include <condition_variable>
 
 #include "scenario.hpp"
-#include "simulationobject.hpp"
-
-#include "checkpoint.hpp"
-#include "orrery.hpp"
+#include "orrerybody.hpp"
 #include "spaceship.hpp"
 
 
@@ -36,8 +33,10 @@ public:
 
   void lock_before_mirror()      const { copy_mutex.lock(); }
   int  get_sim_version()         const { return sim_version_no; }
-  const simobj_map_t& 
-       get_simulation_objects()  const { return simulation_objects; }
+  const orrery_body_vec_t& 
+       get_orrery_bodies()       const { return orrery_bodies; }
+  const space_ship_vec_t& 
+       get_space_ships()         const { return space_ships; }
   void unlock_after_mirror()     const { copy_mutex.unlock(); }
 
 private:
@@ -70,6 +69,9 @@ private:
   void propagate_orrery( double jd, double dt );
   // Update spaceship positions, collect checkpoints as needed
 
+  void  compute_g();
+  // Compute gravitational acceleration on each space ship
+
   void propagate_space_fleet( double jd, double dt );
   // Update spaceship positions, collect checkpoints as needed
 
@@ -79,12 +81,13 @@ private:
 
 private:
   std::string scenario_fname;  
-  Checkpoints checkpoints;
+  // Checkpoints checkpoints;
 
-  simobj_map_t  simulation_objects;
+  orrery_body_vec_t  orrery_bodies;
+  space_ship_vec_t   space_ships;
 
-  Orrery orrery;
-  std::unordered_map<std::string, SpaceShip> space_fleet;
+  // Orrery orrery;
+  // std::unordered_map<std::string, SpaceShip> space_fleet;
   
   std::thread compute_thread;  // The simulation loop runs in yet another thread
 
