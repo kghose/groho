@@ -182,7 +182,9 @@ Display::handle(int event) {
 void
 Display::mirror_simulation( void* ptr )
 {
-  ( (Display*) ptr )->scene.mirror_simulation( ( (Display*) ptr )->simulation );
+  if( ( (Display*) ptr )->scene.mirror_simulation( ( (Display*) ptr )->simulation ) ) {
+    ( (Display*) ptr )->redraw();
+  }
   Fl::repeat_timeout( config::sim_poll_interval, 
                       Display::mirror_simulation, ptr );
 }

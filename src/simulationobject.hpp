@@ -42,6 +42,11 @@ public:
     simulation_buffer.add( jd, pos );
   }
 
+  void mark_buffer_as_ready()
+  {
+    simulation_buffer.finalize();
+  }
+
 protected:
   virtual void update_state( double jd, double dt ) = 0;
 };

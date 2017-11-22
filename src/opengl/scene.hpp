@@ -23,7 +23,8 @@ public:
   void init();
   void render();
 
-  void mirror_simulation( const sim::Simulation& simulation );
+  bool mirror_simulation( const sim::Simulation& simulation );
+  // returns true if data has changed
 
 private:
   ShaderProgram shader_program;

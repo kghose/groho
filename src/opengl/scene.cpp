@@ -1,8 +1,11 @@
 #include "scene.hpp"
 
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
+
 namespace sgl
 {
-
 
 const char vertex_shader[] = R"(
 #version 150
@@ -45,11 +48,15 @@ Scene::render()
   for( auto& trajectory : orrery_bodies ) trajectory.render();
   for( auto& trajectory : space_ships ) trajectory.render();
   glUseProgram( 0 );
+
+  DLOG_S(INFO) << "Renderng!";
 }
 
-void 
+bool
 Scene::mirror_simulation( const sim::Simulation& simulation )
 {
+  bool redraw_needed = false; 
+
   simulation.lock_before_mirror();
 
   const sim::orrery_body_vec_t& ob = simulation.get_orrery_bodies();
@@ -57,6 +64,7 @@ Scene::mirror_simulation( const sim::Simulation& simulation )
 
   if( sim_version_no != simulation.get_sim_version() )
   {
+    redraw_needed = true;
     orrery_bodies.clear();
     for( int i = 0; i < ob.size(); i++ )
       orrery_bodies.push_back( Trajectory( &shader_program ) );
@@ -69,12 +77,14 @@ Scene::mirror_simulation( const sim::Simulation& simulation )
   }
 
   for( int i = 0; i < ob.size(); i++ )
-    orrery_bodies[ i ].copy_simulation_buffer( ob[ i ].simulation_buffer );
+    redraw_needed |= orrery_bodies[ i ].copy_simulation_buffer( ob[ i ].simulation_buffer );
 
   for( int i = 0; i < ss.size(); i++ )
-    space_ships[ i ].copy_simulation_buffer( ss[ i ].simulation_buffer );
+    redraw_needed |= space_ships[ i ].copy_simulation_buffer( ss[ i ].simulation_buffer );
 
   simulation.unlock_after_mirror();
+
+  return redraw_needed;
 }
 
 }

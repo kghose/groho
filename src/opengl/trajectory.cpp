@@ -1,6 +1,10 @@
 #include "shader.hpp"
 #include "trajectory.hpp"
 
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
+
 namespace sgl
 {
 
@@ -54,27 +58,33 @@ TrajectorySegment::render()
   draw_count = 3 * num_points;
   // make draw_start, draw_count settable based on where in the sim we want to be
 
+  DLOG_S(INFO) << "Rendering!";
+
   glBindVertexArray( vao );
   glDrawArrays( draw_type, draw_start, draw_count ); 
   glBindVertexArray( 0 );
 }
 
 
-void 
+bool
 Trajectory::copy_simulation_buffer( const sim::SimulationBuffer& sb )
 {
+  bool copy_happened = false;
   int i = segments.size();
   for( auto& buf_segment : sb )
   {
     if( i > 0 ) { i--; continue; } // Already copied these
     segments.push_back( TrajectorySegment( shader_program, buf_segment ) );
+    copy_happened = true;
   }
+  return copy_happened;
 }
 
 void 
 Trajectory::render()
 {
   for( auto& segment : segments ) segment.render();
+  DLOG_S(INFO) << "Rendering!";
 }
 
 

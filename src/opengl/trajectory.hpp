@@ -51,9 +51,9 @@ class Trajectory
 public:
   Trajectory() {} // needed for unordered_map
   Trajectory( ShaderProgram* shdr ) : shader_program( shdr ) {};
-  void copy_simulation_buffer( const sim::SimulationBuffer& sb );
+  bool copy_simulation_buffer( const sim::SimulationBuffer& sb );
+  // returns true if a copy occured
   void render();
-
 
 private:
   ShaderProgram*   shader_program;

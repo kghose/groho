@@ -92,6 +92,7 @@ Simulation::compute( Scenario scenario )
     jd += scenario.step_jd;
     //std::cout << jd << std::endl;
   }
+  mark_sim_buffers_as_ready();
 
   DLOG_S(INFO) << "Stopping simulation: " << jd;    
 }
@@ -148,6 +149,14 @@ Simulation::resolve_actions( double jd )
 {
 
 }
+
+void 
+Simulation::mark_sim_buffers_as_ready()
+{
+  for( auto& b : orrery_bodies ) { b.mark_buffer_as_ready(); }
+  for( auto& s : space_ships ) { s.mark_buffer_as_ready(); }
+}
+
 
 void
 Simulation::load( Scenario& new_scenario )

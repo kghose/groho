@@ -32,14 +32,14 @@ public:
   void set_aspect_ratio( float ar );
 
 private:
-  glm::vec3    pos;
+  glm::vec3    pos = {0, 0, 40};
 
-  float        phi,
-             theta,
-               fov,
-        near_plane,
-         far_plane,
-      aspect_ratio;
+  float        phi = 0,
+             theta = 0,
+               fov = 55,
+        near_plane = 0.1,
+         far_plane = 100,
+      aspect_ratio = 1.0;
 
   glm::mat4 rotation_mat() const;      // 
   void wrap_angle( float x );

@@ -79,6 +79,10 @@ private:
   // If there are any actions or interactions, resolve them.
   // Add checkpoints and change spacehsip states as needed
 
+  void mark_sim_buffers_as_ready();
+  // When the last step of the sim is done, we need to go in and set the
+  // ready flags of the last incompletely filled SimulationBuffers
+
 private:
   std::string scenario_fname;  
   // Checkpoints checkpoints;
@@ -103,7 +107,7 @@ private:
   std::condition_variable   cv;
 
   // Stuff needed for the mirroring
-  int     sim_version_no = 0;
+  std::atomic<int>   sim_version_no = 0;
   // A counter that we increment each time we re-run. Any one who is mirroring
   // the simulation can check this to see if they need to completely re-copy
   // everything or just do a simple update
