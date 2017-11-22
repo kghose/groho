@@ -23,7 +23,7 @@
 #include <array>
 #include <cassert>
 
-//#include "timestamps.hpp"
+#include "units.hpp"
 #include "event.hpp"
 #include "vector.hpp"
 
@@ -50,9 +50,9 @@ public:
   // return true if we need a new buffer segment because this is filled up
   {
     time_stamps[ buffer_index         ] = jd;
-    buffer_data[ 3 * buffer_index     ] = v.x;
-    buffer_data[ 3 * buffer_index + 1 ] = v.y;
-    buffer_data[ 3 * buffer_index + 2 ] = v.z;
+    buffer_data[ 3 * buffer_index     ] = v.x / scale;
+    buffer_data[ 3 * buffer_index + 1 ] = v.y / scale;
+    buffer_data[ 3 * buffer_index + 2 ] = v.z / scale;
     buffer_index++;
     //std::cerr << buffer_index << ", ";
     return buffer_index == config::buffer_size;
@@ -79,6 +79,8 @@ private:
   size_t buffer_index = 0;
   // next available location in the index for insertion
   std::vector<Event>  events;
+
+  double scale = 1.0_AU;
 };
 
 
