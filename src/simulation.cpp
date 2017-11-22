@@ -154,6 +154,7 @@ Simulation::load( Scenario& new_scenario )
 {
   copy_mutex.lock();
   // This changes the simulation contents, so we need to lock/unlock
+  sim_version_no++;
 
   // XXX Just for testing
   orrery_bodies = load_debugging_orrery();

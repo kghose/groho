@@ -103,7 +103,7 @@ private:
   std::condition_variable   cv;
 
   // Stuff needed for the mirroring
-  int     sim_version_no;
+  int     sim_version_no = 0;
   // A counter that we increment each time we re-run. Any one who is mirroring
   // the simulation can check this to see if they need to completely re-copy
   // everything or just do a simple update

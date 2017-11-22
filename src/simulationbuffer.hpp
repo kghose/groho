@@ -19,6 +19,7 @@
 */
 #pragma once
 
+#include <memory>
 #include <vector>
 #include <array>
 #include <cassert>
@@ -79,18 +80,20 @@ private:
 };
 
 
+struct SBSNode;
+typedef std::shared_ptr<SBSNode> SBSNode_ptr_t;
+
+
 struct SBSNode
 {
   SimulationBufferSegment buffer;
-  bool ready;  // this segment is ready to be read from
-  SBSNode* next;
+  bool ready = false;  // this segment is ready to be read from
+  SBSNode_ptr_t next;
 
-  SBSNode() { ready = false; next = nullptr; }
-
-  SBSNode* append_new_segment()
+  SBSNode_ptr_t append_new_segment()
   {
     ready = true;
-    SBSNode* new_segment = new SBSNode;
+    SBSNode_ptr_t new_segment = SBSNode_ptr_t( new SBSNode );
     next = new_segment;
     return new_segment;
   }
@@ -99,7 +102,7 @@ struct SBSNode
 class SBSNodeIter
 {
 public:
-  SBSNodeIter( SBSNode* const node ) : node( node ) {}
+  SBSNodeIter( SBSNode_ptr_t const node ) : node( node ) {}
 
   bool operator!=( const SBSNodeIter& other )
   // We have our own way of flagging if the iteration should stop here
@@ -120,7 +123,7 @@ public:
   // Note that we don't give access to the linked list, just the buffer
 
 private:
-  SBSNode*            node;
+  SBSNode_ptr_t  node;
 };
 
 
@@ -132,20 +135,20 @@ public:
 public:
   SimulationBuffer()
   {
-    head_segment = new SBSNode;
+    head_segment = SBSNode_ptr_t( new SBSNode);
     last_segment = head_segment;
     node_count = 1;
   }
 
-  ~SimulationBuffer()
-  {
-    while( head_segment != nullptr )
-    {
-      SBSNode* next = head_segment->next;
-      delete head_segment;
-      head_segment = next;
-    }
-  }
+  // ~SimulationBuffer()
+  // {
+  //   while( head_segment != nullptr )
+  //   {
+  //     SBSNode* next = head_segment->next;
+  //     delete head_segment;
+  //     head_segment = next;
+  //   }
+  // }
   
   void add( float jd, Vector& v )
   {
@@ -203,8 +206,8 @@ private:
   std::array<Vector, config::scratch_buffer_size> scratch_buffer;
   size_t scratch_buffer_index = 0;
 
-  SBSNode*   head_segment;
-  SBSNode*   last_segment;
+  SBSNode_ptr_t   head_segment;
+  SBSNode_ptr_t   last_segment;
 
   size_t     node_count;
 };
