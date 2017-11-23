@@ -26,8 +26,8 @@ orrery_body_vec_t  load_debugging_orrery()
       1.33e20,          // GM
       1,                // radius
       0.0, 0.0, 0.5,    // ra, dec, rotation
-      0.0,              // orbit radius
-      0.0               // orbital rate
+      0.1,              // orbit radius
+      1.0               // orbital rate
     },
     {
       "Mercury",
