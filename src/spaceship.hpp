@@ -13,6 +13,8 @@
 namespace sim
 {
 
+const double sec_per_jd = 86400;
+
 class SpaceShip : public SimulationObject
 {
   enum class FlightState { Landed, Crashed, Flying };
@@ -24,10 +26,10 @@ public:
   const double  fuel_consumption_rate;
 
   // Spaceship specific state 
-  Vector        attitude;
-  double        fuel;
-  double        engine_level;
-  Vector        accel;  // We accumulate total acceleration here (engine + gravity)
+  Vector        attitude = { 0, 0, 0};
+  double        fuel = 1.0;
+  double        engine_level = 0.0;
+  Vector        accel = { 0, 0, 0 };  // We accumulate total acceleration here (engine + gravity)
                         // and apply it when we update the position
 
   FlightState   flight_state;
@@ -65,12 +67,14 @@ private:
         fuel_event = true;
       }
     }
-    pos += dt * vel;
-    vel += dt * accel;
+    pos += dt * sec_per_jd * vel;
+    vel += dt * sec_per_jd * accel;
     accel = {0, 0, 0};
   }
 };
 
 typedef std::vector<SpaceShip>  space_ship_vec_t;
+
+space_ship_vec_t load_debugging_space_fleet();
 
 } // namespace sim
