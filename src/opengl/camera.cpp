@@ -41,25 +41,10 @@ Camera::matrix() const
   return projection * view * model;
 }
 
-glm::vec3
-Camera::direction() const
-{
-  return glm::vec3( glm::inverse( rotation_mat() ) * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f ) );
-}
-
-glm::mat4
-Camera::rotation_mat() const
-{
-  glm::mat4 rot(1.0f);
-  rot = glm::rotate( rot, glm::radians(  phi  ), glm::vec3(  0.0f, 0.0f, 1.0f ) );
-  rot = glm::rotate( rot, glm::radians( theta ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
-  return rot;
-}
-
 void 
-Camera::set_position( glm::vec3 _pos ) 
+Camera::set_target( glm::vec3 _target ) 
 { 
-  target = _pos; 
+  target = _target; 
 }
 
 void 
@@ -69,9 +54,8 @@ Camera::dolly_by( float x )
   if( dist < 0 ) dist = 0;
 }
 
-// TODO: rename to orbit_to
 void 
-Camera::pan_to( float new_phi, float new_theta )
+Camera::orbit_to( float new_phi, float new_theta )
 {
   phi = std::fmodf( new_phi, 360.0f );
   if( phi < 0) phi += 360.0f;
@@ -105,13 +89,6 @@ void
 Camera::set_aspect_ratio( float ar ) 
 { 
   aspect_ratio = ar; 
-}
-
-void 
-Camera::wrap_angle( float x )
-{
-  x = std::fmodf( x, 360.0f );
-  x = x < 0 ? -x : x;  
 }
 
 } // namespace sgl

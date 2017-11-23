@@ -16,14 +16,12 @@ public:
   Camera();
 
   glm::mat4 matrix() const;
-  glm::vec3 direction() const;
 
-  void set_position( glm::vec3 _pos ); // camera sits here
-  void dolly_by( float x );            // move in/out along the camera direction
+  void set_target( glm::vec3 _pos );  // new camera target
+  void dolly_by( float x );           // move towards/away from target
   
   double get_phi() { return phi; }     // horizontal
   double get_theta() { return theta; } // vertical
-  void pan_to( float new_phi, float new_theta );
   void orbit_to( float new_phi, float new_theta );
 
   void set_fov( float _fov );
@@ -41,9 +39,6 @@ private:
   float        near_plane;
   float        far_plane;
   float        aspect_ratio;
-
-  glm::mat4 rotation_mat() const;      // 
-  void wrap_angle( float x );
 };
 
 
