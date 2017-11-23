@@ -23,7 +23,7 @@ public:
 
   // This is the debugging version of the OrreryBody and has very simple dynamics
   const double  orbit_radius;  // m
-  const double  orbit_rate;    // radians / day
+  const double  sidereal_period;    // days / orbit
   
   OrreryBody(
       std::string  name,
@@ -34,7 +34,7 @@ public:
       double       dec,
       double       rotational_rate, 
       double       orbit_radius,    // for the debugging version
-      double       orbit_rate
+      double       sidereal_period
       ) 
       :
       GM( GM ),
@@ -43,7 +43,7 @@ public:
       dec( dec ),
       rotational_rate( rotational_rate ),
       orbit_radius( orbit_radius ),
-      orbit_rate( orbit_rate ),
+      sidereal_period( sidereal_period ),
       SimulationObject( name, description )
   {}
 
@@ -70,8 +70,8 @@ private:
   void 
   update_state( double jd, double dt )
   {
-    pos.x = orbit_radius * std::cos( 2.0 * M_PI * orbit_rate * jd );
-    pos.y = orbit_radius * std::sin( 2.0 * M_PI * orbit_rate * jd );
+    pos.x = orbit_radius * std::cos( 2.0 * M_PI * jd / sidereal_period );
+    pos.y = orbit_radius * std::sin( 2.0 * M_PI * jd / sidereal_period );
     pos.z = 0;
   }
 };
