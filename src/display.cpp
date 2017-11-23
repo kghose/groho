@@ -55,10 +55,6 @@ Display::setup_opengl()
   glClearColor( .1f, .1f, .1f, 1 );
   //glEnable( GL_DEPTH_TEST );
   scene.init();
-  // scene.add_planet( "Companion Cube" );
-  // scene.planet( "Companion Cube" ).vertices = companion_cube; // for testing
-  // scene.planet( "Companion Cube" ).draw_count = companion_cube.size() / 3;
-  // scene.planet( "Companion Cube" ).update_trajectory();
 }
 
 void 
@@ -119,7 +115,7 @@ struct MouseDrag
     double  theta = initial_theta + ( Fl::event_y() - initial_y ) / 5.0,
             phi   = initial_phi   + ( Fl::event_x() - initial_x ) / 5.0;
 
-    camera.pan_to( phi, theta );
+    camera.orbit_to( phi, theta );
   }
 
   void end_drag( ) { dragging = false; }
@@ -145,21 +141,11 @@ Display::handle(int event) {
 
     case  FL_MOUSEWHEEL:
       {
-        bool fov_scroll = FL_SHIFT & Fl::event_state(),
-             pos_scroll = FL_COMMAND & Fl::event_state(),
-             sim_scroll = !fov_scroll & !pos_scroll;
-
-        if( sim_scroll ) {
-          // scroll in time
-        }
-
-        if( pos_scroll ) {
+        if( FL_COMMAND & Fl::event_state() ) {
           scene.camera.dolly_by( Fl::event_dy() );
-        }
-        
-        if( fov_scroll ) {
-          scene.camera.change_fov( Fl::event_dx() );
-        }
+        } else {
+          // scroll in time
+        }        
       }
       redraw();          
       return 1;
@@ -175,6 +161,14 @@ Display::handle(int event) {
     case FL_KEYBOARD:
       //... keypress, key is in Fl::event_key(), ascii in Fl::event_text()
       //... Return 1 if you understand/use the keyboard event, 0 otherwise...
+      // Might need a dispatcher here ...
+      switch( Fl::event_text()[0] ) {
+        case '[': scene.camera.change_fov( -5 );
+                  break;
+        case ']': scene.camera.change_fov( +5 );
+                  break;
+      };
+      redraw();
       return 1;
     case FL_SHORTCUT:
       //... shortcut, key is in Fl::event_key(), ascii in Fl::event_text()
