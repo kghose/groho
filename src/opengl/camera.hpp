@@ -24,6 +24,7 @@ public:
   double get_phi() { return phi; }     // horizontal
   double get_theta() { return theta; } // vertical
   void pan_to( float new_phi, float new_theta );
+  void orbit_to( float new_phi, float new_theta );
 
   void set_fov( float _fov );
   void change_fov( float dfov );
@@ -32,14 +33,14 @@ public:
   void set_aspect_ratio( float ar );
 
 private:
-  glm::vec3    pos = {0, 0, 40};
-
-  float        phi = 0,
-             theta = 0,
-               fov = 55,
-        near_plane = 0.1,
-         far_plane = 100,
-      aspect_ratio = 1.0;
+  glm::vec3    target;
+  float        dist;
+  float        phi;
+  float        theta;
+  float        fov;
+  float        near_plane;
+  float        far_plane;
+  float        aspect_ratio;
 
   glm::mat4 rotation_mat() const;      // 
   void wrap_angle( float x );

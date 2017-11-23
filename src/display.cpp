@@ -2,6 +2,7 @@
 #include <cmath>
 
 #include <Fl/Fl.h>
+#include <Fl/gl.h>
 
 #include "display.hpp"
 
@@ -82,6 +83,12 @@ Display::draw()
   glClear( GL_COLOR_BUFFER_BIT );
 
   scene.render();
+
+  gl_font(1, 12);
+  glColor3f(1.0, 1.0, 1.0);
+  //gl_color( FL_DARK_RED );
+  //gl_font( FL_COURIER, 50 );
+  gl_draw( "Hi!", 0, 0);
 }
 
 void
@@ -109,8 +116,8 @@ struct MouseDrag
 
   void drag( int x, int y, sgl::Camera& camera )
   {
-    double  theta = initial_theta - ( Fl::event_y() - initial_y ) / 10.0,
-            phi   = initial_phi   + ( Fl::event_x() - initial_x ) / 10.0;
+    double  theta = initial_theta + ( Fl::event_y() - initial_y ) / 5.0,
+            phi   = initial_phi   + ( Fl::event_x() - initial_x ) / 5.0;
 
     camera.pan_to( phi, theta );
   }

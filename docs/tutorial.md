@@ -45,23 +45,23 @@ Groho's main window gives you a view of the simulation which you can navigate wi
 
 Controls
 --------
-Mouse actions govern most of the important navigation options in the display
+Mouse actions govern most of the important navigation options in the display.
+We control a chase camera that we can orbit around a target and zoom in and out.
+The default view has the solar system center as target, and sits perpendicular
+to the ecliptic.
 
-| Action           |       Effect                         |
+ 
+| Action/Key       |       Effect                         |
 |------------------|--------------------------------------|
-| Mouse drag       | Look                                 |
+| Mouse drag       | Orbit camera                         |
 | Mouse scroll     | Move forward/backward in sim time    |
 | CMD + scroll     | Move in and out of simulation        |
-| Shift + scroll   | Change camera FOV                    | 
+| [ and ]          | Change camera FOV                    | 
+| Cursor keys      | Switch target to adjacent object     |
 
-When the camera gets close to an object it's motion slows down. There are also 
-hotkeys that move the camera to some standard positions. The default hot keys are
 
-| Key       |        View                         |
-|-----------|-------------------------------------|
-| e         | Ecliptic at 40 AU                   |
-| p         | Polar at 40 AU                      |
-| 1 ... 9   | Go to the vicinity of Mercury, Venus, Earth, ... Pluto and look towards the sun |
+* At the start I had the camera act like a first-person-shooter camera. But then
+I found the current way better for what I wanted to get out of the visualization
 
 Display
 -------

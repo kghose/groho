@@ -8,12 +8,13 @@ namespace sgl
 {
 
 Camera::Camera() :
-    pos( 0, 0, 120.0 ),
+    target( 0, 0, 0 ),
+    dist( 120.0 ),
     phi( 0 ),
-    theta( 0 ),
+    theta( 45 ),
     fov( 40 ),
-    near_plane( 10 ),
-    far_plane( 1000.0 ),
+    near_plane( 5 ),
+    far_plane( 500.0 ),
     aspect_ratio( 3.0 / 4.0 )
 {
 }
@@ -21,13 +22,23 @@ Camera::Camera() :
 glm::mat4
 Camera::matrix() const
 // https://stackoverflow.com/a/11404171/2512851
+// http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 {
   glm::mat4 projection = 
     glm::perspective( glm::radians( fov ), aspect_ratio, near_plane, far_plane );
   
-  glm::mat4 view = glm::translate( rotation_mat(), -pos );
-  
-  return projection * view;
+  //glm::mat4 view = glm::translate( rotation_mat(), -pos );
+  glm::mat4 view = glm::lookAt( 
+    glm::vec3( dist, 0, 0),
+    glm::vec3( 0, 0, 0),
+    glm::vec3( 0, 0, 1) 
+  );
+
+  glm::mat4 model(1.0f);
+  model = glm::translate( model, -target );
+  model = glm::rotate( model, glm::radians( theta ), glm::vec3(  0.0f, 1.0f, 0.0f ) );
+  model = glm::rotate( model, glm::radians(  phi  ), glm::vec3(  0.0f, 0.0f, 1.0f ) );
+  return projection * view * model;
 }
 
 glm::vec3
@@ -40,30 +51,34 @@ glm::mat4
 Camera::rotation_mat() const
 {
   glm::mat4 rot(1.0f);
-  rot = glm::rotate( rot, glm::radians( theta ), glm::vec3( -1.0f, 0.0f, 0.0f ) );
-  rot = glm::rotate( rot, glm::radians(  phi  ), glm::vec3(  0.0f, 1.0f, 0.0f ) );
+  rot = glm::rotate( rot, glm::radians(  phi  ), glm::vec3(  0.0f, 0.0f, 1.0f ) );
+  rot = glm::rotate( rot, glm::radians( theta ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
   return rot;
 }
 
 void 
 Camera::set_position( glm::vec3 _pos ) 
 { 
-  pos = _pos; 
+  target = _pos; 
 }
 
 void 
 Camera::dolly_by( float x )
 {
-  pos += x * direction();
+  dist += x;
+  if( dist < 0 ) dist = 0;
 }
 
+// TODO: rename to orbit_to
 void 
 Camera::pan_to( float new_phi, float new_theta )
 {
-  phi = new_phi;
+  phi = std::fmodf( new_phi, 360.0f );
+  if( phi < 0) phi += 360.0f;
+  
   theta = new_theta;
-  wrap_angle( phi );
-  wrap_angle( theta );
+  if( theta > 90) theta = 90;
+  if( theta < -90) theta = -90;
 }
 
 void 
