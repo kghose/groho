@@ -74,6 +74,27 @@ simulation time. Orrery objects paths are shown to one complete orbit round the
 sun while spacecraft paths are shown from start to finish. This means that 
 planetary paths look "normal" (like circles) but lunar paths resemble epicycles.
 
+Co-ordinate system re-referencing
+---------------------------------
+Internally the simulation is referenced to a heliocentric, cartesian reference 
+frame. When we display data we translate all trajectories relative to the
+camera target. 
+
+Say we are lauching a ship into Earth orbit. The helio-centric 
+trajectory of the ship is initially parallel to that of the Earth before 
+breaking into epicycles that form a spiral around the Earth's path (much like
+the Moon's helio-centric trajectory). This can be a little hard to interpret.
+If we move the camera target to be the Earth, then all trajectories are 
+translated - at each time point - relative to the Earth. This means the Earth's
+trajectory disappears to be a point at the origin, the Moon's trajectory 
+becomes a circle round the Earth and the ship's trajectory becomes recognizable
+as a parabola morphing into an ellipse around the Earth.
+
+_Note to self: If we do adaptive downsampling and never save the original points
+this translation becomes tricky: we can use interpolation but now do we have
+to worry about cumulative errors?_
+
+
 Scenario file
 =============
 When you start groho, you pass a scenario file, like so
