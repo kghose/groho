@@ -1,9 +1,10 @@
 Tutorial (v0.0)
 ===============
 
+The tutorial will present a few scenarios and then work through them.
+
 Scenarios
 =========
-We'll start by considering a few space-flight scenarios 
 
 Earth-to-Mars transfer
 ----------------------
@@ -18,7 +19,7 @@ Intercept of Asteroid-belt-to-Mars slow boat by Earth-launched torchship
 ------------------------------------------------------------------------
 Ship A, a slow boat (ship with limited fuel and acceleration that falls most of it's
 trip) is transfering from the asteroid belt to Mars. We want to intercept the
-slow boat using Shib B, a torch ship launched from Earth. 
+slow boat using Ship B, a torch ship launched from Earth. 
 
 - First we'll develop the Ship A flight plan, de-orbiting and falling to mars transfer
 - We'll then copy over the flight plan we developed earlier and add an interaction event and tweak it until the interaction event is satisfied.
@@ -58,10 +59,12 @@ to the ecliptic.
 | CMD + scroll     | Move in and out of simulation        |
 | [ and ]          | Change camera FOV                    | 
 | Cursor keys      | Switch target to adjacent object     |
+| Home             | Go to default view                   |
 
+* _At the start I had the camera act like a first-person-shooter camera. But then
+I found the current way better for what I wanted to get out of the visualization_
 
-* At the start I had the camera act like a first-person-shooter camera. But then
-I found the current way better for what I wanted to get out of the visualization
+* The Home key on macOS is Fn + Left Cursor
 
 Display
 -------
@@ -79,7 +82,7 @@ When you start groho, you pass a scenario file, like so
 
 Here `earth-mars.txt` is a scenario file, and it tells Groho what Orrery model to use (The Orrery is the thing that simulates the solar system), what range of dates to run the simulation for and what flight plan files to include in the simulation. Flight plans are the biggest part of the simulation. Each spaceship has it's own flight plan which governs what it does in the simulation.
 
-`earth-mars.txt`, for example, starts like this:
+`earth-mars.txt`, for example, starts something like this:
 
 ```
 name: Earth to mars
@@ -97,7 +100,7 @@ flightplan: durga.txt
 
 [jdc]: http://aa.usno.navy.mil/data/docs/JulianDate.php
 
-`flightplan` is a flight plan text file. You can have as many flight plans as you want, one to a line. Ideally, the names of each spaceship should be unique. Clashing names will be renamed internally with suffixes like `II`, `III` but this may break any ship-ship interaction actions, so basically, name each ship uniquely. 
+`flightplan` is a flight plan text file. You can have as many flight plans as you want, one to a line. The names of each spaceship has to be unique. 
 
 Typically you will have the scenario file and flight plan files for a simulation in one folder with different folders for different simulations, to keep organized, while the JPL ephemeris kernels are kept in one fixed data directory. 
 
@@ -106,15 +109,3 @@ Typically you will have the scenario file and flight plan files for a simulation
 For a detailed description of the flightplan file see [here][fp].
 
 [fp]: flight-plan.md
-
-Diff mode
-=========
-
-In diff mode the display keeps track of the last N versions of the simulation
-you ran and displays them simultaneously. This allows you to see the effects
-of the changes you are making to the flight plan. 
-
-**This is especially useful when you use a version control system to version 
-your scenario files: once you load up the main scenario file, 
-you can use `git checkout` to switch to different versions of the simulation
-ond overlay them. Note that memory useage is proportional to N**
