@@ -34,8 +34,7 @@
 namespace config  // some of these may later be read from config files
 {
 
-const size_t scratch_buffer_size = 1000;
-const size_t buffer_size = 1000;
+const size_t buffer_size = 10000;
 
 }
 
@@ -110,30 +109,25 @@ public:
 public:
   SimulationBuffer()
   {
-    head_segment = SBSNode_ptr_t( new SBSNode);
-    last_segment = head_segment;
-    node_count = 1;
-    available_node_count = 0;
+    try {
+      head_segment = SBSNode_ptr_t( new SBSNode );
+      last_segment = head_segment;
+      node_count = 1;
+      available_node_count = 0;
+    } catch ( std::bad_alloc ) {
+      //DLOG_S(INFO) << "Can't allocate SBSNode";
+      exit(1);
+    }
   }
 
   void add( float jd, Vector& v )
   {
     assert( node_count != available_node_count );  // we should not have finalized it
-    if( scratch_buffer_index > 1 )
-    {
-      if( ( scratch_buffer_index == config::scratch_buffer_size ) |
-          ( deviation_from_interpolation_sq( v ) > tolerance_sq ) )
-      {
-        if( last_segment->buffer.add( jd, v ) ) {  
-          last_segment = last_segment->append_new_segment();
-          node_count++; 
-          available_node_count++;
-        }
-        scratch_buffer_index = 0;
-      }
+    if( last_segment->buffer.add( jd, v ) ) {  
+      last_segment = last_segment->append_new_segment();
+      node_count++; 
+      available_node_count++;
     }
-    scratch_buffer[ scratch_buffer_index ] = v;
-    scratch_buffer_index++;
   }
 
   size_t available_size() const { return available_node_count; }
@@ -158,28 +152,6 @@ public:
   }
 
 private:
-  float deviation_from_interpolation_sq( Vector& Z )
-  {
-    Vector X = scratch_buffer[ 0 ],
-           Y = scratch_buffer[ scratch_buffer_index / 2 ],
-           A = Y - X,
-           B = Y - Z,
-           L = Z - X;
-    
-    double a2 = dot( A, A ),
-           b2 = dot( B, B ),
-           l2 = dot( L, L ),
-           l  = std::sqrt( l2 ),
-           q  = ( a2 - b2 + l2 ) / ( 2 * l ),
-           q2 = q * q;
-
-    return a2 - q2;    
-  }
-
-private:
-  std::array<Vector, config::scratch_buffer_size> scratch_buffer;
-  size_t scratch_buffer_index = 0;
-
   SBSNode_ptr_t   head_segment;
   SBSNode_ptr_t   last_segment;
 
