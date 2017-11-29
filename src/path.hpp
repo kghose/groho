@@ -27,6 +27,7 @@
 #include "event.hpp"
 #include "vector.hpp"
 #include "fractaldownsampler"
+#include "dataview.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -36,23 +37,6 @@ namespace sim
 {
 
 typedef std::vector<Vector> vector_vec_t;
-
-
-struct DataView
-// Flattened view (suitable for OpenGL) of data trace in new frame
-{
-  float*  buf;      // typically will use OpenGL to allocate this pointer
-  float*  t_buf;
-  size_t  n_points;
-  size_t  n_points_allocated;
-
-  std::string          name;
-  std::string          reference;
-
-  virtual void allocate( size_t n_pts ) = 0;
-};
-
-typedef std::vector<DataView> dv_vec_t;
 
 
 class Path
