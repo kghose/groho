@@ -18,6 +18,8 @@ class SpaceShip
   enum class FlightState { Landed, Crashed, Flying };
 
 public:
+  // Externally visible state
+  Vector        pos      = { 0, 0, 0 };
   Vector        attitude = { 0, 0, 0 };
   double        engine_level = 0.0;
   Path          path;
@@ -46,7 +48,10 @@ public:
       max_fuel( max_f ), max_acceleration( max_a ), 
       fuel_consumption_rate( fcr ),
       pos( pos ), vel( vel )
-  {}
+  {
+    path.name = name;
+    path.reference = "Solar-System Barycenter";
+  }
 
   void 
   leap_frog_1( double jd, double dt, double dt2 )
@@ -90,7 +95,6 @@ public:
 
 private:
   // Spaceship state 
-  Vector        pos      = { 0, 0, 0 };
   Vector        vel      = { 0, 0, 0 };
   Vector        acc      = { 0, 0, 0 };
   double        fuel     = 1.0;

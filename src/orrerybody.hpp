@@ -2,16 +2,22 @@
 
 #include <vector>
 
-#include "simulationobject.hpp"
+#include "path.hpp"
 
 
 namespace sim
 {
 
-class OrreryBody : public SimulationObject
+class OrreryBody
 {
 public:
+  Vector          pos;
+
+  Path            path;
+
   // Body characteristics
+  const std::string  name;
+  const std::string  description;
   const double    GM;      // needed for gravity calculations 
   const double    radius;  // needed surface calculations (launch/crash)
   
@@ -37,15 +43,19 @@ public:
       double       sidereal_period
       ) 
       :
+      name( name ),
+      description( description ),
       GM( GM ),
       radius( radius ),
       ra( ra ),
       dec( dec ),
       rotational_rate( rotational_rate ),
       orbit_radius( orbit_radius ),
-      sidereal_period( sidereal_period ),
-      SimulationObject( name, description )
-  {}
+      sidereal_period( sidereal_period )
+  {
+    path.name = name;
+    path.reference = "Solar-System Barycenter";
+  }
 
   // Given a surface position in (lat, lon) return the absolute
   // position in the simulation space
@@ -65,14 +75,16 @@ public:
     return LatLon();
   }
 
-private:
   // The degugging version
   void 
-  update_state( double jd, double dt )
+  update_pos( double jd )
   {
     pos.x = orbit_radius * std::cos( 2.0 * M_PI * jd / sidereal_period );
     pos.y = orbit_radius * std::sin( 2.0 * M_PI * jd / sidereal_period );
     pos.z = 0;
+    pos.t = jd;
+
+    path.add( pos );
   }
 };
 

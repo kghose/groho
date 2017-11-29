@@ -12,7 +12,7 @@ Path::num_points_in_new_frame( Path& new_frame )
 }
 
 void 
-Path::transform_to_new_frame( Path& new_frame, DataView& dv, TransformType tt )
+Path::transform_to_new_frame( Path& new_frame, DataView& dv )
 {
   dv.name = name;
   dv.reference = new_frame.name;

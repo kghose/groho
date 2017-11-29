@@ -13,6 +13,7 @@
 #include "scenario.hpp"
 #include "orrerybody.hpp"
 #include "spaceship.hpp"
+#include "datamirror.hpp"
 
 
 namespace sim
@@ -31,13 +32,11 @@ public:
   void quit();
   // Sets quit_now to tell all simulation related threads to quit
 
-  void lock_before_mirror()      const { copy_mutex.lock(); }
-  int  get_sim_version()         const { return sim_version_no; }
-  const orrery_body_vec_t& 
-       get_orrery_bodies()       const { return orrery_bodies; }
-  const space_ship_vec_t& 
-       get_space_ships()         const { return space_ships; }
-  void unlock_after_mirror()     const { copy_mutex.unlock(); }
+  std::mutex& get_mutex() const { return copy_mutex; }
+
+  void mirror_data( std::string target, DataMirror& mirror );
+  // Transform all trajectories to be relative to target and pass it back
+  // in mirror
 
 private:
 
@@ -66,22 +65,28 @@ private:
   void step( double jd, double dt );
   // Run simulation for one time-step and collect checkpoints as needed
 
-  void propagate_orrery( double jd, double dt );
+  void leap_frog_1( const double jd, const double dt, const double dt2 );
+  // First part of leap-frog algorithm
+
+  void propagate_orrery( const double jd );
   // Update spaceship positions, collect checkpoints as needed
 
-  void  compute_g();
+  void update_spaceship_acc();
   // Compute gravitational acceleration on each space ship
 
-  void propagate_space_fleet( double jd, double dt );
-  // Update spaceship positions, collect checkpoints as needed
+  void leap_frog_2( const double dt );
+  // Second and final part of leap-frog algorithm
 
   void resolve_actions( double jd );
   // If there are any actions or interactions, resolve them.
   // Add checkpoints and change spacehsip states as needed
 
-  void mark_sim_buffers_as_ready();
-  // When the last step of the sim is done, we need to go in and set the
-  // ready flags of the last incompletely filled SimulationBuffers
+  OrreryBody& get_orrery_body( std::string name );
+  // find the relevant orrery body or die
+
+  // void mark_sim_buffers_as_ready();
+  // // When the last step of the sim is done, we need to go in and set the
+  // // ready flags of the last incompletely filled SimulationBuffers
 
 private:
   std::string scenario_fname;  
@@ -90,9 +95,7 @@ private:
   orrery_body_vec_t  orrery_bodies;
   space_ship_vec_t   space_ships;
 
-  // Orrery orrery;
-  // std::unordered_map<std::string, SpaceShip> space_fleet;
-  
+
   std::thread compute_thread;  // The simulation loop runs in yet another thread
 
   // Paraphernalia needed for comminucating across threads

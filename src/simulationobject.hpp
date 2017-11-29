@@ -1,3 +1,6 @@
+// DEPRECATED
+
+
 /*
   SimulationObject carries the core state and history common for all simulation
   objects. Specialized objects derive from this class adding functions for state
