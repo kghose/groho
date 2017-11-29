@@ -191,6 +191,7 @@ Simulation::get_orrery_body( std::string name )
 void 
 Simulation::mirror_data( std::string target, DataMirror& mirror )
 {
+  std::lock_guard<std::mutex> lock( copy_mutex );
   auto& new_frame = get_orrery_body( target ); 
   for( auto& b : orrery_bodies ) {
     b.path.transform_to_new_frame( new_frame, mirror.add_orrery_body( b.name ) );
@@ -213,7 +214,7 @@ Simulation::mirror_data( std::string target, DataMirror& mirror )
 void
 Simulation::load( Scenario& new_scenario )
 {
-  copy_mutex.lock();
+  std::lock_guard<std::mutex> lock( copy_mutex );
   // This changes the simulation contents, so we need to lock/unlock
 
   // Safest to explicitly delete 
@@ -225,8 +226,6 @@ Simulation::load( Scenario& new_scenario )
   // XXX Just for testing
   orrery_bodies = load_debugging_orrery();
   space_ships = load_debugging_space_fleet();
-
-  copy_mutex.unlock();
 }
 
 } // namespace sim
