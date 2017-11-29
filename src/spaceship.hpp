@@ -8,69 +8,93 @@
 #include <string>
 #include <vector>
 #include "vector.hpp"
-#include "simulationobject.hpp"
+#include "path.hpp"
 
 namespace sim
 {
 
-const double sec_per_jd = 86400;
-
-class SpaceShip : public SimulationObject
-{
+class SpaceShip
+{  
   enum class FlightState { Landed, Crashed, Flying };
-  
-public:
-  // Spaceship characteristics
-  const double  max_fuel;
-  const double  max_acceleration;
-  const double  fuel_consumption_rate;
 
-  // Spaceship specific state 
-  Vector        attitude = { 0, 0, 0};
-  double        fuel = 1.0;
+public:
+  Vector        attitude = { 0, 0, 0 };
   double        engine_level = 0.0;
-  Vector        accel = { 0, 0, 0 };  // We accumulate total acceleration here (engine + gravity)
-                        // and apply it when we update the position
+  Path          path;
+
+  // Spaceship characteristics
+  const std::string   name;
+  const std::string   description;
+  const double        max_fuel;
+  const double        max_acceleration;
+  const double        fuel_consumption_rate;
 
   FlightState   flight_state;
-  LatLon        surface_ll;   // Only valid if ship is landed or crashed               
+  LatLon        surface_ll;   // Only valid if ship is landed or crashed
 
-  bool          fuel_event = false;
-
+public:
   SpaceShip(
       std::string  name,
       std::string  description,
       double       max_f,      
       double       max_a,
-      double       fcr) 
+      double       fcr,
+      Vector       pos = { 0, 0, 0 },
+      Vector       vel = { 0, 0, 0 }) 
       :
-      max_fuel( max_f ),
-      max_acceleration( max_a ),
+      name( name ), description( description ), 
+      max_fuel( max_f ), max_acceleration( max_a ), 
       fuel_consumption_rate( fcr ),
-      SimulationObject( name, description )
+      pos( pos ), vel( vel )
   {}
 
-private:
+  void 
+  leap_frog_1( double jd, double dt, double dt2 )
+  // First part of leap frog
+  // pos is updated fully, vel is updated partially
+  // ** after this, new acc needs to be computed **
+  {
+    pos += vel * dt + 0.5 * acc * dt2;
+    vel += 0.5 * acc * dt;
 
-  void
-  update_state( double jd, double dt )
-  // update position and velocity and set flag for bingo fuel if needed 
+    pos.t = jd;
+    path.add( pos );
+  }
+
+  void 
+  leap_frog_2( double dt )
+  // Second part of leap frog. Call after updating acc
+  // vel update is finished 
+  {
+    vel += 0.5 * acc * dt;
+  }
+
+  void 
+  compute_acc( Vector g )
+  // Add net grav acceleration to engine acceleration 
+  // do this inbetween leap_frog_1 and 2
   { 
-    // at this point we've computed acceleration due to gravity
-    // and placed it in accel
-    fuel_event = false;
+    _fuel_ran_out = false;
     if( fuel > 0 ) {
-      accel += ( engine_level * max_acceleration ) * attitude; 
+      acc = g + ( engine_level * max_acceleration ) * attitude; 
       fuel -= engine_level * fuel_consumption_rate;
       if( fuel <= 0 ) { 
         engine_level = 0;
-        fuel_event = true;
+        _fuel_ran_out = true;
       }
     }
-    pos += dt * sec_per_jd * vel;
-    vel += dt * sec_per_jd * accel;
-    accel = {0, 0, 0};
   }
+
+  bool
+  fuel_ran_out() { return _fuel_ran_out; }
+
+private:
+  // Spaceship state 
+  Vector        pos      = { 0, 0, 0 };
+  Vector        vel      = { 0, 0, 0 };
+  Vector        acc      = { 0, 0, 0 };
+  double        fuel     = 1.0;
+  bool          _fuel_ran_out = false;
 };
 
 typedef std::vector<SpaceShip>  space_ship_vec_t;
