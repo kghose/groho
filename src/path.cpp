@@ -5,20 +5,25 @@ namespace sim
 {
 
 size_t 
-Path::num_points_in_new_frame( Path& ref )
+Path::num_points_in_new_frame( Path& new_frame )
 {
-  if( reference_frame = ref.name) return size();
-  else return size() + ref.size(); // conservative size hint
+  if( new_frame.name == reference ) return  size();  // identity transform
+  else return            new_frame.size() + size(); // conservative size hint
 }
 
 void 
-Path::copy_to_new_frame( SimulationData& ref, DataView& dv )
+Path::transform_to_new_frame( Path& new_frame, DataView& dv, TransformType tt )
 {
-  if( reference_frame = ref.name ) return flatten( dv );
+  dv.name = name;
+  dv.reference = new_frame.name;
+
+  dv.allocate( num_points_in_new_frame( Path& new_frame ) );
+
+  if( new_frame.name == reference ) return copy( dv );
 
   size_t  index = 0;
   size_t  ref_idx = 0;
-  size_t  ref_size = ref.size();
+  size_t  ref_size = new_frame.size();
   size_t  data_idx = 0;
   size_t  data_size = size();
 
@@ -27,19 +32,30 @@ Path::copy_to_new_frame( SimulationData& ref, DataView& dv )
   while( ( ref_idx < ref_size - 1 ) |
          ( data_idx < data_size ) )
   {
-    if ( trajectory[ data_idx ].t < ref.trajectory[ ref_idx + 1 ].t )
+    if ( trajectory[ data_idx ].t < new_frame.trajectory[ ref_idx + 1 ].t )
     {
       t = trajectory[ data_idx ].t
-      v_ref = interpolate( ref.trajectory, ref_idx, t );
       v_old = trajectory[ data_idx ];
+      v_ref = interpolate( new_frame.trajectory, ref_idx, t );
       data_idx++;
     }
     else
     {
-      t = ref.trajectory[ ref_idx ].t
-      v_old = interpolate( trajectory, data_idx - 1, t );
-      v_ref = ref.trajectory[ ref_idx + 1 ];
-      ref_idx++;      
+      if ( trajectory[ data_idx ].t > new_frame.trajectory[ ref_idx + 1 ].t )
+      {
+        t = new_frame.trajectory[ ref_idx ].t
+        v_old = interpolate( trajectory, data_idx - 1, t );
+        v_ref = new_frame.trajectory[ ref_idx + 1 ];
+        ref_idx++;      
+      }
+      else
+      {
+        t = new_frame.trajectory[ ref_idx ].t
+        v_old = trajectory[ data_idx ];
+        v_ref = new_frame.trajectory[ ref_idx + 1 ];
+        data_idx++;
+        ref_idx++;              
+      }
     }
 
     v_new = v_old - v_ref;
@@ -55,7 +71,7 @@ Path::copy_to_new_frame( SimulationData& ref, DataView& dv )
 }
 
 void
-Path::flatten( DataView& dv )
+Path::copy( DataView& dv )
 {
   size_t max_index = size();
   for(size_t index = 0; index < max_index; index++ )
