@@ -12,6 +12,9 @@
 namespace sim
 {
 
+const double sec_per_jd = 86400;
+
+
 time_t 
 file_last_modified_time( std::string fname )
 {
@@ -113,6 +116,8 @@ Scenario::load_main_file()
     std::stod( ts.get_parameter( "step",  "0.00001"   ) ),
     ScnNeedsFullRecompute 
   );
+  dt = step_jd * sec_per_jd;
+  dt2 = dt * dt;
 
   copy_new_params_and_diff(
     start_jd, 

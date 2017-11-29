@@ -46,6 +46,8 @@ struct Scenario
   double                              start_jd
                                      , stop_jd
                                      , step_jd
+  double   dt;
+  double   dt2;
   ;
 
 
