@@ -8,10 +8,10 @@ namespace sim
 
 struct Vector 
 {
-  double x, y, z;
+  double x, y, z, t;
 
   Vector() {}
-  Vector( double x, double y, double z ) : x(x), y(y), z(z) {}
+  Vector( double x, double y, double z, float t = 0 ) : x(x), y(y), z(z), t(t) {}
   
   double norm_sq() { return x*x + y*y + z*z; }
   double norm()    { return std::sqrt( norm_sq() ); }
