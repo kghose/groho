@@ -36,19 +36,18 @@ struct ScenarioChanges
 
 struct Scenario
 {
-  std::string                   main_file_name
-                                        , name
-                                 , description
-  ;
-  std::vector<std::string>        orrery_files  
-                           , flight_plan_files
-  ;
-  double                              start_jd
-                                     , stop_jd
-                                     , step_jd
+  std::string     main_file_name;
+  std::string     name;
+  std::string     description;
+                               
+  std::vector<std::string>    orrery_files;
+  std::vector<std::string>    flight_plan_files;
+
+  double   start_jd;
+  double   stop_jd;
+  double   step_jd;
   double   dt;
   double   dt2;
-  ;
 
 
   time_t scenario_last_modified;

@@ -17,47 +17,55 @@
 
 #include "opengl.hpp"
 #include "shader.hpp"
-#include "simulationobject.hpp"
-
+#include "pathview.hpp"
 
 namespace sgl
 {
 
-class TrajectorySegment
+
+// class TrajectorySegment
+// {
+// public:
+//   TrajectorySegment( ShaderProgram* shdr, const sim::SimulationBufferSegment& sim_buf );
+//   ~TrajectorySegment();
+//   void render();
+//   // wraps the GL calls needed to render this trajectory
+
+// private:
+//   ShaderProgram*   shader_program;
+
+//   GLuint        vbo;
+//   GLuint        vao;
+//   GLenum  draw_type;
+//   GLint  draw_start;
+//   GLint  draw_count;
+//   size_t num_points;
+
+//   std::array<float, config::buffer_size>  time_stamps;
+//   // next available location in the index for insertion
+//   std::vector<sim::Event>  events;  
+// };
+
+class Trajectory : public sim::PathView
 {
 public:
-  TrajectorySegment( ShaderProgram* shdr, const sim::SimulationBufferSegment& sim_buf );
-  ~TrajectorySegment();
+  Trajectory() : PathView( "nothing" ) {} // needed for unordered_map
+  Trajectory( std::string name, ShaderProgram* shdr);
+  ~Trajectory();
+
   void render();
   // wraps the GL calls needed to render this trajectory
+
+  void allocate( size_t expected_points );
+  void finalize();
 
 private:
   ShaderProgram*   shader_program;
 
   GLuint        vbo;
   GLuint        vao;
-  GLenum  draw_type;
-  GLint  draw_start;
-  GLint  draw_count;
-  size_t num_points;
-
-  std::array<float, config::buffer_size>  time_stamps;
-  // next available location in the index for insertion
-  std::vector<sim::Event>  events;  
-};
-
-class Trajectory
-{
-public:
-  Trajectory() {} // needed for unordered_map
-  Trajectory( ShaderProgram* shdr ) : shader_program( shdr ) {};
-  bool copy_simulation_buffer( const sim::SimulationBuffer& sb );
-  // returns true if a copy occured
-  void render();
-
-private:
-  ShaderProgram*   shader_program;
-  std::vector<TrajectorySegment> segments;
+  GLint  draw_start = 0;
+  GLint  draw_count;  
 };
 
 }

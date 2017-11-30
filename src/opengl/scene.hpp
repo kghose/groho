@@ -4,35 +4,42 @@
 */
 #pragma once
 
-#include <vector>
+#include <unordered_map>
 
 #include "opengl.hpp"
 #include "camera.hpp"
 #include "trajectory.hpp"
 #include "simulation.hpp"
+#include "simulationview.hpp"
 
 
 namespace sgl
 {
 
-class Scene
+class Scene : public sim::SimulationView
 {
 public:
   Camera camera;
 
-  void init();
+  void initialize_shaders();
   void render();
 
-  bool mirror_simulation( const sim::Simulation& simulation );
+  bool needs_redraw();
   // returns true if data has changed
+
+  void initialize( 
+      const sim::orrery_body_vec_t& _orrery_bodies, 
+      const sim::space_ship_vec_t& _space_ships );
+
+  sim::PathView& get_path_view_orrery_body( std::string name );
+  sim::PathView& get_path_view_space_ship( std::string name );
 
 private:
   ShaderProgram shader_program;
 
-  std::vector<Trajectory>    orrery_bodies;
-  std::vector<Trajectory>    space_ships;
+  std::unordered_map<std::string, Trajectory>  orrery_bodies;
+  std::unordered_map<std::string, Trajectory>  space_ships;
 
-  int  sim_version_no = -1;
 };
 
 } // namespace sgl

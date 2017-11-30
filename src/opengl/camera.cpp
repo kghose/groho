@@ -13,7 +13,7 @@ Camera::Camera() :
     phi( 0 ),
     theta( 45 ),
     fov( 40 ),
-    near_plane( 5 ),
+    near_plane( .1 ),
     far_plane( 500.0 ),
     aspect_ratio( 3.0 / 4.0 )
 {

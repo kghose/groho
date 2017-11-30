@@ -54,7 +54,7 @@ Display::setup_opengl()
 {
   glClearColor( .1f, .1f, .1f, 1 );
   //glEnable( GL_DEPTH_TEST );
-  scene.init();
+  scene.initialize_shaders();
 }
 
 void 
@@ -183,9 +183,10 @@ Display::handle(int event) {
 void
 Display::mirror_simulation( void* ptr )
 {
-  if( ( (Display*) ptr )->scene.mirror_simulation( ( (Display*) ptr )->simulation ) ) {
-    ( (Display*) ptr )->redraw();
-  }
+  Display* display = (Display*) ptr;
+  display->simulation.get_view( display->scene );
+  if( display->scene.needs_redraw() ) { display->redraw(); }
+
   Fl::repeat_timeout( config::sim_poll_interval, 
                       Display::mirror_simulation, ptr );
 }

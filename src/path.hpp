@@ -26,8 +26,8 @@
 #include "units.hpp"
 #include "event.hpp"
 #include "vector.hpp"
-#include "fractaldownsampler"
-#include "dataview.hpp"
+#include "fractaldownsampler.hpp"
+#include "pathview.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -49,7 +49,7 @@ public:
 
 public:
   Path( std::string name, std::string reference, 
-        scale=1.0_AU, double rt=1.001, double lt=1e6 ) : 
+        double scale=1.0_AU, double rt=1.001, double lt=1e6 ) : 
       name( name ), reference( reference ),
       sample_this_point( rt, lt ), scale( scale )
   {}
@@ -61,20 +61,24 @@ public:
   // The size of the re-referenced data points. The most conservative estmate is
   // the sum of the points in this buffer and the reference buffer.
 
-  void transform_to_new_frame( Path& new_frame, DataView& dv );
+  void view_in_frame( Path& new_frame, PathView& dv );
   // Given a pre-allocated float buffer fill it with data re-referenced to ref 
   // and re-interpolated.
   // The data is flattened as used by OpenGL. t_buf contains time data
-
-  void copy( DataView& dv );
-  // Used when the referece frame is the one we used originally
-  // i.e. no transform has to be done
 
 private:
   FractalDownsampler  sample_this_point;
   double scale = 1.0_AU;
 
 private:
+  void view_in_new_frame( Path& new_frame, PathView& dv );
+  // Used when the referece frame is different form the one we used originally
+  // i.e. transform s required
+
+  void view_in_existing_frame( PathView& dv );
+  // Used when the referece frame is the one we used originally
+  // i.e. no transform has to be done
+
   Vector interpolate( vector_vec_t& p, size_t n0, float t );
   // Add the interpolated value between n0 and n0 + 1 for time t to the view
   // expects that p[ n0 ].t < t < p[ n0 + 1 ].t

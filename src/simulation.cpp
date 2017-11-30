@@ -102,7 +102,6 @@ Simulation::compute( Scenario scenario )
     jd += scenario.step_jd;
     simulation_steps++;
   }
-  mark_sim_buffers_as_ready();
 
   DLOG_S(INFO) << "Stopping simulation: " << jd << " (" << simulation_steps << " steps)";    
 }
@@ -110,13 +109,12 @@ Simulation::compute( Scenario scenario )
 void
 Simulation::step( double jd, double dt, double dt2 )
 {
-  copy_mutex.lock();
+  std::lock_guard<std::mutex> lock( copy_mutex );
   leap_frog_1( jd, dt, dt2 );
   propagate_orrery( jd );
   update_spaceship_acc();
   leap_frog_2( dt );
   resolve_actions( jd );
-  copy_mutex.unlock();
 }
 
 void
@@ -177,11 +175,11 @@ Simulation::resolve_actions( double jd )
 
 }
 
-Path& 
+OrreryBody& 
 Simulation::get_orrery_body( std::string name )
 {
   for( auto& b : orrery_bodies ) {
-    if( b.name == target ) return b.path;
+    if( b.name == name ) return b;
   }
   std::runtime_error( "No orrery body named" + name );
 }
@@ -189,27 +187,29 @@ Simulation::get_orrery_body( std::string name )
 
 // TODO: figure out way to stop copying once simulation has ended
 void 
-Simulation::mirror_data( std::string target, DataMirror& mirror )
+Simulation::get_view( SimulationView& sv )
 {
   std::lock_guard<std::mutex> lock( copy_mutex );
-  auto& new_frame = get_orrery_body( target ); 
+  // prevent any one from modifying the simulation at this point
+
+  // We should generate a view if
+  // 1. The frame of reference has changed, or
+  // 2. The final step of the simulation has not been copied over
+
+  if( sim_version_no != sv.simulation_version )
+  {
+    sv.initialize( orrery_bodies, space_ships );
+    sv.simulation_version = sim_version_no;
+  }
+
+  auto& frame = get_orrery_body( sv.target_frame ).path;
   for( auto& b : orrery_bodies ) {
-    b.path.transform_to_new_frame( new_frame, mirror.add_orrery_body( b.name ) );
+    b.path.view_in_frame( frame, sv.get_path_view_orrery_body( b.name ) );
   }
   for( auto& b : space_ships ) {
-    b.path.transform_to_new_frame( new_frame, mirror.add_space_ship( b.name ) );
+    b.path.view_in_frame( frame, sv.get_path_view_space_ship( b.name ) );
   }
 }
-
-
-
-// void 
-// Simulation::mark_sim_buffers_as_ready()
-// {
-//   for( auto& b : orrery_bodies ) { b.mark_buffer_as_ready(); }
-//   for( auto& s : space_ships ) { s.mark_buffer_as_ready(); }
-// }
-
 
 void
 Simulation::load( Scenario& new_scenario )

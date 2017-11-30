@@ -13,7 +13,7 @@
 #include "scenario.hpp"
 #include "orrerybody.hpp"
 #include "spaceship.hpp"
-#include "datamirror.hpp"
+#include "simulationview.hpp"
 
 
 namespace sim
@@ -32,14 +32,11 @@ public:
   void quit();
   // Sets quit_now to tell all simulation related threads to quit
 
-  std::mutex& get_mutex() const { return copy_mutex; }
-
-  void mirror_data( std::string target, DataMirror& mirror );
-  // Transform all trajectories to be relative to target and pass it back
-  // in mirror
+  void get_view( SimulationView& sv );
+  // Return a copy of all trajectories relative to target specified by simulationview
+  // reallocate as needed e.g. if simulation has changed
 
 private:
-
   void recompute_with( const Scenario& scenario );
   // Interrupt current simulation and rerun with new scenario
   // The new scenario carries information about what has changed from the
@@ -62,7 +59,7 @@ private:
   void wait();  
   // Block thread until we need to resimulate
 
-  void step( double jd, double dt );
+  void step( double jd, double dt, double dt2 );
   // Run simulation for one time-step and collect checkpoints as needed
 
   void leap_frog_1( const double jd, const double dt, const double dt2 );
@@ -84,9 +81,6 @@ private:
   OrreryBody& get_orrery_body( std::string name );
   // find the relevant orrery body or die
 
-  // void mark_sim_buffers_as_ready();
-  // // When the last step of the sim is done, we need to go in and set the
-  // // ready flags of the last incompletely filled SimulationBuffers
 
 private:
   std::string scenario_fname;  
@@ -119,8 +113,8 @@ private:
   // This lock prevents the destruction of the simulation objects during 
   // a simulation restart and prevents mirroring while simulation objects are
   // being destroyed for a simulation restart
-  
-  //std::unique_lock<std::mutex> copy_lock;
+
+  // we need a mechanism by which to prevent view generation when not needed  
 };
 
 }

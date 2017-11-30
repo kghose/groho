@@ -51,11 +51,9 @@ public:
       dec( dec ),
       rotational_rate( rotational_rate ),
       orbit_radius( orbit_radius ),
-      sidereal_period( sidereal_period )
-  {
-    path.name = name;
-    path.reference = "Solar-System Barycenter";
-  }
+      sidereal_period( sidereal_period ),
+      path( name, "Solar-System Barycenter")
+  {}
 
   // Given a surface position in (lat, lon) return the absolute
   // position in the simulation space

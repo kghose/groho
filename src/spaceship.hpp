@@ -47,11 +47,8 @@ public:
       name( name ), description( description ), 
       max_fuel( max_f ), max_acceleration( max_a ), 
       fuel_consumption_rate( fcr ),
-      pos( pos ), vel( vel )
-  {
-    path.name = name;
-    path.reference = "Solar-System Barycenter";
-  }
+      pos( pos ), vel( vel ), path( name, "Solar-System Barycenter" )
+  {}
 
   void 
   leap_frog_1( double jd, double dt, double dt2 )

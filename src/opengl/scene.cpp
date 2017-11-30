@@ -32,7 +32,7 @@ void main() {
 
 
 void
-Scene::init()
+Scene::initialize_shaders()
 {
   std::vector<Shader> shaders;
   shaders.push_back( Shader( vertex_shader, GL_VERTEX_SHADER ) );
@@ -45,44 +45,53 @@ Scene::render()
 {
   glUseProgram( shader_program.id );
   shader_program.set_camera( camera.matrix() );
-  for( auto& trajectory : orrery_bodies ) trajectory.render();
-  for( auto& trajectory : space_ships ) trajectory.render();
+  for( auto& [ name, trajectory ] : orrery_bodies ) trajectory.render();
+  for( auto& [ name, trajectory ] : space_ships ) trajectory.render();
   glUseProgram( 0 );
 }
 
 bool
-Scene::mirror_simulation( const sim::Simulation& simulation )
+Scene::needs_redraw()
 {
-  bool redraw_needed = false; 
+  return true;  // make smarter
+}
 
-  simulation.lock_before_mirror();
+void 
+Scene::initialize( 
+    const sim::orrery_body_vec_t& _orrery_bodies, 
+    const sim::space_ship_vec_t& _space_ships )
+// If there is a chance the list of simulation objects could have changed,
+// call this to recreate the views
+{
+  orrery_bodies.clear();
+  space_ships.clear();
 
-  const sim::orrery_body_vec_t& ob = simulation.get_orrery_bodies();
-  const sim::space_ship_vec_t& ss = simulation.get_space_ships();
-
-  if( sim_version_no != simulation.get_sim_version() )
-  {
-    redraw_needed = true;
-    orrery_bodies.clear();
-    for( int i = 0; i < ob.size(); i++ )
-      orrery_bodies.push_back( Trajectory( &shader_program ) );
-
-    space_ships.clear();
-    for( int i = 0; i < ss.size(); i++ )
-      space_ships.push_back( Trajectory( &shader_program ) );
-
-    sim_version_no = simulation.get_sim_version();
+  for( const auto& b : _orrery_bodies ) {
+    orrery_bodies.insert( { b.name, Trajectory( b.name, &shader_program ) } );
+  }
+  for( const auto& b : _space_ships ) {
+    space_ships.insert( { b.name, Trajectory( b.name, &shader_program ) } );
   }
 
-  for( int i = 0; i < ob.size(); i++ )
-    redraw_needed |= orrery_bodies[ i ].copy_simulation_buffer( ob[ i ].simulation_buffer );
-
-  for( int i = 0; i < ss.size(); i++ )
-    redraw_needed |= space_ships[ i ].copy_simulation_buffer( ss[ i ].simulation_buffer );
-
-  simulation.unlock_after_mirror();
-
-  return redraw_needed;
+  // We generally want to keep the existing target but in rare cases, if we 
+  // switch orrery models, the name may not exist and we need to find a default one
+  // This is also triggered on first run
+  if( ( orrery_bodies.count( target_frame ) == 0 ) & ( _orrery_bodies.size() ) ) {
+    target_frame = _orrery_bodies[ 0 ].name;
+  }
 }
 
+sim::PathView& 
+Scene::get_path_view_orrery_body( std::string name )
+{
+  return orrery_bodies[ name ];
 }
+
+sim::PathView& 
+Scene::get_path_view_space_ship( std::string name )
+{
+  return space_ships[ name ];
+}
+
+
+} // namespace sgl

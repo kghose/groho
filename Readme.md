@@ -63,6 +63,11 @@ Bussard by Phil Hagelberg
 [Bussard](https://technomancy.itch.io/bussard) is a cool hacking/spaceflight game
 where you write complex programs to fly your spaceship to solve puzzles.
 
+SolarSystemOrbiter
+------------------
+[SolarSystemOrbiter](https://github.com/madoee/SolarSystemOrbiter) -
+"Plot the orbits of the planets in our Solar System and calculate the Hohmann Transfer Orbits to transfer your rocket ship from one planet to the other and back." 
+
 
 Thanks
 ======
@@ -70,3 +75,4 @@ Included in the code are the following fine pieces of software
 
 1. [loguru](https://github.com/emilk/loguru) from Emil Ernerfeldt
 2. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash
+3. [glm](https://github.com/g-truc/glm) - [OpenGL Mathematics](http://glm.g-truc.net/)

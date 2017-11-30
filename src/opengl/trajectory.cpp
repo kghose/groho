@@ -8,51 +8,76 @@
 namespace sgl
 {
 
+const size_t initial_buffer_size = 1000;
 
-TrajectorySegment::TrajectorySegment( 
-    ShaderProgram* shdr, 
-    const sim::SimulationBufferSegment& sim_buf ) :
-      shader_program( shdr ), 
-      draw_type( GL_LINE_STRIP ),
-      //draw_type( GL_TRIANGLES ),
-      draw_start( 0 )
+const GLenum  draw_type = GL_LINE_STRIP;
+const GLenum  buffer_type = GL_STATIC_DRAW;
+
+
+Trajectory::Trajectory( std::string name, ShaderProgram* shdr ) : 
+    PathView( name ), shader_program( shdr )
 {
-  GLfloat *vertex_buf = (GLfloat*) sim_buf.buffer_ptr( num_points );
-  time_stamps = sim_buf.copy_of_time_stamps();
-  events = sim_buf.copy_of_events();
-
   glGenVertexArrays( 1, &vao );
   glBindVertexArray( vao );
 
   glGenBuffers( 1, &vbo );
   glBindBuffer( GL_ARRAY_BUFFER, vbo );
-
-  glBufferData( GL_ARRAY_BUFFER, 
-                sizeof(GLfloat) * 3 * num_points, 
-                vertex_buf, 
-                GL_DYNAMIC_DRAW );
+  // allocate( initial_buffer_size ); // do we need to do this?
 
   glEnableVertexAttribArray( shader_program->get_attrib_loc( "vert" ) );
   glVertexAttribPointer( 
-    shader_program->get_attrib_loc( "vert" ), 
-    3, 
-    GL_FLOAT, 
-    GL_FALSE, 
-    0, //3 * sizeof( GLfloat ), 
-    NULL);
+      shader_program->get_attrib_loc( "vert" ), 
+      3, 
+      GL_FLOAT, 
+      GL_FALSE, 
+      0, 
+      NULL
+  );
 
   glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
-  glBindVertexArray( 0 );
+  glBindVertexArray( 0 );   
 }
 
-TrajectorySegment::~TrajectorySegment()
+Trajectory::~Trajectory()
 {
-  glDeleteBuffers( 1, &vbo );  
+  glDeleteBuffers( 1, &vbo );
+  glDeleteVertexArrays( 1, &vao );
   // "silently ignores 0's and names that do not correspond to existing buffer objects."  
 }
 
+void
+Trajectory::allocate( size_t expected_points )
+{  
+  glBindBuffer( GL_ARRAY_BUFFER, vbo );
+
+  if( expected_points > buf_allocated_points )
+  {
+    glBufferData( 
+      GL_ARRAY_BUFFER, 
+      sizeof(GLfloat) * 3 * expected_points, 
+      nullptr, 
+      buffer_type 
+    );
+
+    t_buf = std::vector<float>( expected_points ) ;
+    buf_allocated_points = expected_points;
+  }
+
+  buf = (float*) glMapBufferRange( GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 3 * expected_points, GL_MAP_WRITE_BIT );
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
+}
+
 void 
-TrajectorySegment::render()
+Trajectory::finalize()
+{
+  glBindBuffer( GL_ARRAY_BUFFER, vbo );
+  glUnmapBuffer( GL_ARRAY_BUFFER );
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void 
+Trajectory::render()
 {
   draw_start = 0;
   draw_count = num_points;
@@ -62,29 +87,5 @@ TrajectorySegment::render()
   glDrawArrays( draw_type, draw_start, draw_count ); 
   glBindVertexArray( 0 );
 }
-
-
-bool
-Trajectory::copy_simulation_buffer( const sim::SimulationBuffer& sb )
-{
-  bool copy_happened = false;
-  
-  int already_copied_count = segments.size();
-  int available_count = sb.available_size();
-  for( int i = already_copied_count; i < available_count; i++ )
-  {
-    segments.push_back( TrajectorySegment( shader_program, sb[ i ] ) );
-    copy_happened = true;
-  }
-
-  return copy_happened;
-}
-
-void 
-Trajectory::render()
-{
-  for( auto& segment : segments ) segment.render();
-}
-
 
 } // namespace sgl
