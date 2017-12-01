@@ -1,0 +1,8 @@
+# Anything after a # is ignored
+name: Earth to mars
+description: Tutorial example showing how to build an Earth to mars transfer
+orrery: simplesolarsystem
+start: 0
+stop: 700
+step: .001
+flightplan: durga.txt
