@@ -1,21 +1,7 @@
 /*
-  The simulation buffer takes care of position and event history for each
-  simulation object.
-
-  There are no synchronization locks here. This is because the simulation will 
-  only write to segments that are invisible to the reader, and no writes
-  will ever take place to segments visible to the reader.
-
-  It's upto the Simulation to lock access to the entire list/dict of buffers when
-  a restart occurs and such locking is not handled at this level. What I envision
-  is a read lock at the dictionary level that only locks dictionary deletion
-  during simulation restarts.
-
-  See the "Data" writeup in docs for the rationale for this design
-
-  Notes:
-    How to instrument a class for the range based for loop apparatus is explained
-    in http://antonym.org/2014/02/c-plus-plus-11-range-based-for-loops.html
+  Given two simulationobjects A and B, transform A such that it is in the
+  reference frame formed by B. Write the data into a flat buffer that could
+  be from OpenGL  
 */
 #pragma once
 
@@ -23,11 +9,7 @@
 #include <array>
 #include <cassert>
 
-#include "units.hpp"
-#include "event.hpp"
-#include "vector.hpp"
-#include "fractaldownsampler.hpp"
-#include "pathview.hpp"
+#include "simulationobject.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -36,9 +18,41 @@
 namespace sim
 {
 
-typedef std::vector<Vector> vector_vec_t;
+class SimulationObjectView
+{
+public:
+  SimulationObjectView( cnst_so_shptr obj, cnst_so_shptr ref ) :
+    obj( obj ), ref( ref )
+  {}
+
+  size_t max_size();
+  // when we transform obj relative to ref, because of adpative downsampling we
+  // don't know ahead of time the exact number of points the downsampled data will
+  // take, but we do know the maximum possible.
+
+  size_t path_view( float* buf, float* t_buf, size_t idx );
+  // Transform obj relative to ref and write out into buf
+  // take the first idx points
+  // write timestamps into t_buf
+  // return the actual size written
+
+private:
+  cnst_so_shptr obj; 
+  cnst_so_shptr ref;
+
+  size_t copy( float* buf, float* t_buf, size_t idx);
+  // Write the path of a into a flat buffer that could be from OpenGL
+
+  size_t transform( float* buf, float* t_buf, size_t idx );
+  // Given two simulationobjects A and B, transform A such that it is in the
+  // reference frame formed by B. Write the data into a flat buffer that could
+  // be from OpenGL
+};
 
 
+
+
+/*
 class Path
 {
 public:
@@ -83,6 +97,6 @@ private:
   // Add the interpolated value between n0 and n0 + 1 for time t to the view
   // expects that p[ n0 ].t < t < p[ n0 + 1 ].t
 };
-
+*/
 
 } // namespace sim

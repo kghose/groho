@@ -24,8 +24,9 @@ struct Event
   std::string       remarks;
   EventType      event_type;
 
+  Event() {}
   Event( double jd ): jd( jd ) {}
-
+  Event( double jd, EventType et ) : jd( jd ), event_type( et ) {}
   Event( double jd, EventType et, std::string name, std::string remarks ) : 
       jd( jd ), name( name ), remarks( remarks ), event_type( et ) 
   {}  

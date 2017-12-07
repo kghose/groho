@@ -1,5 +1,6 @@
 #include "shader.hpp"
 #include "trajectory.hpp"
+#include "simulationobjectview.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -14,31 +15,14 @@ const GLenum  draw_type = GL_LINE_STRIP;
 const GLenum  buffer_type = GL_STATIC_DRAW;
 
 
-Trajectory::Trajectory( std::string name, ShaderProgram* shdr ) : 
-    PathView( name ), shader_program( shdr )
+Trajectory::~Trajectory()
 {
-  glGenVertexArrays( 1, &vao );
-  glBindVertexArray( vao );
-
-  glGenBuffers( 1, &vbo );
-  glBindBuffer( GL_ARRAY_BUFFER, vbo );
-  // allocate( initial_buffer_size ); // do we need to do this?
-
-  glEnableVertexAttribArray( shader_program->get_attrib_loc( "vert" ) );
-  glVertexAttribPointer( 
-      shader_program->get_attrib_loc( "vert" ), 
-      3, 
-      GL_FLOAT, 
-      GL_FALSE, 
-      0, 
-      NULL
-  );
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
-  glBindVertexArray( 0 );   
+  clear();
 }
 
-Trajectory::~Trajectory()
+
+void
+Trajectory::clear()
 {
   glDeleteBuffers( 1, &vbo );
   glDeleteVertexArrays( 1, &vao );
@@ -46,34 +30,43 @@ Trajectory::~Trajectory()
 }
 
 void
-Trajectory::allocate( size_t expected_points )
-{  
+Trajectory::copy( sim::cnst_so_shptr obj, sim::cnst_so_shptr ref )
+{
+  clear();
+  sim::SimulationObjectView sov( obj, ref );
+
+  size_t max_points = sov.max_size();
+
+  glGenVertexArrays( 1, &vao );
+  glBindVertexArray( vao );
+
+  glGenBuffers( 1, &vbo );
   glBindBuffer( GL_ARRAY_BUFFER, vbo );
 
-  if( expected_points > buf_allocated_points )
-  {
-    glBufferData( 
-      GL_ARRAY_BUFFER, 
-      sizeof(GLfloat) * 3 * expected_points, 
-      nullptr, 
-      buffer_type 
-    );
+  glBufferData( GL_ARRAY_BUFFER, 
+                sizeof(GLfloat) * 3 * max_points, 
+                nullptr, 
+                GL_DYNAMIC_DRAW );
 
-    t_buf = std::vector<float>( expected_points ) ;
-    buf_allocated_points = expected_points;
-  }
+  GLfloat* buf = (GLfloat *) glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+  t_buf = std::unique_ptr<float>( new float[ max_points ] );
+  num_points = sov.path_view( buf, t_buf.get(), max_points );
 
-  buf = (float*) glMapBufferRange( GL_ARRAY_BUFFER, 0, sizeof(GLfloat) * 3 * expected_points, GL_MAP_WRITE_BIT );
+  DLOG_S(INFO) << obj->name << ": " << num_points << " points to display";
+
+  glUnmapBuffer(GL_ARRAY_BUFFER);
+    
+  glEnableVertexAttribArray( shader_program->get_attrib_loc( "vert" ) );
+  glVertexAttribPointer( 
+    shader_program->get_attrib_loc( "vert" ), 
+    3, 
+    GL_FLOAT, 
+    GL_FALSE, 
+    0, //3 * sizeof( GLfloat ), 
+    NULL);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
-}
-
-void 
-Trajectory::finalize()
-{
-  glBindBuffer( GL_ARRAY_BUFFER, vbo );
-  glUnmapBuffer( GL_ARRAY_BUFFER );
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray( 0 );  
 }
 
 void 

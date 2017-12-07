@@ -2,22 +2,16 @@
 
 #include <vector>
 
-#include "path.hpp"
+#include "simulationobject.hpp"
 
 
 namespace sim
 {
 
-class OrreryBody
+class OrreryBody : public SimulationObject
 {
 public:
-  Vector          pos;
-
-  Path            path;
-
   // Body characteristics
-  const std::string  name;
-  const std::string  description;
   const double    GM;      // needed for gravity calculations 
   const double    radius;  // needed surface calculations (launch/crash)
   
@@ -43,16 +37,14 @@ public:
       double       sidereal_period
       ) 
       :
-      name( name ),
-      description( description ),
+      SimulationObject( name, description ),
       GM( GM ),
       radius( radius ),
       ra( ra ),
       dec( dec ),
       rotational_rate( rotational_rate ),
       orbit_radius( orbit_radius ),
-      sidereal_period( sidereal_period ),
-      path( name, "Solar-System Barycenter")
+      sidereal_period( sidereal_period )
   {}
 
   // Given a surface position in (lat, lon) return the absolute
@@ -82,13 +74,14 @@ public:
     pos.z = 0;
     pos.t = jd;
 
-    path.add( pos );
+    append( pos );
   }
 };
 
 
-typedef std::vector<OrreryBody>  orrery_body_vec_t;
+typedef std::shared_ptr<OrreryBody> ob_shptr;
+typedef std::vector<ob_shptr>  ob_shptr_vec_t;
 
-orrery_body_vec_t  load_debugging_orrery();
+ob_shptr_vec_t  load_debugging_orrery();
 
 } // namespace sim

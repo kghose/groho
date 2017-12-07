@@ -19,9 +19,8 @@ namespace config
 namespace sim
 {
 
-Display::Display( Simulation& simulation, int width, int height, char* title ) 
-: 
-Fl_Gl_Window( width, height, title ), simulation( simulation ) 
+Display::Display( Simulator& simulator, int width, int height, char* title ) : 
+    Fl_Gl_Window( width, height, title ), simulator( simulator ) 
 {  
   mode( FL_OPENGL3 | FL_RGB | FL_ALPHA | FL_DEPTH | FL_DOUBLE | FL_MULTISAMPLE );
   // FL_OPENGL3 -> 
@@ -35,7 +34,7 @@ Fl_Gl_Window( width, height, title ), simulation( simulation )
   // This allows resizing. Without this window is fixed size
 
   Fl::add_timeout( config::sim_poll_interval, 
-                   Display::mirror_simulation, this );
+                   Display::refresh_simulation, this );
   // Poll simulation for new data periodically
 }
 
@@ -54,8 +53,43 @@ Display::setup_opengl()
 {
   glClearColor( .1f, .1f, .1f, 1 );
   //glEnable( GL_DEPTH_TEST );
-  scene.initialize_shaders();
+  initialize_shaders();
 }
+
+
+const char vertex_shader[] = R"(
+#version 150
+
+uniform mat4 camera;
+in vec3 vert;
+
+void main() {   
+    gl_Position = camera * vec4(vert, 1);
+}
+)";
+
+
+const char fragment_shader[] = R"(
+#version 150
+
+out vec4 finalColor;
+
+void main() {
+    //set every drawn pixel to white
+    finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+)";
+
+
+void
+Display::initialize_shaders()
+{
+  std::vector<sgl::Shader> shaders;
+  shaders.push_back( sgl::Shader( vertex_shader, GL_VERTEX_SHADER ) );
+  shaders.push_back( sgl::Shader( fragment_shader, GL_FRAGMENT_SHADER ) );
+  shader_program.create( shaders );
+}
+
 
 void 
 Display::draw()
@@ -71,14 +105,14 @@ Display::draw()
   if ( !valid() ) // something like a resize happened 
   {
     glViewport( 0, 0, pixel_w(), pixel_h() );
-    scene.camera.set_aspect_ratio( (float)pixel_w() / (float)pixel_h() );
+    camera.set_aspect_ratio( (float)pixel_w() / (float)pixel_h() );
   }
 
   glClearColor(0, 0, 0, 1); // black
   //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
   glClear( GL_COLOR_BUFFER_BIT );
 
-  scene.render();
+  render_simulation();
 
   gl_font(1, 12);
   glColor3f(1.0, 1.0, 1.0);
@@ -88,9 +122,14 @@ Display::draw()
 }
 
 void
-Display::draw_orrery()
+Display::render_simulation()
 {
+  glUseProgram( shader_program.id );
+  shader_program.set_camera( camera.matrix() );
+  for( auto& trajectory : simulation_objects ) trajectory->render();
+  glUseProgram( 0 );
 }
+
 
 struct MouseDrag
 {
@@ -131,18 +170,18 @@ Display::handle(int event) {
     case FL_PUSH:
       //... mouse down event ...
       //... position in Fl::event_x() and Fl::event_y()
-      md.start_drag( Fl::event_x(), Fl::event_y(), scene.camera );
+      md.start_drag( Fl::event_x(), Fl::event_y(), camera );
       return 1;
     case FL_DRAG:
       //... mouse moved while down event ...
-      md.drag( Fl::event_x(), Fl::event_y(), scene.camera );
+      md.drag( Fl::event_x(), Fl::event_y(), camera );
       redraw();      
       return 1;
 
     case  FL_MOUSEWHEEL:
       {
         if( FL_COMMAND & Fl::event_state() ) {
-          scene.camera.dolly_by( Fl::event_dy() );
+          camera.dolly_by( Fl::event_dy() );
         } else {
           // scroll in time
         }        
@@ -163,9 +202,9 @@ Display::handle(int event) {
       //... Return 1 if you understand/use the keyboard event, 0 otherwise...
       // Might need a dispatcher here ...
       switch( Fl::event_text()[0] ) {
-        case '[': scene.camera.change_fov( -5 );
+        case '[': camera.change_fov( -5 );
                   break;
-        case ']': scene.camera.change_fov( +5 );
+        case ']': camera.change_fov( +5 );
                   break;
       };
       redraw();
@@ -181,15 +220,54 @@ Display::handle(int event) {
 }
 
 void
-Display::mirror_simulation( void* ptr )
+Display::refresh_simulation( void* ptr )
 {
+  static float last_display_jd = 0;
+
   Display* display = (Display*) ptr;
-  display->simulation.get_view( display->scene );
-  if( display->scene.needs_redraw() ) { display->redraw(); }
+  
+  if( display->simulation == nullptr ) { display->load_simulation(); }
+  if( display->simulation->is_stale() ) { display->load_simulation(); }
+
+  float current_jd = display->simulation->get_last_jd();
+  if( last_display_jd < current_jd ) {
+      display->view_simulation();
+      last_display_jd = current_jd;
+      display->redraw();
+  }
 
   Fl::repeat_timeout( config::sim_poll_interval, 
-                      Display::mirror_simulation, ptr );
+                      Display::refresh_simulation, ptr );
 }
+
+void
+Display::load_simulation()
+{
+  simulation_objects.clear();
+
+  simulation = simulator.get_simulation();
+  for( const auto& ob : simulation->orrery_bodies ) {
+    simulation_objects.push_back( 
+      std::make_unique<sgl::Trajectory>( ob->name, &shader_program ) );
+  }
+  for( const auto& ob : simulation->space_ships ) {
+    simulation_objects.push_back( 
+      std::make_unique<sgl::Trajectory>( ob->name, &shader_program ) );
+  }  
+}
+
+void
+Display::view_simulation()
+{
+  size_t orrery_body_count = simulation->orrery_bodies.size();
+  for( size_t i = 0; i < orrery_body_count; i++ ) {
+    simulation_objects[ i ]->copy( simulation->orrery_bodies[ i ], nullptr );
+  }
+  for( size_t i = 0; i < simulation->space_ships.size(); i++ ) {
+    simulation_objects[ orrery_body_count + i ]->copy( simulation->space_ships[ i ], nullptr );
+  }  
+}
+
 
 } // namespace sim
 

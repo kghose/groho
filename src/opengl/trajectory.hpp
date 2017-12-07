@@ -17,7 +17,8 @@
 
 #include "opengl.hpp"
 #include "shader.hpp"
-#include "pathview.hpp"
+#include "simulationobject.hpp"
+
 
 namespace sgl
 {
@@ -46,27 +47,42 @@ namespace sgl
 //   std::vector<sim::Event>  events;  
 // };
 
-class Trajectory : public sim::PathView
+class Trajectory
 {
 public:
-  Trajectory() : PathView( "nothing" ) {} // needed for unordered_map
-  Trajectory( std::string name, ShaderProgram* shdr);
+  Trajectory()  {} // needed for unordered_map
+  Trajectory( std::string name, ShaderProgram* shdr) :
+      name( name ), shader_program( shdr )
+  {}
   ~Trajectory();
+
+  void clear();
+  // Tell OpenGL to free the buffers
+
+  void copy( sim::cnst_so_shptr obj, sim::cnst_so_shptr ref=nullptr );
+  // Generate a view into obj->path
+  // If ref is non-null do a frame conversion reference to ref
+  // We use pointers se we can set ref to null to indicate no reference frame movement
 
   void render();
   // wraps the GL calls needed to render this trajectory
 
-  void allocate( size_t expected_points );
-  void finalize();
-
 private:
+  const std::string  name;
+  //const std::string  description;
   ShaderProgram*   shader_program;
 
   GLuint        vbo;
   GLuint        vao;
   GLint  draw_start = 0;
-  GLint  draw_count;  
+  GLint  draw_count; 
+
+  std::unique_ptr<float>  t_buf;
+  size_t num_points;
 };
+
+typedef std::unique_ptr<Trajectory>  traj_ptr_t;
+typedef std::vector<traj_ptr_t> traj_ptr_vect_t;
 
 }
 

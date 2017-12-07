@@ -1,8 +1,64 @@
-#include "path.hpp"
+#include "simulationobjectview.hpp"
 
 
 namespace sim
 {
+
+size_t 
+SimulationObjectView::max_size()
+// when we transform obj relative to ref, because of adpative downsampling we
+// don't know ahead of time the exact number of points the downsampled data will
+// take, but we do know the maximum possible.
+{
+  if( ref == nullptr ) return obj->path.size();
+  else return obj->path.size() + ref->path.size();
+}
+
+size_t 
+SimulationObjectView::path_view( float* buf, float* t_buf, size_t max_idx )
+// Transform obj relative to ref and write out into buf
+// write timestamps into t_buf
+// return the actual size written
+{
+  if( ref == nullptr ) return copy( buf, t_buf, max_idx );
+  else return transform( buf, t_buf, max_idx );  
+}
+
+size_t 
+SimulationObjectView::copy( float* buf, float* t_buf, size_t max_idx )
+// Write the path of a into a flat buffer that could be from OpenGL
+{
+  for( int i = 0; i < max_idx; i++ )
+  {
+    const Vector& p = obj->path[ i ]; 
+    buf  [ 3 * i     ] = p.x;
+    buf  [ 3 * i + 1 ] = p.y;
+    buf  [ 3 * i + 2 ] = p.z;
+    t_buf[     i     ] = p.t;
+  }
+  return max_idx;
+}
+
+size_t 
+SimulationObjectView::transform( float* buf, float* t_buf, size_t max_idx )
+// Given two simulationobjects A and B, transform A such that it is in the
+// reference frame formed by B. Write the data into a flat buffer that could
+// be from OpenGL
+{
+  for( int i = 0; i < max_idx; i++ )
+  {
+    const Vector& p = obj->path[ i ]; 
+    buf  [ 3 * i     ] = p.x;
+    buf  [ 3 * i + 1 ] = p.y;
+    buf  [ 3 * i + 2 ] = p.z;
+    t_buf[     i     ] = p.t;
+  }
+  return max_idx;
+}
+
+
+/*
+
 
 size_t 
 Path::num_points_in_new_frame( Path& new_frame )
@@ -76,24 +132,12 @@ Path::view_in_new_frame( Path& new_frame, PathView& dv )
 }
 
 
-void
-Path::view_in_existing_frame( PathView& dv )
-{
-  size_t max_idx = size();
-  for( dv.num_points = 0; dv.num_points < max_idx; dv.num_points++ )
-  {
-    dv.buf  [ 3 * dv.num_points     ] = trajectory[ dv.num_points ].x;
-    dv.buf  [ 3 * dv.num_points + 1 ] = trajectory[ dv.num_points ].y;
-    dv.buf  [ 3 * dv.num_points + 2 ] = trajectory[ dv.num_points ].z;
-    dv.t_buf[     dv.num_points     ] = trajectory[ dv.num_points ].t;
-  }
-}
 
 Vector 
 Path::interpolate( vector_vec_t& p, size_t n0, float t )
 {
   return ( p[ n0 + 1 ] - p[ n0 ] ) * ( t - p[ n0 ].t ) / ( p[ n0 + 1 ].t - p[ n0 ].t ) + p[ n0 ];
 }
-
+*/
 
 } // namespace sim

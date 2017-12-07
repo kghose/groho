@@ -6,11 +6,13 @@
 #include <atomic>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include <Fl/Fl_Gl_Window.h>
 
-#include "simulation.hpp"
-#include "scene.hpp"
+#include "simulator.hpp"
+#include "camera.hpp"
+#include "trajectory.hpp"
 
 
 namespace sim
@@ -19,32 +21,49 @@ namespace sim
 class Display : public Fl_Gl_Window
 {
 public:
-  Display( Simulation& simulation, int width, int height, char* title );
+  Display( Simulator& simulator, int width, int height, char* title );
   ~Display();
 
   void run();
   // Main FLTK loop
   
   void draw();                
-  
+  // Called by FLTK
+
+  void render_simulation();
+  // draw the orrery and spaceships
+
   int handle( int );       
   // User event handling
 
-  static void mirror_simulation( void* );          
-  // Called periodically to poll simulation for fresh data
-
+  static void refresh_simulation( void* );          
+  // Called periodically to see if we need to redraw the simulation or reload it
+  // only static functions can be passed to the callback
 
 private:
   
   void setup_opengl();
   // Misc OpenGL initialization
 
-  void draw_orrery();
+  void initialize_shaders();
+  //   
+
+  void load_simulation();
+  // Create a new simulation_objects list from scratch 
+
+  void view_simulation();
+  // geenrate a view of the simulation into existing buffers
 
 private:
   std::atomic<bool> quit_now;
-  Simulation& simulation;
-  sgl::Scene scene;
+  Simulator& simulator;  
+  const_sim_ptr_t simulation;
+  
+  sgl::Camera camera;
+  sgl::ShaderProgram shader_program;
+  sgl::traj_ptr_vect_t simulation_objects; 
+
+  //sgl::Scene scene;
 };
 
 }

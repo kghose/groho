@@ -1,3 +1,13 @@
+/*
+  This handles the downsampling of the data 
+*/
+#pragma once
+#include "vector.hpp"
+
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
+
 namespace sim
 {
 
@@ -8,7 +18,7 @@ public:
       ratio_threshold( rt ), linear_threshold( lt )
   {}
 
-  bool operator()( Vector& v )
+  bool operator()( const Vector& v )
   {
     cumulative_curve_dist += (v - last_v).norm();
     float linear_dist = (v - last_sample_v).norm();
@@ -16,6 +26,7 @@ public:
     if(  ( ( cumulative_curve_dist / linear_dist )    > ratio_threshold  )   
        | ( abs( cumulative_curve_dist - linear_dist ) > linear_threshold ) ) 
     {
+      //DLOG_S(INFO) << "HI" << cumulative_curve_dist;
       cumulative_curve_dist = 0;
       last_sample_v = v;
       last_v = v;

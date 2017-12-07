@@ -13,12 +13,12 @@ struct Vector
   Vector() {}
   Vector( double x, double y, double z, float t = 0 ) : x(x), y(y), z(z), t(t) {}
   
-  double norm_sq() { return x*x + y*y + z*z; }
-  double norm()    { return std::sqrt( norm_sq() ); }
-  Vector normed()  { return Vector( *this ) / norm(); }
+  double norm_sq() const { return x*x + y*y + z*z; }
+  double norm() const   { return std::sqrt( norm_sq() ); }
+  Vector normed() const { return Vector( *this ) / norm(); }
 
   Vector
-  operator+( const Vector& rhs )
+  operator+( const Vector& rhs ) const
   {
     return Vector(
       x + rhs.x,
@@ -28,7 +28,7 @@ struct Vector
   }
 
   Vector
-  operator-( const Vector& rhs )
+  operator-( const Vector& rhs ) const
   {
     return Vector(
       x - rhs.x,
@@ -38,7 +38,7 @@ struct Vector
   }
 
   Vector
-  operator/( const double rhs )
+  operator/( const double rhs ) const
   {
     return Vector(
       x / rhs,

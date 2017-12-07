@@ -11,19 +11,19 @@
 #include <condition_variable>
 
 #include "scenario.hpp"
-#include "orrerybody.hpp"
-#include "spaceship.hpp"
-#include "simulationview.hpp"
+#include "simulation.hpp"
+// #include "orrerybody.hpp"
+// #include "spaceship.hpp"
+// #include "simulationview.hpp"
 
 
 namespace sim
 {
 
-
-class Simulation
+class Simulator
 {
 public:
-  Simulation( std::string scenario_fname );
+  Simulator( std::string scenario_fname );
 
   void run();
   // Main loop. Periodically check for scenario file changes. Rerun sim if needed
@@ -32,9 +32,10 @@ public:
   void quit();
   // Sets quit_now to tell all simulation related threads to quit
 
-  void get_view( SimulationView& sv );
-  // Return a copy of all trajectories relative to target specified by simulationview
-  // reallocate as needed e.g. if simulation has changed
+  const_sim_ptr_t get_simulation() const { return simulation; }
+  // Return us a pointer to the current simulation being run
+  // We typically call this after discovering we are holding a stale
+  // simulation
 
 private:
   void recompute_with( const Scenario& scenario );
@@ -59,26 +60,14 @@ private:
   void wait();  
   // Block thread until we need to resimulate
 
-  void step( double jd, double dt, double dt2 );
+  void step( double jd, double dt );
   // Run simulation for one time-step and collect checkpoints as needed
-
-  void leap_frog_1( const double jd, const double dt, const double dt2 );
-  // First part of leap-frog algorithm
-
-  void propagate_orrery( const double jd );
-  // Update spaceship positions, collect checkpoints as needed
-
-  void update_spaceship_acc();
-  // Compute gravitational acceleration on each space ship
-
-  void leap_frog_2( const double dt );
-  // Second and final part of leap-frog algorithm
 
   void resolve_actions( double jd );
   // If there are any actions or interactions, resolve them.
   // Add checkpoints and change spacehsip states as needed
 
-  OrreryBody& get_orrery_body( std::string name );
+  // OrreryBody& get_orrery_body( std::string name );
   // find the relevant orrery body or die
 
 
@@ -86,8 +75,8 @@ private:
   std::string scenario_fname;  
   // Checkpoints checkpoints;
 
-  orrery_body_vec_t  orrery_bodies;
-  space_ship_vec_t   space_ships;
+  sim_ptr_t   simulation = nullptr;
+  // The simulation storing all the state and history
 
 
   std::thread compute_thread;  // The simulation loop runs in yet another thread
@@ -102,12 +91,6 @@ private:
                                 ;
   std::mutex                user_command_mutex;
   std::condition_variable   cv;
-
-  // Stuff needed for the mirroring
-  std::atomic<int>   sim_version_no = 0;
-  // A counter that we increment each time we re-run. Any one who is mirroring
-  // the simulation can check this to see if they need to completely re-copy
-  // everything or just do a simple update
 
   mutable std::mutex copy_mutex;
   // This lock prevents the destruction of the simulation objects during 

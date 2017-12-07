@@ -3,7 +3,7 @@
 //#include <iostream>
 #include <stdexcept>
 
-#include "simulation.hpp"
+#include "simulator.hpp"
 #include "event.hpp"
 
 #define LOGURU_WITH_STREAMS 1
@@ -21,7 +21,7 @@ const float threshold = 0.01;
 namespace sim
 {
 
-Simulation::Simulation( std::string _scenario_fname ) 
+Simulator::Simulator( std::string _scenario_fname ) 
 {
   scenario_fname = _scenario_fname;
   user_command_received = false;
@@ -30,7 +30,7 @@ Simulation::Simulation( std::string _scenario_fname )
 }
 
 void 
-Simulation::run()
+Simulator::run()
 {  
   using namespace std::chrono_literals;
   
@@ -54,21 +54,21 @@ Simulation::run()
 
 
 void
-Simulation::recompute_with( const Scenario& new_scenario )
+Simulator::recompute_with( const Scenario& new_scenario )
 {
   restart = true;
   if( compute_thread.joinable() ) compute_thread.join();
 
   // once more unto the breach
   compute_thread = std::thread( 
-    &sim::Simulation::compute,
+    &sim::Simulator::compute,
     std::ref( *this ),
     new_scenario
   );
 }
 
 void
-Simulation::wait()
+Simulator::wait()
 {
   std::unique_lock<std::mutex> lk( user_command_mutex );
   cv.wait(lk, [this](){ return user_command_received; });  // protects against spurious unblocks
@@ -76,7 +76,7 @@ Simulation::wait()
 }
 
 void
-Simulation::quit()
+Simulator::quit()
 { 
   std::lock_guard<std::mutex> lk( user_command_mutex );
   user_command_received = true;
@@ -85,147 +85,79 @@ Simulation::quit()
 }
 
 void 
-Simulation::compute( Scenario scenario )
+Simulator::compute( Scenario scenario )
 {
   loguru::set_thread_name("compute");
  
   load( scenario );
   
   restart = false;  
-  DLOG_S(INFO) << "Starting simulation: " << scenario.start_jd << " - " << scenario.stop_jd;  
+  DLOG_S(INFO) << "Starting Simulator: " << scenario.start_jd << " - " << scenario.stop_jd;  
 
-  int simulation_steps = 0;
+  int simulator_steps = 0;
   double jd = scenario.start_jd;
   while( !restart & !quit_now & ( jd < scenario.stop_jd ) ) 
   { 
-    step( jd, scenario.dt, scenario.dt2 );
+    step( jd, scenario.dt );
     jd += scenario.step_jd;
-    simulation_steps++;
+    simulator_steps++;
   }
 
-  DLOG_S(INFO) << "Stopping simulation: " << jd << " (" << simulation_steps << " steps)";    
+  DLOG_S(INFO) << "Stopping Simulator: " << jd << " (" << simulator_steps << " steps)";    
 }
  
 void
-Simulation::step( double jd, double dt, double dt2 )
+Simulator::step( double jd, double dt )
 {
-  std::lock_guard<std::mutex> lock( copy_mutex );
-  leap_frog_1( jd, dt, dt2 );
-  propagate_orrery( jd );
-  update_spaceship_acc();
-  leap_frog_2( dt );
-  resolve_actions( jd );
-}
+  for( auto& s : simulation->space_ships ) { s->update_pos( jd, dt ); }
 
-void
-Simulation::leap_frog_1( const double jd, const double dt, const double dt2 )
-{
-  for( auto& s : space_ships ) { s.leap_frog_1( jd, dt, dt2 ); }  
-}
+  for( auto& b : simulation->orrery_bodies ) { b->update_pos( jd ); }
 
-void
-Simulation::propagate_orrery( const double jd )
-{
-  for( auto& b : orrery_bodies ) { b.update_pos( jd ); }
-}
-
-void
-Simulation::update_spaceship_acc()
-{
-  for( auto& s : space_ships ) {
+  for( auto& s : simulation->space_ships ) 
+  {
     Vector g;
-    for( auto& b : orrery_bodies ) {
-      Vector R = b.pos - s.pos;
+    for( auto& b : simulation->orrery_bodies ) {
+      Vector R = b->pos - s->pos;
       // Good time to check for collisions too! TODO
-      g += (b.GM / R.norm_sq()) * R.normed();
+      g += (b->GM / R.norm_sq()) * R.normed();
     }
-    s.compute_acc( g );
+    s->update_acc_and_vel( g, jd, dt );
   }
+  resolve_actions( jd );
+
+  simulation->set_last_jd( jd );
 }
 
 void
-Simulation::leap_frog_2( const double dt )
+Simulator::resolve_actions( double jd )
 {
-  for( auto& s : space_ships ) { s.leap_frog_2( dt ); }  
+
 }
 
-
-// void 
-// Simulation::propagate_space_fleet( const double jd )
+// OrreryBody& 
+// Simulator::get_orrery_body( std::string name )
 // {
-//   for( auto& s : space_ships )
-//   {
-//     //bool bingo_fuel = false;
-//     s.step( jd, dt);
-//     // if( bingo_fuel )
-//     // {
-//     //   // checkpoints.push_back( checkpointp_t( new Event( 
-//     //   //   jd,
-//     //   //   EventType::BingoFuel,
-//     //   //   v.name,
-//     //   //   ""
-//     //   // )));
-//     // }
+//   for( auto& b : orrery_bodies ) {
+//     if( b.name == name ) return b;
 //   }
+//   std::runtime_error( "No orrery body named" + name );
 // }
 
 void
-Simulation::resolve_actions( double jd )
+Simulator::load( Scenario& new_scenario )
 {
+  sim_ptr_t old_sim = simulation;
 
-}
-
-OrreryBody& 
-Simulation::get_orrery_body( std::string name )
-{
-  for( auto& b : orrery_bodies ) {
-    if( b.name == name ) return b;
-  }
-  std::runtime_error( "No orrery body named" + name );
-}
-
-
-// TODO: figure out way to stop copying once simulation has ended
-void 
-Simulation::get_view( SimulationView& sv )
-{
-  std::lock_guard<std::mutex> lock( copy_mutex );
-  // prevent any one from modifying the simulation at this point
-
-  // We should generate a view if
-  // 1. The frame of reference has changed, or
-  // 2. The final step of the simulation has not been copied over
-
-  if( sim_version_no != sv.simulation_version )
-  {
-    sv.initialize( orrery_bodies, space_ships );
-    sv.simulation_version = sim_version_no;
-  }
-
-  auto& frame = get_orrery_body( sv.target_frame ).path;
-  for( auto& b : orrery_bodies ) {
-    b.path.view_in_frame( frame, sv.get_path_view_orrery_body( b.name ) );
-  }
-  for( auto& b : space_ships ) {
-    b.path.view_in_frame( frame, sv.get_path_view_space_ship( b.name ) );
-  }
-}
-
-void
-Simulation::load( Scenario& new_scenario )
-{
-  std::lock_guard<std::mutex> lock( copy_mutex );
-  // This changes the simulation contents, so we need to lock/unlock
-
-  // Safest to explicitly delete 
-  orrery_bodies.clear();
-  space_ships.clear();
-
-  sim_version_no++;
+  simulation = sim_ptr_t( new Simulation );
 
   // XXX Just for testing
-  orrery_bodies = load_debugging_orrery();
-  space_ships = load_debugging_space_fleet();
+  simulation->orrery_bodies = load_debugging_orrery();
+  simulation->space_ships = load_debugging_space_fleet();
+
+  //TODO: 
+  if( old_sim != nullptr ) {
+    old_sim->mark_as_stale();
+  }
 }
 
 } // namespace sim
