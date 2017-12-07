@@ -58,8 +58,9 @@ public:
   void update_acc_and_vel( Vector g, double jd, double dt )
   // Compute g externally, after update_pos and before this
   {
+    acc = g;
     if( fuel > 0 ) {
-      acc = g + ( engine_level * max_acceleration ) * attitude; 
+      acc += ( engine_level * max_acceleration ) * attitude; 
       fuel -= engine_level * fuel_consumption_rate;
       if( fuel <= 0 ) { 
         engine_level = 0;
