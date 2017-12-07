@@ -222,17 +222,15 @@ Display::handle(int event) {
 void
 Display::refresh_simulation( void* ptr )
 {
-  static float last_display_jd = 0;
-
   Display* display = (Display*) ptr;
   
   if( display->simulation == nullptr ) { display->load_simulation(); }
   if( display->simulation->is_stale() ) { display->load_simulation(); }
 
   float current_jd = display->simulation->get_last_jd();
-  if( last_display_jd < current_jd ) {
+  if( display->last_display_jd < current_jd ) {
       display->view_simulation();
-      last_display_jd = current_jd;
+      display->last_display_jd = current_jd;
       display->redraw();
   }
 
@@ -243,7 +241,10 @@ Display::refresh_simulation( void* ptr )
 void
 Display::load_simulation()
 {
+  DLOG_S(INFO) << "Stale simulation, reloading";
+
   simulation_objects.clear();
+  last_display_jd = 0;
 
   simulation = simulator.get_simulation();
   for( const auto& ob : simulation->orrery_bodies ) {

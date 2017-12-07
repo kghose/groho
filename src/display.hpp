@@ -58,7 +58,10 @@ private:
   std::atomic<bool> quit_now;
   Simulator& simulator;  
   const_sim_ptr_t simulation;
-  
+  float last_display_jd = 0;
+  // We use this to decide whether we need to copy the simulation data to the
+  // OpenGL buffers
+
   sgl::Camera camera;
   sgl::ShaderProgram shader_program;
   sgl::traj_ptr_vect_t simulation_objects; 
