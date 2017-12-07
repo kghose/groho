@@ -115,7 +115,7 @@ Simulator::step( double jd, double dt )
 
   for( auto& s : simulation->space_ships ) 
   {
-    Vector g;
+    Vector g = { 0, 0, 0 };
     for( auto& b : simulation->orrery_bodies ) {
       Vector R = b->pos - s->pos;
       // Good time to check for collisions too! TODO
