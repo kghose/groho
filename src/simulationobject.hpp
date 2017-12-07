@@ -52,7 +52,7 @@ public:
       const Vector& pos = { 0, 0, 0 }, 
       const Vector& vel = { 0, 0, 0 },
       const Vector& acc = { 0, 0, 0 } ) :
-      name( name ), description( description )
+      name( name ), description( description ), pos( pos ), vel( vel ), acc( acc )
   {}
 
   void append( const Vector& v ) { if( sample( v ) ) path.append( v / scale ); } 
