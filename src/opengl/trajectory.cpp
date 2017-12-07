@@ -49,10 +49,9 @@ Trajectory::copy( sim::cnst_so_shptr obj, sim::cnst_so_shptr ref )
                 GL_DYNAMIC_DRAW );
 
   GLfloat* buf = (GLfloat *) glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+  
   t_buf = std::unique_ptr<float>( new float[ max_points ] );
   num_points = sov.path_view( buf, t_buf.get(), max_points );
-
-  DLOG_S(INFO) << obj->name << ": " << num_points << " points to display";
 
   glUnmapBuffer(GL_ARRAY_BUFFER);
     

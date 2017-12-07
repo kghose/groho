@@ -4,5 +4,5 @@ description: Tutorial example showing how to build an Earth to mars transfer
 orrery: simplesolarsystem
 start: 0
 stop: 700
-step: .001
+step: .1
 flightplan: durga.txt

@@ -1,6 +1,26 @@
 Data considerations
 ===================
 
+Simulation time step
+--------------------
+Before going into data considerations we should consider what time step we should
+use. A sophisticated simulation would use adpative time-steps but for now I'm
+sticking with a fixed time step. I first used Euler integration. If you look on
+the internets you will find the term "symplectic" and "non-symplectic". "symplectic"
+means that the integration conserves energy while "non-symplectic" does not.
+
+In practical terms 
+
+
+Long story short, with an object orbit at the distance of earth, I found that,
+with Euler integration a time step of 0.001 JD (a little more than a minute) gave
+pretty good results.
+
+
+
+
+
+
 Storing data at each timestep
 -----------------------------
 For display purposes each object requires 3 floats per display point (x, y, z) 
