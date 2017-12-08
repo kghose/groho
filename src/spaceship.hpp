@@ -35,6 +35,7 @@ public:
   SpaceShip(
       std::string  name,
       std::string  description,
+      float        radius,
       double       max_f,      
       double       max_a,
       double       fcr,
@@ -42,7 +43,7 @@ public:
       Vector       vel = { 0, 0, 0 },
       double       fuel = 0.0) 
       :
-      SimulationObject( name, description, pos, vel ),
+      SimulationObject( name, description, radius, pos, vel ),
       max_fuel( max_f ), max_acceleration( max_a ), 
       fuel_consumption_rate( fcr ), fuel( fuel )
   {}

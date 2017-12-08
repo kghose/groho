@@ -30,7 +30,7 @@ Display::Display( Simulator& simulator, int width, int height, char* title ) :
   Fl::use_high_res_GL(1);
   // TODO: Without this macOS Retina display is a bit wonky TODO: CHECK!!
 
-  size_range( 400, 400); 
+  size_range( 400, 400 ); 
   // This allows resizing. Without this window is fixed size
 
   Fl::add_timeout( config::sim_poll_interval, 
@@ -114,11 +114,6 @@ Display::draw()
 
   render_simulation();
 
-  gl_font(1, 12);
-  glColor3f(1.0, 1.0, 1.0);
-  //gl_color( FL_DARK_RED );
-  //gl_font( FL_COURIER, 50 );
-  gl_draw( "Hi!", 0, 0);
 }
 
 void
@@ -249,11 +244,11 @@ Display::load_simulation()
   simulation = simulator.get_simulation();
   for( const auto& ob : simulation->orrery_bodies ) {
     simulation_objects.push_back( 
-      std::make_unique<sgl::Trajectory>( ob->name, &shader_program ) );
+      std::make_unique<sgl::Trajectory>( ob->name, ob->radius / config::simulation_scale, &shader_program ) );
   }
   for( const auto& ob : simulation->space_ships ) {
     simulation_objects.push_back( 
-      std::make_unique<sgl::Trajectory>( ob->name, &shader_program ) );
+      std::make_unique<sgl::Trajectory>( ob->name, ob->radius / config::simulation_scale, &shader_program ) );
   }  
 }
 

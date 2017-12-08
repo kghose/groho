@@ -50,9 +50,9 @@ namespace sgl
 class Trajectory
 {
 public:
-  Trajectory()  {} // needed for unordered_map
-  Trajectory( std::string name, ShaderProgram* shdr) :
-      name( name ), shader_program( shdr )
+  //Trajectory( float radius = 0)  {} // needed for unordered_map
+  Trajectory( std::string name, float radius, ShaderProgram* shdr) :
+      name( name ), radius( radius ), shader_program( shdr )
   {}
   ~Trajectory();
 
@@ -69,6 +69,8 @@ public:
 
 private:
   const std::string  name;
+  const float radius;
+
   //const std::string  description;
   ShaderProgram*   shader_program;
 

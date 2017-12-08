@@ -35,6 +35,13 @@ very well [here](https://stackoverflow.com/a/4643295/2512851):
 deferred until the template parameter is known.
 
 
+Template classes must be defined in the header file
+--------------------------------------------------
+This was mildly annoying to find out. https://www.codeproject.com/Articles/48575/How-to-define-a-template-class-in-a-h-file-and-imp
+
+
+
+
 Multi-threading
 ---------------
 

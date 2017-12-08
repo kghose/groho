@@ -13,7 +13,6 @@ class OrreryBody : public SimulationObject
 public:
   // Body characteristics
   const double    GM;      // needed for gravity calculations 
-  const double    radius;  // needed surface calculations (launch/crash)
   
   // Needed for translating surface point to absolute coordinates
   const double    ra;      // RA (radians)
@@ -37,9 +36,8 @@ public:
       double       sidereal_period
       ) 
       :
-      SimulationObject( name, description ),
+      SimulationObject( name, description, radius ),
       GM( GM ),
-      radius( radius ),
       ra( ra ),
       dec( dec ),
       rotational_rate( rotational_rate ),

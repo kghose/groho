@@ -12,6 +12,7 @@ load_debugging_space_fleet()
     ss_shptr( new SpaceShip(
       "Durga",
       "A torch-ship",
+      10.0,
       1.0,      
       0.1,
       1e-2,
