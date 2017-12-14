@@ -61,7 +61,11 @@ public:
   {}
 
   void append( const Vector& v ) { if( sample( v ) ) path.append( v / config::simulation_scale ); } 
-  void append( const Event& e  ) { events.append( e ); }
+  void append( const Event& e  ) 
+  {     
+    events.append( e );
+    DLOG_S(INFO) << e;
+  }
   
 private:
   FractalDownsampler  sample;
