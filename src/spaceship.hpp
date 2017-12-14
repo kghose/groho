@@ -65,7 +65,7 @@ public:
       fuel -= engine_level * fuel_consumption_rate;
       if( fuel <= 0 ) { 
         engine_level = 0;
-        append( Event( jd, EventType::BingoFuel, "", "" ) );
+        append( Event( jd, name, EventType::BingoFuel ) );
       }
     }
     vel += acc * dt;
