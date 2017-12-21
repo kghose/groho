@@ -1,3 +1,17 @@
+/*
+  This implements a thread-safe data buffer that the Simulator writes to and the
+  Display can read from. 
+
+  The Simulator writes to the last (newest) node and the Display can only read
+  upto the penultimate one.
+
+  We enforce this by supplying `append` methods that add a single vector/event
+  to the buffer at a location that the reader will never touch 
+  and `get` methods that return const references to the data but do not allow us 
+  to regions where data is being actively written
+
+  The methods are not optimized yet for only accessing changed parts of the data
+*/
 #pragma once
 #include <array>
 #include <vector>
@@ -6,15 +20,7 @@
 
 namespace sim
 {
-/*
-template<class T, size_t N>
-struct Node
-{
-  T data[ N ];
-  std::atomic<size_t> size = 0;
-  // How we keep track of how many points filled
-};
-*/
+
 template<class T, size_t N, size_t M>
 struct NodeArray
 {
