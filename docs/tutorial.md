@@ -1,32 +1,69 @@
 Tutorial (v0.0)
 ===============
 
-The tutorial will present a few scenarios and then work through them.
-
-Scenarios
-=========
-
-Earth-to-Mars transfer
+Features and use cases
 ----------------------
-We will develop a flight plan for an Earth-to-Mars transfer using a torch-ship
-(spaceship capable of sustained acceleration). We will develop the plan in 
-stages:
-- Launch out of Earth's gravity well
-- Intercept Mars
-- Mars orbit insertion
 
-Intercept of Asteroid-belt-to-Mars slow boat by Earth-launched torchship
-------------------------------------------------------------------------
+This simulator is designed to help gain intuitions of how near-future space 
+flight within the solar system would look like. To this end it allows us to:
+
+- Simulate the flights and interactions of hundreds of spacecraft
+- Simulate multi-year journeys in reasonable CPU time.
+- Super-impose multiple scenarios together to make a complex simulation from simpler ones
+- Perform reproducible simulations (seeded random number generators, stable numerical calculations)
+- Compare multiple versions of a simulation
+
+### This is not an interactive simulation
+
+The simulation works by setting up a scenario and then letting everything evolve 
+according to physical law and scripted events. The experimenter influences the 
+simulation only through the choice of scenario and script parameters.
+
+### This is not an n-body simulation
+
+The motions of planets, moons and larger asteroids are taken from existing 
+ephemeris and are not propagated via n-body gravitational simulations. The 
+expected time scales of the simulations (upto a century) are short enough that 
+existing ephemeres will do fine and will save us a lot of computation. 
+The gravitational effect of each planet, moon and asteroid on a ship is taken 
+into account.
+
+### Relativistic effects
+
+Communications over solar-system distances are interestingly affected by
+the finite speed of light. The simulation enables the calculation of when an event 
+at one location is detected at other locations/ships.
+
+Example scenarios
+-----------------
+
+### Earth-to-Mars Hohmann transfer
+
+https://en.wikipedia.org/wiki/Hohmann_transfer_orbit
+
+Starting with a spaceship in Earth orbit, we will develop a flight plan that
+puts it into a Hohmann transfer and then inserts it into Mars orbit. As we do
+this we'll introduce the use of a file versioning system - git in this case -
+to version our simulations and overlay the different versions to figure out
+a suitable flight plan. 
+
+
+### Intercept of Asteroid-belt-to-Mars slow boat by Earth-launched torchship
+
 Ship A, a slow boat (ship with limited fuel and acceleration that falls most of it's
 trip) is transfering from the asteroid belt to Mars. We want to intercept the
-slow boat using Ship B, a torch ship launched from Earth. 
+slow boat using Ship B, a torch ship (a ship capable of sustained acceleration) 
+launched from Earth. 
 
 - First we'll develop the Ship A flight plan, de-orbiting and falling to mars transfer
-- We'll then copy over the flight plan we developed earlier and add an interaction event and tweak it until the interaction event is satisfied.
+- We'll then add the Ship B flight plan into the mix and then introduce the idea of
+  a trigger: an event logger that tells us when something happens and can also
+  cause something to happen. (Yes, perhaps this makes `groho` Turing complete)
 
-Fact checking "Saturn's Children"
----------------------------------
-In Saturn's Children Icarus (the deep-space ship) states that a direct
+
+### Fact checking "Saturn's Children"
+
+In "Saturn's Children", Icarus (the deep-space ship) states that a direct
 burn-and-decelerate would take them 18 years to get from Callisto to Eris, 
 while a trip from Jupiter to Eris is almost a straight line trip because 
 Jupiter and Eris are in opposition and takes 4 years (with the Mercury flyby
@@ -38,41 +75,40 @@ fun to pick a time when Callisto and Eris are in opposition and then work out
 the different flight paths.
 
 
-Ok, how do we do this?
+Simulation files
+----------------
+Simulations are described using text files. A **scenario file** sets up the
+solar system model (The **orrery**) various simulation parameters, such as
+time-step and carries a list of **fight plans** each of which is a text file
+that describes the behavior of a spacecraft in the simulation.
+
+Simulation files can be edited with your favorite editor and versioned with
+your favourite versioning system. `groho` is independent of all this. What
+`groho` does is monitor changes to the simulation files on the file system and 
+updates the simulation computations when the files change.
+
 
 User Interface
-==============
-Groho's main window gives you a view of the simulation which you can navigate with the mouse and keyboard. The simulation is governed by scenario and flight plan files, which are ordinary text files you can create and edit with your favorite text editor. When any of the simulation files are altered the simulation is re-run automatically and the display updates. 
+--------------
 
-Controls
---------
-Mouse actions govern most of the important navigation options in the display.
-We control a chase camera that we can orbit around a target and zoom in and out.
-The default view has the solar system center as target, and sits perpendicular
-to the ecliptic.
+### Orbit diagram
+The orbit diagram shows solar system body orbits, space craft trajectories, 
+space craft status and event locations. The display can be navigated to view 
+from different angles, to use different bodies as centers of reference and to 
+playback or show different parts of the simulation. Events can be inspected 
+to show greater detail.
 
- 
-| Action/Key       |       Effect                         |
-|------------------|--------------------------------------|
-| Mouse drag       | Orbit camera                         |
-| Mouse scroll     | Move forward/backward in sim time    |
-| CMD + scroll     | Move in and out of simulation        |
-| [ and ]          | Change camera FOV                    | 
-| Cursor keys      | Switch target to adjacent object     |
-| Home             | Go to default view                   |
+### Timeline
+The timeline allows us to pick parts of the simulation to show and also marks
+out events so we can easily locate them in time.
 
-* _At the start I had the camera act like a first-person-shooter camera. But then
-I found the current way better for what I wanted to get out of the visualization_
+### Overlaying simulations
+Simulations that have the same orrery and simulation parameters can be overlaid
+in the orbit display. This is useful when developing and combining flight plans.
+For example, editing an existing flight plan or adding a new flight plan to a
+scenario gives us the option to overlay the changed (or new) space craft trajectory
+to the old one. 
 
-* The Home key on macOS is Fn + Left Cursor
-
-Display
--------
-Initially the display shows the whole simulation (advancing as the simulation
-computation progresses). At any point we can move backwards/forwards in 
-simulation time. Orrery objects paths are shown to one complete orbit round the
-sun while spacecraft paths are shown from start to finish. This means that 
-planetary paths look "normal" (like circles) but lunar paths resemble epicycles.
 
 Co-ordinate system re-referencing
 ---------------------------------
@@ -123,7 +159,7 @@ flightplan: durga.txt
 
 [jdc]: http://aa.usno.navy.mil/data/docs/JulianDate.php
 
-`flightplan` is a flight plan text file. You can have as many flight plans as you want, one to a line. The names of each spaceship has to be unique. 
+`flightplan` is a flight plan text file. You can have as many flight plans as you want, one to a line. The name of each spaceship (declared in the flightplan file) has to be unique. 
 
 Typically you will have the scenario file and flight plan files for a simulation in one folder with different folders for different simulations, to keep organized, while the JPL ephemeris kernels are kept in one fixed data directory. 
 
