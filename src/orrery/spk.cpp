@@ -38,6 +38,9 @@ void SpkSegment::compute(double jd, OrreryBody& body)
 
 const std::string ftp_validation_template = "FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP";
 
+
+// There is one file record at the start that has a specific structure reflected
+// here
 struct FileRecord {
     char      file_architecture[8]; // LOCIDW
     u_int32_t n_double_precision; // ND
@@ -68,12 +71,18 @@ bool read_file_record(std::ifstream& nasa_spk_file, FileRecord& hdr)
     return true;
 }
 
-void read_block(std::ifstream& nasa_spk_file, size_t n_block, char buf[block_size])
+// 1024 ("block_size") byte blocks are the fundamental unit of a DAF record
+// Summary records point to record block numbers ("n_block") that we can use
+// to jump to particular records
+void read_record_block(std::ifstream& nasa_spk_file, size_t n_block, char buf[block_size])
 {
     nasa_spk_file.seekg(block_size * (n_block - 1));
     nasa_spk_file.read(buf, block_size);
 }
 
+// The DAF comment records are slightly screwy. '\0' is used to indicate a
+// new line and '\4' indicates end of comment text. Also, it seems that only
+// the first 1000 bytes of the 1024 byte block are actually used.
 void parse_daf_comment(char a[block_size])
 {
     for (int i = 0; i < 1000; i++) {
@@ -96,11 +105,23 @@ std::string read_comment_blocks(std::ifstream& nasa_spk_file, size_t n_initial_s
     std::string comment;
     for (int i = 2; i < n_initial_summary; i++) {
         char raw_comment[block_size];
-        read_block(nasa_spk_file, i, raw_comment);        
+        read_record_block(nasa_spk_file, i, raw_comment);
         parse_daf_comment(raw_comment);
         comment += raw_comment;
     }
     return comment;
+}
+
+size_t read_segment_record(std::ifstream& nasa_spk_file, size_t segment_start_block)
+{
+  char buf[block_size];
+  read_record_block(nasa_spk_file, segment_start_block, buf);
+  double next_segment_start_block = *(double*) &buf[0];
+  double n_blocks_in_segment = *(double*) &buf[16];
+
+
+
+  return (size_t) next_segment_start_block;
 }
 
 //TODO: Handle files of both endian-ness
