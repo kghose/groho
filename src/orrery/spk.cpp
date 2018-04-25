@@ -68,33 +68,40 @@ bool read_file_record(std::ifstream& nasa_spk_file, FileRecord& hdr)
     return true;
 }
 
-void parse_daf_comment(char a[block_size])
+void read_block(std::ifstream& nasa_spk_file, size_t n_block, char buf[block_size])
 {
-  for(int i = 0; i < 1000; i++) {
-    switch (a[i]) {
-      case '\0': a[i] = '\n'; break;
-      case '\4': a[i] = '\0'; 
-      i = 1000;
-      break;
-      default: break;
-    }
-  }  
+    nasa_spk_file.seekg(block_size * (n_block - 1));
+    nasa_spk_file.read(buf, block_size);
 }
 
+void parse_daf_comment(char a[block_size])
+{
+    for (int i = 0; i < 1000; i++) {
+        switch (a[i]) {
+        case '\0':
+            a[i] = '\n';
+            break;
+        case '\4':
+            a[i] = '\0';
+            i    = 1000;
+            break;
+        default:
+            break;
+        }
+    }
+}
 
 std::string read_comment_blocks(std::ifstream& nasa_spk_file, size_t n_initial_summary)
 {
-  std::string comment;
-  nasa_spk_file.seekg( block_size );
-  for(int i = 1; i < n_initial_summary - 1; i++) {
-    char raw_comment[block_size];
-    nasa_spk_file.read(raw_comment, block_size);
-    parse_daf_comment(raw_comment);
-    comment += raw_comment;
-  }
-  return comment;
+    std::string comment;
+    for (int i = 2; i < n_initial_summary; i++) {
+        char raw_comment[block_size];
+        read_block(nasa_spk_file, i, raw_comment);        
+        parse_daf_comment(raw_comment);
+        comment += raw_comment;
+    }
+    return comment;
 }
-
 
 //TODO: Handle files of both endian-ness
 bool SpkOrrery::load_orrery_model(std::string fname)
