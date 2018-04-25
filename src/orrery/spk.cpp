@@ -12,6 +12,11 @@
   or 301 (moon). This sorting is done by placing bodies <= 10 at the begining
   of the list. The order of succeeding bodies is irrelevant 
 
+  Thanks go to JPL/NASA NAIF docs
+  ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
+
+  And jplemphem Python code by Brandon Rhodes
+  https://github.com/brandon-rhodes/python-jplephem
 
 */
 #include <fstream>
@@ -25,31 +30,29 @@ namespace orrery {
 
 namespace daffile {
 
+const size_t block_size = 1024;
+
 void SpkSegment::compute(double jd, OrreryBody& body)
 {
 }
 
-//8sII60sIII8s603s28s297s
-//            (locidw, self.nd, self.n_integers, self.internal_name, self.initial_record, self.final_record,
-//             self.free, numeric_format, self.prenul, self._validation_ftpstr, self.pstnul
-
 const std::string ftp_validation_template = "FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP";
 
 struct FileRecord {
-    char      file_architecture[8];
-    u_int32_t n_double_precision;
-    u_int32_t n_integers;
-    char      internal_name[60];
-    u_int32_t initial_record;
-    u_int32_t final_record;
-    u_int32_t first_free_address;
-    char      numeric_format[8];
-    char      zeros_1[603];
-    char      ftp_validation_str[28];
-    char      zeros_2[297];
+    char      file_architecture[8]; // LOCIDW
+    u_int32_t n_double_precision; // ND
+    u_int32_t n_integers; // NI
+    char      internal_name[60]; // LOCIFN
+    u_int32_t n_initial_summary; // FWARD
+    u_int32_t n_final_summary; // BWARD
+    u_int32_t first_free_address; // FREE
+    char      numeric_format[8]; // LOCFMT
+    char      zeros_1[603]; //PRENUL
+    char      ftp_validation_str[28]; //FTPSTR
+    char      zeros_2[297]; //PSTNUL
 };
 
-bool load_file_record(std::ifstream& nasa_spk_file, FileRecord& hdr)
+bool read_file_record(std::ifstream& nasa_spk_file, FileRecord& hdr)
 {
     nasa_spk_file.read((char*)(FileRecord*)&hdr, sizeof(hdr));
 
@@ -65,6 +68,34 @@ bool load_file_record(std::ifstream& nasa_spk_file, FileRecord& hdr)
     return true;
 }
 
+void parse_daf_comment(char a[block_size])
+{
+  for(int i = 0; i < 1000; i++) {
+    switch (a[i]) {
+      case '\0': a[i] = '\n'; break;
+      case '\4': a[i] = '\0'; 
+      i = 1000;
+      break;
+      default: break;
+    }
+  }  
+}
+
+
+std::string read_comment_blocks(std::ifstream& nasa_spk_file, size_t n_initial_summary)
+{
+  std::string comment;
+  nasa_spk_file.seekg( block_size );
+  for(int i = 1; i < n_initial_summary - 1; i++) {
+    char raw_comment[block_size];
+    nasa_spk_file.read(raw_comment, block_size);
+    parse_daf_comment(raw_comment);
+    comment += raw_comment;
+  }
+  return comment;
+}
+
+
 //TODO: Handle files of both endian-ness
 bool SpkOrrery::load_orrery_model(std::string fname)
 {
@@ -77,12 +108,16 @@ bool SpkOrrery::load_orrery_model(std::string fname)
     }
 
     FileRecord hdr;
-    if (!load_file_record(nasa_spk_file, hdr)) {
+    if (!read_file_record(nasa_spk_file, hdr)) {
         ok = false;
         return false;
     }
 
-    return true;
+    std::string comment = read_comment_blocks(nasa_spk_file, hdr.n_initial_summary);
+    //std::cout << comment;
+
+    ok = true;
+    return ok;
 }
 
 // Fill out the (x, y, z) of each Orrery body and return us an immutable
