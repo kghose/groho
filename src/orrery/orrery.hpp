@@ -3,12 +3,11 @@
 
   It provides a uniform interface where by
     - We can load Orrery model(s) from disk
-    - Obtain a list of GM and (x, y, z) data for all bodies in the Orrery 
+    - Obtain a list of GM and (x, y, z) data for all bodies in the Orrery
       at a given time point
-
-  It packages loading Orrery files (like SPK files) and getting gravitational
-  body locations into one interface.
 */
+#pragma once
+
 #include <string>
 #include <vector>
 
@@ -18,9 +17,9 @@ namespace orrery {
 
 struct OrreryBody {
     std::string name;
-    float       GM; // GM value for body
+    float       GM;  // GM value for body
     sim::Vector pos; // Position referenced to solar system barycenter
-    float       r; // Radius of body (for collision tests)
+    float       r;   // Radius of body (for collision tests)
 };
 
 typedef std::vector<OrreryBody> OrreryBodyVec;
