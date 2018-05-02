@@ -13,14 +13,5 @@
 
 namespace daffile {
 
-struct Emphemeris {
-    std::string target_name; // Human readable name for this body
-    std::string center_name; // Human readable name for reference body
-    int         target_code; // NASA/JPL code for this body
-    int         center_code; // NASA/JPL code for reference body
-    double      jd_start;    // At what epoch does this emphemeris start
-    double      jd_stop;     // At what epoch does this emphemeris end
-};
-
 void load_spk(std::ifstream& nasa_spk_file);
 }

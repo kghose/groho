@@ -11,21 +11,10 @@
   referenced to the solar system barycenter 0, is placed before 399 (Earth)
   or 301 (moon). This sorting is done by placing bodies <= 10 at the begining
   of the list. The order of succeeding bodies is irrelevant
-
-  Thanks go to JPL/NASA NAIF docs
-  ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
-
-  And jplemphem Python code by Brandon Rhodes
-  https://github.com/brandon-rhodes/python-jplephem
-
-  And this stackoverflow answer
-  https://space.stackexchange.com/a/20715
-
-  to this question
-  https://space.stackexchange.com/questions/12506/what-is-the-exact-format-of-the-jpl-ephemeris-files
-
 */
+#include <cmath>
 #include <fstream>
+#include <optional>
 
 #include "spk.hpp"
 
@@ -34,136 +23,362 @@
 
 namespace daffile {
 
-/*
+// In the following section all structures that closely reflect some part of the
+// SPK/DAF file structure are named adhering to the nomenclature JPL/NASA
+// adopted. The final structure (Emphemeris) which collates and organizes the
+// data in a manner suitable for this program is named to match it's logical
+// function.
 
+//   Thanks go to JPL/NASA NAIF docs
+//   ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 
+//   the jplemphem Python code by Brandon Rhodes
+//   https://github.com/brandon-rhodes/python-jplephem
 
-*/
+//   And this stackoverflow answer
+//   https://space.stackexchange.com/a/20715
+//   to this question
+//   https://space.stackexchange.com/questions/12506/what-is-the-exact-format-of-the-jpl-ephemeris-files
 
+// The file is organized in 1024 byte blocks
 const size_t block_size = 1024;
 
-// void SpkSegment::compute(double jd, OrreryBody& body)
-// {
-// }
-
-const std::string ftp_validation_template
+const std::string integrity_check_template
     = "FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP";
 
 // There is one file record at the start that has a specific structure reflected
-// here
+// here spanning, 1024 bytes
 struct FileRecord {
-    char      file_architecture[8];   // LOCIDW
-    u_int32_t n_double_precision;     // ND
-    u_int32_t n_integers;             // NI
-    char      internal_name[60];      // LOCIFN
-    u_int32_t n_initial_summary;      // FWARD
-    u_int32_t n_final_summary;        // BWARD
-    u_int32_t first_free_address;     // FREE
-    char      numeric_format[8];      // LOCFMT
-    char      zeros_1[603];           // PRENUL
-    char      ftp_validation_str[28]; // FTPSTR
-    char      zeros_2[297];           // PSTNUL
+    char      file_architecture[8]; // LOCIDW
+    u_int32_t n_double_precision;   // ND
+    u_int32_t n_integers;           // NI
+    char      internal_name[60];    // LOCIFN
+    u_int32_t first_summary_block;  // FWARD
+    u_int32_t last_summary_block;   // BWARD
+    u_int32_t first_free_address;   // FREE
+    char      numeric_format[8];    // LOCFMT
+    char      zeros_1[603];         // PRENUL
+    char      integrity_string[28]; // FTPSTR
+    char      zeros_2[297];         // PSTNUL
 } __attribute__((__packed__));
 
-bool read_file_record(std::ifstream& nasa_spk_file, FileRecord& hdr)
+std::optional<FileRecord> read_file_record(std::ifstream& nasa_spk_file);
+
+// There is usually a comments section after this which is free form, taking
+// one or more 1024 byte blocks.
+
+std::string read_comment_blocks(
+    std::ifstream& nasa_spk_file, std::optional<FileRecord> hdr);
+
+// The comment records are followed by summary records.
+// Blocks of summary records are chained like a linked list with each block
+// having a header section that carries the chain information. These values are
+// integers but they are stored as doubles
+struct SummaryRecordBlockHeader {
+    double next_summary_record_blk; // pointer to next SR 1Kb block (1 indexed)
+    double prev_summary_record_blk; // pointer to previous SR block (1 indexed)
+    double n_summaries;             // number of element summaries here
+} __attribute__((__packed__));
+
+// Each summary has a fixed form, reflected here
+struct Summary {
+    double    start_second; // initial epoch, as seconds from J2000
+    double    end_second;   // final epoch, as seconds from J2000
+    u_int32_t target_id;    // target identifier
+    u_int32_t center_id;    // center identifier
+    u_int32_t frame_id;     // frame identifier (we handle 1 - J2000 - only)
+    u_int32_t data_type;    // data type identifier (we handle II or III)
+    u_int32_t start_i;      // index (8 byte blocks) where segment data starts
+    u_int32_t end_i;        // index (8 byte blocks) where segment data ends
+} __attribute__((__packed__));
+
+typedef std::vector<Summary> SummaryVec;
+
+SummaryVec read_summaries(
+    std::ifstream& nasa_spk_file, std::optional<const FileRecord> hdr);
+
+// The start_i and end_i pointers of a summary point to a block of element
+// records. Each element record is a set of chebyshev coefficients along with
+// the value of the mid point and range that set of coefficients are valid for.
+//
+// Type II elements only have coeffcients for position:
+//    +------------------+
+//    | MID              |
+//    +------------------+
+//    | RADIUS           |
+//    +------------------+
+//    | X  coefficients  |
+//    +------------------+
+//    | Y  coefficients  |
+//    +------------------+
+//    | Z  coefficients  |
+//    +------------------+
+//
+// While Type III elements have an additional set of coefficients for velocity:
+//
+//    +------------------+
+//    | MID              |
+//    +------------------+
+//    | RADIUS           |
+//    +------------------+
+//    | X  coefficients  |
+//    +------------------+
+//    | Y  coefficients  |
+//    +------------------+
+//    | Z  coefficients  |
+//    +------------------+
+//    | X' coefficients  |
+//    +------------------+
+//    | Y' coefficients  |
+//    +------------------+
+//    | Z' coefficients  |
+//    +------------------+
+
+typedef std::vector<double> dblvec;
+
+struct Elements {
+    double t_mid;  // same as MID
+    double t_half; // same as RADIUS
+    dblvec X;      // coefficients for X
+    dblvec Y;      // coefficients for Y
+    dblvec Z;      // coefficients for Z
+};
+
+Elements read_elements(std::ifstream& nasa_spk_file, int data_type);
+dblvec   read_coefficients(std::ifstream& nasa_spk_file, int data_type);
+
+typedef std::vector<Elements> ElementsVec;
+
+// At the end of the set of element records is a footer carrying some
+// metadata for that block of element records
+struct ElementRecordMetadata {
+    double init;   // The start time (in s) of the epoch represented
+    double intlen; // The length of the interval represented
+    double rsize;  // The size of the record in units of 8 bytes (a double)
+    double n;      // The number of records contained here
+};
+
+ElementRecordMetadata
+read_element_record_metadata(std::ifstream& nasa_spk_file, const Summary& s);
+
+// In the end we package all of this into the "Ephemeris" structure
+struct Ephemeris {
+    int         target_code; // NASA/JPL code for this body
+    int         center_code; // NASA/JPL code for reference body
+    std::string target_name; // Human readable name for this body
+    std::string center_name; // Human readable name for reference body
+    ElementsVec evec; // coefficients for just the epoch we are interested in
+};
+
+Ephemeris read_ephemeris(std::ifstream& nasa_spk_file, const Summary& s);
+
+typedef std::vector<Ephemeris> EphemerisVec;
+
+// Read the file header record
+std::optional<FileRecord> read_file_record(std::ifstream& nasa_spk_file)
 {
-    nasa_spk_file.read((char*)(FileRecord*)&hdr, sizeof(hdr));
+    std::optional<FileRecord> hdr;
 
-    LOG_S(INFO) << "File architecture: " << hdr.file_architecture;
-    LOG_S(INFO) << "Internal name: " << hdr.internal_name;
-    LOG_S(INFO) << "Numeric format: " << hdr.numeric_format;
+    nasa_spk_file.seekg(0);
+    nasa_spk_file.read((char*)&*hdr, sizeof(*hdr));
 
-    if ((hdr.n_double_precision != 2) & (hdr.n_integers != 6)) {
+    LOG_S(INFO) << "File architecture: " << hdr->file_architecture;
+    LOG_S(INFO) << "Internal name: " << hdr->internal_name;
+    LOG_S(INFO) << "Numeric format: " << hdr->numeric_format;
+
+    if ((hdr->n_double_precision != 2) & (hdr->n_integers != 6)) {
         LOG_S(ERROR) << "Expected ND = 2, NI = 6, but got "
-                     << hdr.n_double_precision << ", " << hdr.n_integers;
-        return false;
+                     << hdr->n_double_precision << ", " << hdr->n_integers;
+        return {};
     }
 
-    if (ftp_validation_template.compare(hdr.ftp_validation_str) != 0) {
+    if (integrity_check_template.compare(hdr->integrity_string) != 0) {
         LOG_S(ERROR) << "This file is likely corrupted: FTP validation fails";
-        return false;
+        return {};
     }
 
-    return true;
+    return hdr;
 }
 
-// 1024 ("block_size") byte blocks are the fundamental unit of a DAF record
-// Summary records point to record block numbers ("n_block") that we can use
-// to jump to particular records
-void read_record_block(
-    std::ifstream& nasa_spk_file, size_t n_block, char buf[block_size])
-{
-    nasa_spk_file.seekg(block_size * (n_block - 1));
-    nasa_spk_file.read(buf, block_size);
-}
-
-// The DAF comment records are slightly screwy. '\0' is used to indicate a
-// new line and '\4' indicates end of comment text. Also, it seems that only
-// the first 1000 bytes of the 1024 byte block are actually used.
-void parse_daf_comment(char a[block_size])
-{
-    for (int i = 0; i < 1000; i++) {
-        switch (a[i]) {
-        case '\0':
-            a[i] = '\n';
-            break;
-        case '\4':
-            a[i] = '\0';
-            i    = 1000;
-            break;
-        default:
-            break;
-        }
-    }
-}
-
+// The comment is stored in blocks of 1024 bytes, but only the first 1000 bytes
+// of that are used. The null character (\0) is used instead of a new line while
+// the \4 character indicates end of the comment. As a result, we need to read
+// the comment as blocks of 1024 characters, discard the last 24, replace \0
+// with \n and \4 with \0 at which point we have the whole comment and can stop.
+// Considering we don't have any use for the comment string, this was really not
+// necessary and done more out of a desire to be completionist.
 std::string
-read_comment_blocks(std::ifstream& nasa_spk_file, size_t n_initial_summary)
+read_comment_blocks(std::ifstream& nasa_spk_file, std::optional<FileRecord> hdr)
 {
+    if (!hdr) {
+        return "";
+    }
+
     std::string comment;
-    for (int i = 2; i < n_initial_summary; i++) {
-        char raw_comment[block_size];
-        read_record_block(nasa_spk_file, i, raw_comment);
-        parse_daf_comment(raw_comment);
-        comment += raw_comment;
+    nasa_spk_file.seekg(block_size);
+    for (int i = 2; i < hdr->first_summary_block; i++) {
+        char buf[block_size];
+        nasa_spk_file.read(buf, block_size);
+        for (int i = 0; i < 1000; i++) {
+            if (buf[i] == '\0') {
+                buf[i] = '\n';
+            } else {
+                if (buf[i] == '\4') {
+                    buf[i] = '\0';
+                    break;
+                }
+            }
+        }
+        comment += buf;
     }
     return comment;
 }
 
-// Summary record header.
-// These are integers but they are stored as doubles
-struct SummaryRecord {
-    double n_next_summary_record;     // pointer to next SR
-    double n_previous_summary_record; // pointer to previous SR
-    double n_element_records;         // number of element summaries here
-} __attribute__((__packed__));
+SummaryVec read_summaries(std::ifstream& nasa_spk_file, FileRecord& hdr)
+{
+    SummaryRecordBlockHeader srbh;
+    SummaryVec               sv;
 
-// Summaries
-struct ElementSummary {
-    double    start_second; // initial epoch, as seconds from J2000
-    double    end_second;   // final epoch, as seconds from J2000
-    int       target;       // integer target identifier
-    int       center;       // integer center identifier
-    int       frame;        // integer frame identifier
-    int       data_type;    // integer data type identifier
-    u_int32_t start_i;      // index where segment starts
-    u_int32_t end_i;        // index where segment ends
-} __attribute__((__packed__));
+    size_t summaries_read = 0;
 
-std::ostream& operator<<(std::ostream& out, const ElementSummary& es)
+    nasa_spk_file.seekg(block_size * (hdr.first_summary_block - 1));
+    nasa_spk_file.read((char*)&srbh, sizeof(srbh));
+
+    for (;;) {
+        LOG_S(INFO) << "Summary record block#" << ++summaries_read;
+        for (size_t j = 0; j < srbh.n_summaries; j++) {
+            Summary es;
+            nasa_spk_file.read((char*)&es, sizeof(es));
+            sv.push_back(es);
+            LOG_S(INFO) << "Summary " << j + 1 << "/" << srbh.n_summaries;
+        }
+
+        if (srbh.next_summary_record_blk == 0)
+            break;
+
+        nasa_spk_file.seekg(block_size * (srbh.next_summary_record_blk - 1));
+        nasa_spk_file.read((char*)&srbh, sizeof(srbh));
+    }
+
+    return sv;
+}
+
+std::ostream& operator<<(std::ostream& out, const Summary& es)
 {
     out << "(" << es.start_second << " - " << es.end_second
         << ": T:" << es.target << " C:" << es.center << ")";
     return out;
 }
 
-typedef std::vector<ElementSummary> ElementSummaryVec;
+std::ostream& operator<<(std::ostream& out, const ElementRecordMetadata& erm)
+{
+    out << "(" << erm.init << ", " << erm.intlen << ", " << erm.rsize << ", "
+        << erm.n;
+    return out;
+}
 
-ElementSummaryVec
+ElementRecordMetadata
+read_element_record_metadata(std::ifstream& nasa_spk_file, const Summary& s)
+{
+    ElementRecordMetadata erm;
+    nasa_spk_file.seekg((s.end_i - 4) * 8);
+    nasa_spk_file.read((char*)&erm, sizeof(erm));
+    return erm;
+}
+
+void read_coefficients(
+    std::ifstream& nasa_spk_file, size_t n_coeff, std::vector<double>& V)
+{
+    for (int j = 0; j < n_coeff; j++) {
+        double c;
+        nasa_spk_file.read((char*)&c, sizeof(double));
+        V.push_back(c);
+    }
+}
+
+std::optional<ChebyVec> read_ephemeris_coefficients(
+    std::ifstream& nasa_spk_file, const Summary& s, double start_s,
+    double end_s)
+{
+    if (!((s.data_type == 2) || (s.data_type == 3))) {
+        LOG_S(ERROR) << "Can only handle data type II or III";
+        return {};
+    }
+
+    if (start_s < s.start_second) {
+        LOG_S(ERROR) << "Start time out of range";
+        return {};
+    }
+
+    if (end_s > s.end_second) {
+        LOG_S(ERROR) << "End time out of range";
+        return {};
+    }
+
+    ElementRecordMetadata erm = read_element_record_metadata(nasa_spk_file, s);
+
+    size_t internal_offset_start
+        = std::floor((start_s - erm.init) / erm.intlen) * erm.rsize;
+    size_t internal_offset_end
+        = std::floor((end_s - erm.init) / erm.intlen) * erm.rsize;
+    size_t n_coeff = (int(erm.rsize) - 2) / (3 * (s.data_type - 1));
+
+    ChebyVec cv;
+
+    nasa_spk_file.seekg((s.start_i + internal_offset_start - 1) * 8);
+    for (size_t i = internal_offset_start; i <= internal_offset_end; i++) {
+
+        ChebyshevCoefficients cc;
+
+        nasa_spk_file.read((char*)&cc.t_mid, sizeof(double));
+        nasa_spk_file.read((char*)&cc.t_half, sizeof(double));
+
+        read_coefficients(nasa_spk_file, n_coeff, cc.X);
+        read_coefficients(nasa_spk_file, n_coeff, cc.Y);
+        read_coefficients(nasa_spk_file, n_coeff, cc.Z);
+
+        cv.push_back(cc);
+
+        // if (s.data_type == 3) {
+        //     nasa_spk_file.seekg(
+        //         3 * n_coeff * 8, std::ios::relative); // TODO: XXX relative
+        // }
+    }
+    return cv;
+}
+
+struct ElementRecord {
+    std::vector<double>   coefficients;
+    Summary               es;
+    ElementRecordMetadata erm;
+};
+
+ElementRecord read_element_record(std::ifstream& nasa_spk_file, Summary es)
+{
+    ElementRecord er;
+    er.es = es;
+    nasa_spk_file.seekg((es.end_i - 4) * 8);
+    nasa_spk_file.read((char*)&er.erm, sizeof(er.erm));
+
+    // std::vector<double> coefficients;
+    // er.coefficients.resize((es.end_i - 4) - es.start_i);
+    er.coefficients.resize(1000);
+
+    nasa_spk_file.seekg((es.start_i - 1) * 8);
+    nasa_spk_file.read(
+        reinterpret_cast<char*>(er.coefficients.data()),
+        er.coefficients.size() * sizeof(double));
+
+    return er;
+}
+
+typedef std::vector<ElementRecord> ElementRecordVec;
+
+ElementRecordVec
 read_summaries(std::ifstream& nasa_spk_file, size_t segment_start_block)
 {
-    SummaryRecord     sr;
-    ElementSummaryVec esv;
+    SummaryRecordBlockHeader sr;
+    ElementRecordVec         erv;
 
     size_t summary_records_read = 0;
 
@@ -174,21 +389,21 @@ read_summaries(std::ifstream& nasa_spk_file, size_t segment_start_block)
         LOG_S(INFO) << "Read summary record #" << ++summary_records_read;
         for (size_t n_element = 0; n_element < sr.n_element_records;
              n_element++) {
-            ElementSummary es;
+            Summary es;
             nasa_spk_file.read((char*)&es, sizeof(es));
-            esv.push_back(es);
+            erv.push_back(read_element_record(nasa_spk_file, es));
             LOG_S(INFO) << "Read element summary " << n_element + 1 << "/"
                         << sr.n_element_records << " " << es;
         }
 
-        if (sr.n_next_summary_record == 0)
+        if (sr.next_summary_record_blk == 0)
             break;
 
-        nasa_spk_file.seekg(block_size * (sr.n_next_summary_record - 1));
+        nasa_spk_file.seekg(block_size * (sr.next_summary_record_blk - 1));
         nasa_spk_file.read((char*)&sr, sizeof(sr));
     }
 
-    return ElementSummaryVec();
+    return erv;
 }
 
 // size_t read_summary_record(std::ifstream& nasa_spk_file, size_t
@@ -208,16 +423,16 @@ struct EphemerisCoeffcients {
 void load_spk(std::ifstream& nasa_spk_file)
 {
 
-    FileRecord hdr;
-    if (!read_file_record(nasa_spk_file, hdr)) {
+    auto hdr = read_file_record(nasa_spk_file);
+    if (!hdr) {
         // ok = false;
         // return false;
     }
 
-    std::string comment
-        = read_comment_blocks(nasa_spk_file, hdr.n_initial_summary);
+    std::string comment = read_comment_blocks(nasa_spk_file, hdr);
     // std::cout << comment;
 
-    read_summaries(nasa_spk_file, hdr.n_initial_summary);
+    ElementRecordVec erv
+        = read_summaries(nasa_spk_file, hdr->first_summary_block);
 }
 }
