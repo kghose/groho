@@ -3,7 +3,8 @@
 namespace orrery {
 
 // TODO: Handle files of both endian-ness
-bool SpkOrrery::load_orrery_model(std::string fname)
+bool SpkOrrery::load_orrery_model(
+    std::string fname, double begin_jd, double end_jd)
 {
     std::ifstream nasa_spk_file(fname, std::ios::binary);
 
@@ -13,7 +14,7 @@ bool SpkOrrery::load_orrery_model(std::string fname)
         return false;
     }
 
-    load_spk(nasa_spk_file);
+    load_spk(nasa_spk_file, begin_jd, end_jd);
 
     ok = true;
     return ok;

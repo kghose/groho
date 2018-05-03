@@ -54,7 +54,7 @@ public:
     // Calling this repeatedly will load multiple SPK files.
     // Bodies that appear multiple times will be over written such that
     // only the last read version is kept
-    bool load_orrery_model(std::string fname);
+    bool load_orrery_model(std::string fname, double begin_jd, double end_jd);
 
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
     // vector containing this information.

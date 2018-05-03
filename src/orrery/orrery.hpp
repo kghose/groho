@@ -36,7 +36,9 @@ public:
 
     // Given a model file path, load this orrery file
     // Return false if an error occurs while loading the file
-    virtual bool load_orrery_model(std::string fname) = 0;
+    virtual bool
+    load_orrery_model(std::string fname, double begin_jd, double end_jd)
+        = 0;
 
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
     // vector containing this information.

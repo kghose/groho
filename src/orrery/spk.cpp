@@ -23,6 +23,20 @@
 
 namespace daffile {
 
+const double T0        = 2451545.0; // Julian date for the year 2000
+const double S_PER_DAY = 86400.0;
+
+double jd_to_j2000(double jd) { return (jd - T0) * S_PER_DAY; }
+
+double j2000_to_jd(double seconds) { return T0 + seconds / S_PER_DAY; }
+
+// https://en.wikipedia.org/wiki/Earth-centered_inertial#J2000
+// One commonly used ECI frame is defined with the Earth's Mean Equator and
+// Equinox at 12:00 Terrestrial Time on 1 January 2000. It can be referred to as
+// J2000 or EME2000. The x-axis is aligned with the mean equinox. The z-axis is
+// aligned with the Earth's spin axis or celestial North Pole. The y-axis is
+// rotated by 90° East about the celestial equator.[5]
+
 // In the following section all structures that closely reflect some part of the
 // SPK/DAF file structure are named adhering to the nomenclature JPL/NASA
 // adopted. The final structure (Emphemeris) which collates and organizes the
@@ -42,6 +56,9 @@ namespace daffile {
 
 // The file is organized in 1024 byte blocks
 const size_t block_size = 1024;
+
+// 8 byte doubles are the standard data for most of the file
+const size_t size_of_double = 8;
 
 const std::string integrity_check_template
     = "FTPSTR:\r:\n:\r\n:\r\x00:\x81:\x10\xce:ENDFTP";
@@ -82,7 +99,7 @@ struct SummaryRecordBlockHeader {
 
 // Each summary has a fixed form, reflected here
 struct Summary {
-    double    start_second; // initial epoch, as seconds from J2000
+    double    begin_second; // initial epoch, as seconds from J2000
     double    end_second;   // final epoch, as seconds from J2000
     u_int32_t target_id;    // target identifier
     u_int32_t center_id;    // center identifier
@@ -134,20 +151,11 @@ SummaryVec read_summaries(
 //    | Z' coefficients  |
 //    +------------------+
 
-typedef std::vector<double> dblvec;
+Elements
+read_elements(std::ifstream& nasa_spk_file, int coefficient_n, int data_type);
 
-struct Elements {
-    double t_mid;  // same as MID
-    double t_half; // same as RADIUS
-    dblvec X;      // coefficients for X
-    dblvec Y;      // coefficients for Y
-    dblvec Z;      // coefficients for Z
-};
-
-Elements read_elements(std::ifstream& nasa_spk_file, int data_type);
-dblvec   read_coefficients(std::ifstream& nasa_spk_file, int data_type);
-
-typedef std::vector<Elements> ElementsVec;
+void read_coefficients(
+    std::ifstream& nasa_spk_file, size_t n_coeff, std::vector<double>& V);
 
 // At the end of the set of element records is a footer carrying some
 // metadata for that block of element records
@@ -161,41 +169,83 @@ struct ElementRecordMetadata {
 ElementRecordMetadata
 read_element_record_metadata(std::ifstream& nasa_spk_file, const Summary& s);
 
-// In the end we package all of this into the "Ephemeris" structure
-struct Ephemeris {
-    int         target_code; // NASA/JPL code for this body
-    int         center_code; // NASA/JPL code for reference body
-    std::string target_name; // Human readable name for this body
-    std::string center_name; // Human readable name for reference body
-    ElementsVec evec; // coefficients for just the epoch we are interested in
-};
+Ephemeris read_ephemeris(
+    std::ifstream& nasa_spk_file,
+    const Summary& s,
+    double         begin_jd,
+    double         end_jd);
 
-Ephemeris read_ephemeris(std::ifstream& nasa_spk_file, const Summary& s);
+//
+// Function defenitions follow /////////////////////////////////////////
+//
 
-typedef std::vector<Ephemeris> EphemerisVec;
+EphemerisVec
+load_spk(std::ifstream& nasa_spk_file, double begin_jd, double end_jd)
+{
+
+    auto hdr = read_file_record(nasa_spk_file);
+    if (!hdr) {
+        LOG_S(ERROR) << "Problem with header";
+        return {};
+    }
+
+    // std::string comment = read_comment_blocks(nasa_spk_file, hdr);
+    // std::cout << comment;
+
+    EphemerisVec eph_vec;
+    for (auto summary : read_summaries(nasa_spk_file, hdr)) {
+
+        if (summary.frame_id != 1) {
+            LOG_S(WARNING) << "Body: " << summary.target_id
+                           << ": can only handle J2000 frame, this is "
+                           << summary.frame_id << ". Skipping.";
+            continue;
+        }
+
+        if ((jd_to_j2000(begin_jd) < summary.begin_second)
+            || (jd_to_j2000(end_jd) > summary.end_second)) {
+            LOG_S(WARNING) << "Body: " << summary.target_id
+                           << ": Insufficient ephemeris data for simulation";
+            continue;
+        }
+
+        if (!((summary.data_type == 2) || (summary.data_type == 3))) {
+            LOG_S(WARNING) << "Body: " << summary.target_id
+                           << ": Can only handle data type II or III. Skipping";
+            continue;
+        }
+
+        eph_vec.push_back(EphShrPtr(new Ephemeris(
+            read_ephemeris(nasa_spk_file, summary, begin_jd, end_jd))));
+    }
+
+    return eph_vec;
+}
 
 // Read the file header record
 std::optional<FileRecord> read_file_record(std::ifstream& nasa_spk_file)
 {
-    std::optional<FileRecord> hdr;
+    FileRecord hdr;
 
     nasa_spk_file.seekg(0);
-    nasa_spk_file.read((char*)&*hdr, sizeof(*hdr));
+    nasa_spk_file.read((char*)&hdr, sizeof(hdr));
 
-    LOG_S(INFO) << "File architecture: " << hdr->file_architecture;
-    LOG_S(INFO) << "Internal name: " << hdr->internal_name;
-    LOG_S(INFO) << "Numeric format: " << hdr->numeric_format;
+    LOG_S(INFO) << "File architecture: " << hdr.file_architecture;
+    LOG_S(INFO) << "Internal name: " << hdr.internal_name;
+    LOG_S(INFO) << "Numeric format: " << hdr.numeric_format;
 
-    if ((hdr->n_double_precision != 2) & (hdr->n_integers != 6)) {
+    if ((hdr.n_double_precision != 2) & (hdr.n_integers != 6)) {
         LOG_S(ERROR) << "Expected ND = 2, NI = 6, but got "
-                     << hdr->n_double_precision << ", " << hdr->n_integers;
+                     << hdr.n_double_precision << ", " << hdr.n_integers;
         return {};
     }
 
-    if (integrity_check_template.compare(hdr->integrity_string) != 0) {
+    if (integrity_check_template.compare(hdr.integrity_string) != 0) {
         LOG_S(ERROR) << "This file is likely corrupted: FTP validation fails";
         return {};
     }
+
+    LOG_S(INFO) << "Header looks fine";
 
     return hdr;
 }
@@ -234,14 +284,19 @@ read_comment_blocks(std::ifstream& nasa_spk_file, std::optional<FileRecord> hdr)
     return comment;
 }
 
-SummaryVec read_summaries(std::ifstream& nasa_spk_file, FileRecord& hdr)
+SummaryVec read_summaries(
+    std::ifstream& nasa_spk_file, std::optional<const FileRecord> hdr)
 {
     SummaryRecordBlockHeader srbh;
     SummaryVec               sv;
 
+    if (!hdr) {
+        return sv;
+    }
+
     size_t summaries_read = 0;
 
-    nasa_spk_file.seekg(block_size * (hdr.first_summary_block - 1));
+    nasa_spk_file.seekg(block_size * (hdr->first_summary_block - 1));
     nasa_spk_file.read((char*)&srbh, sizeof(srbh));
 
     for (;;) {
@@ -263,18 +318,92 @@ SummaryVec read_summaries(std::ifstream& nasa_spk_file, FileRecord& hdr)
     return sv;
 }
 
-std::ostream& operator<<(std::ostream& out, const Summary& es)
+Ephemeris read_ephemeris(
+    std::ifstream& nasa_spk_file,
+    const Summary& s,
+    double         begin_jd,
+    double         end_jd)
 {
-    out << "(" << es.start_second << " - " << es.end_second
-        << ": T:" << es.target << " C:" << es.center << ")";
-    return out;
+    double begin_s = jd_to_j2000(begin_jd);
+    double end_s   = jd_to_j2000(end_jd);
+
+    ElementRecordMetadata erm = read_element_record_metadata(nasa_spk_file, s);
+
+    size_t begin_element = std::floor((begin_s - erm.init) / erm.intlen);
+    size_t end_element   = std::floor((end_s - erm.init) / erm.intlen);
+
+    size_t n_coeff;
+    if (s.data_type == 2) {
+        n_coeff = (int(erm.rsize) - 2) / 3; // Type II - has one sets of coeffs
+    }
+    if (s.data_type == 3) {
+        n_coeff = (int(erm.rsize) - 2) / 6; // Type III - has two sets of coeffs
+    }
+
+    size_t internal_offset_byte
+        = (begin_element * erm.rsize + s.start_i - 1) * size_of_double;
+    nasa_spk_file.seekg(internal_offset_byte);
+
+    Ephemeris eph;
+
+    eph.target_code = s.target_id;
+    eph.center_code = s.center_id;
+
+    eph.evec.reserve(end_element - begin_element + 1);
+    for (size_t i = begin_element; i <= end_element; i++) {
+        eph.evec.push_back(read_elements(nasa_spk_file, n_coeff, s.data_type));
+    }
+
+    LOG_S(INFO) << "Ephemeris for " << s.target_id << ": " << n_coeff - 1
+                << " order polynomial, " << eph.evec.size() << " elements, ";
+
+    return eph;
 }
 
-std::ostream& operator<<(std::ostream& out, const ElementRecordMetadata& erm)
+// std::ostream& operator<<(std::ostream& out, const Summary& es)
+// {
+//     out << "(" << es.start_second << " - " << es.end_second
+//         << ": T:" << es.target << " C:" << es.center << ")";
+//     return out;
+// }
+
+// std::ostream& operator<<(std::ostream& out, const ElementRecordMetadata& erm)
+// {
+//     out << "(" << erm.init << ", " << erm.intlen << ", " << erm.rsize << ", "
+//         << erm.n;
+//     return out;
+// }
+
+// Element data are stored sequentially, so this function is meant to be called
+// sequentially.
+Elements read_elements(std::ifstream& nasa_spk_file, int n_coeff, int data_type)
 {
-    out << "(" << erm.init << ", " << erm.intlen << ", " << erm.rsize << ", "
-        << erm.n;
-    return out;
+    Elements elem;
+
+    nasa_spk_file.read((char*)&elem.t_mid, sizeof(double));
+    nasa_spk_file.read((char*)&elem.t_half, sizeof(double));
+
+    read_coefficients(nasa_spk_file, n_coeff, elem.X);
+    read_coefficients(nasa_spk_file, n_coeff, elem.Y);
+    read_coefficients(nasa_spk_file, n_coeff, elem.Z);
+
+    if (data_type == 3) { // Need to skip the unused coefficients
+        nasa_spk_file.seekg(3 * n_coeff * 8, std::ios::cur);
+    }
+
+    return elem;
+}
+
+// Coefficients are stored sequentially.
+void read_coefficients(
+    std::ifstream& nasa_spk_file, size_t n_coeff, std::vector<double>& V)
+{
+    V.reserve(n_coeff);
+    for (int j = 0; j < n_coeff; j++) {
+        double c;
+        nasa_spk_file.read((char*)&c, sizeof(double));
+        V.push_back(c);
+    }
 }
 
 ElementRecordMetadata
@@ -286,16 +415,7 @@ read_element_record_metadata(std::ifstream& nasa_spk_file, const Summary& s)
     return erm;
 }
 
-void read_coefficients(
-    std::ifstream& nasa_spk_file, size_t n_coeff, std::vector<double>& V)
-{
-    for (int j = 0; j < n_coeff; j++) {
-        double c;
-        nasa_spk_file.read((char*)&c, sizeof(double));
-        V.push_back(c);
-    }
-}
-
+/*
 std::optional<ChebyVec> read_ephemeris_coefficients(
     std::ifstream& nasa_spk_file, const Summary& s, double start_s,
     double end_s)
@@ -346,6 +466,7 @@ std::optional<ChebyVec> read_ephemeris_coefficients(
     }
     return cv;
 }
+*/
 
 struct ElementRecord {
     std::vector<double>   coefficients;
@@ -374,8 +495,9 @@ ElementRecord read_element_record(std::ifstream& nasa_spk_file, Summary es)
 
 typedef std::vector<ElementRecord> ElementRecordVec;
 
-ElementRecordVec
-read_summaries(std::ifstream& nasa_spk_file, size_t segment_start_block)
+/*
+SummaryVec read_summaries(
+    std::ifstream& nasa_spk_file, std::optional<const FileRecord> hdr)
 {
     SummaryRecordBlockHeader sr;
     ElementRecordVec         erv;
@@ -405,7 +527,7 @@ read_summaries(std::ifstream& nasa_spk_file, size_t segment_start_block)
 
     return erv;
 }
-
+*/
 // size_t read_summary_record(std::ifstream& nasa_spk_file, size_t
 // segment_start_block)
 // {
@@ -416,23 +538,4 @@ read_summaries(std::ifstream& nasa_spk_file, size_t segment_start_block)
 
 //     return (size_t)next_segment_start_block;
 // }
-
-struct EphemerisCoeffcients {
-};
-
-void load_spk(std::ifstream& nasa_spk_file)
-{
-
-    auto hdr = read_file_record(nasa_spk_file);
-    if (!hdr) {
-        // ok = false;
-        // return false;
-    }
-
-    std::string comment = read_comment_blocks(nasa_spk_file, hdr);
-    // std::cout << comment;
-
-    ElementRecordVec erv
-        = read_summaries(nasa_spk_file, hdr->first_summary_block);
-}
 }
