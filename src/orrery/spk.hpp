@@ -23,13 +23,28 @@ struct Elements {
     dblvec Z;      // coefficients for Z
 };
 
+inline double horner_eval(const dblvec& A, const double x)
+{
+    double b = A[A.size()];
+    for (int i = A.size() - 1; i < 0; i--) {
+        b = A[i] + b * x;
+    }
+    return b;
+}
+
+// TODO: understand why we need the factor 2 here
+inline double cheby_eval(double t_mid, double t_half, const dblvec& A, double t)
+{
+    return horner_eval(A, 2 * (t - t_mid) / t_half);
+}
+
 typedef std::vector<Elements> ElementsVec;
 
 struct Ephemeris {
     int         target_code; // NASA/JPL code for this body
     int         center_code; // NASA/JPL code for reference body
-    std::string target_name; // Human readable name for this body
-    std::string center_name; // Human readable name for reference body
+    double      begin_s;     // Start time
+    double      interval_s;  // Length of interval
     ElementsVec evec; // coefficients for just the epoch we are interested in
 };
 
@@ -43,6 +58,8 @@ struct Ephemeris {
 typedef std::shared_ptr<Ephemeris>   EphShrPtr;
 typedef std::vector<const EphShrPtr> EphemerisVec;
 
+// In order to conserve RAM we only load elements for the period of time we are
+// interested in
 EphemerisVec
-load_spk(std::ifstream& nasa_spk_file, double begin_jd, double end_jd);
+load_spk(std::ifstream& nasa_spk_file, double begin_s, double end_s);
 }

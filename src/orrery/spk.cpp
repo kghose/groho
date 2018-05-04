@@ -23,13 +23,6 @@
 
 namespace daffile {
 
-const double T0        = 2451545.0; // Julian date for the year 2000
-const double S_PER_DAY = 86400.0;
-
-double jd_to_j2000(double jd) { return (jd - T0) * S_PER_DAY; }
-
-double j2000_to_jd(double seconds) { return T0 + seconds / S_PER_DAY; }
-
 // https://en.wikipedia.org/wiki/Earth-centered_inertial#J2000
 // One commonly used ECI frame is defined with the Earth's Mean Equator and
 // Equinox at 12:00 Terrestrial Time on 1 January 2000. It can be referred to as
@@ -180,7 +173,7 @@ Ephemeris read_ephemeris(
 //
 
 EphemerisVec
-load_spk(std::ifstream& nasa_spk_file, double begin_jd, double end_jd)
+load_spk(std::ifstream& nasa_spk_file, double begin_s, double end_s)
 {
 
     auto hdr = read_file_record(nasa_spk_file);
@@ -202,8 +195,7 @@ load_spk(std::ifstream& nasa_spk_file, double begin_jd, double end_jd)
             continue;
         }
 
-        if ((jd_to_j2000(begin_jd) < summary.begin_second)
-            || (jd_to_j2000(end_jd) > summary.end_second)) {
+        if ((begin_s < summary.begin_second) || (end_s > summary.end_second)) {
             LOG_S(WARNING) << "Body: " << summary.target_id
                            << ": Insufficient ephemeris data for simulation";
             continue;
@@ -216,7 +208,7 @@ load_spk(std::ifstream& nasa_spk_file, double begin_jd, double end_jd)
         }
 
         eph_vec.push_back(EphShrPtr(new Ephemeris(
-            read_ephemeris(nasa_spk_file, summary, begin_jd, end_jd))));
+            read_ephemeris(nasa_spk_file, summary, begin_s, end_s))));
     }
 
     return eph_vec;
@@ -321,12 +313,9 @@ SummaryVec read_summaries(
 Ephemeris read_ephemeris(
     std::ifstream& nasa_spk_file,
     const Summary& s,
-    double         begin_jd,
-    double         end_jd)
+    double         begin_s,
+    double         end_s)
 {
-    double begin_s = jd_to_j2000(begin_jd);
-    double end_s   = jd_to_j2000(end_jd);
-
     ElementRecordMetadata erm = read_element_record_metadata(nasa_spk_file, s);
 
     size_t begin_element = std::floor((begin_s - erm.init) / erm.intlen);
@@ -348,6 +337,8 @@ Ephemeris read_ephemeris(
 
     eph.target_code = s.target_id;
     eph.center_code = s.center_id;
+    eph.begin_s     = erm.init + begin_element * erm.intlen;
+    eph.interval_s  = erm.intlen;
 
     eph.evec.reserve(end_element - begin_element + 1);
     for (size_t i = begin_element; i <= end_element; i++) {
@@ -467,7 +458,7 @@ std::optional<ChebyVec> read_ephemeris_coefficients(
     return cv;
 }
 */
-
+/*
 struct ElementRecord {
     std::vector<double>   coefficients;
     Summary               es;
@@ -494,7 +485,7 @@ ElementRecord read_element_record(std::ifstream& nasa_spk_file, Summary es)
 }
 
 typedef std::vector<ElementRecord> ElementRecordVec;
-
+*/
 /*
 SummaryVec read_summaries(
     std::ifstream& nasa_spk_file, std::optional<const FileRecord> hdr)

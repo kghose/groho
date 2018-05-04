@@ -1,6 +1,79 @@
+#include <unordered_set>
+
 #include "spkorrery.hpp"
 
 namespace orrery {
+
+EphemerisVec combine_ephemerides(
+    const EphemerisVec& old_ephemera, const EphemerisVec& new_ephemera)
+{
+    EphemerisVec unsorted_ephemera;
+
+    std::unordered_set<int> centers;
+
+    for (auto e : old_ephemera) {
+        unsorted_ephemera.push_back(e);
+        centers.insert(e->target_code);
+    }
+
+    // Add if not duplicate
+    for (auto e : new_ephemera) {
+        if (centers.count(e->target_code) == 0) {
+            unsorted_ephemera.push_back(e);
+            centers.insert(e->target_code);
+        } else {
+            LOG_S(WARNING) << "Ignoring duplicate body (" << e->target_code
+                           << ")";
+        }
+    }
+
+    return unsorted_ephemera;
+}
+
+// Reorder the Ephemerides such that bodies serving as centers come before the
+// target bodies.
+// This is a multi-pass algorithm. We repeatedly sweep over the original list
+// adding bodies to the sorted list as long as we have computed their center
+EphemerisVec sort_ephemerides(const EphemerisVec& un_srt)
+{
+    EphemerisVec srt;
+
+    std::unordered_set<int> centers = { 0 };
+
+    while (srt.size() < un_srt.size()) {
+        for (int i = 0; i < un_srt.size(); i++) {
+            if (centers.count(un_srt[i]->target_code))
+                continue;
+            if (centers.count(un_srt[i]->center_code)) {
+                srt.push_back(un_srt[i]);
+                centers.insert(un_srt[i]->target_code);
+            }
+        }
+    }
+
+    return srt;
+}
+
+// Returns a vector v such that v[i] points to the ephemerides in srt that
+// serves as the center for i. Undefined for i whose center is 0
+std::vector<size_t> create_center_indexes(const EphemerisVec& srt)
+{
+    std::unordered_map<int, size_t> code2index;
+
+    std::vector<size_t> ci(srt.size());
+
+    for (int i = 0; i < srt.size(); i++) {
+        code2index[srt[i]->target_code] = i;
+    }
+
+    for (int i = 0; i < srt.size(); i++) {
+        if (srt[i]->center_code != 0) {
+            ci[i] = code2index[srt[i]->center_code];
+        }
+    }
+
+    return ci;
+}
 
 // TODO: Handle files of both endian-ness
 bool SpkOrrery::load_orrery_model(
@@ -14,7 +87,17 @@ bool SpkOrrery::load_orrery_model(
         return false;
     }
 
-    load_spk(nasa_spk_file, begin_jd, end_jd);
+    ephemera = sort_ephemerides(combine_ephemerides(
+        ephemera, load_spk(nasa_spk_file, begin_jd, end_jd)));
+
+    center_idx = create_center_indexes(ephemera);
+
+    // TODO: Include table of planetary constants so we can fill these out
+    bodies.clear();
+    for (auto e : ephemera) {
+        OrreryBody ob;
+        bodies.push_back(ob);
+    }
 
     ok = true;
     return ok;
@@ -22,14 +105,15 @@ bool SpkOrrery::load_orrery_model(
 
 // Fill out the (x, y, z) of each Orrery body and return us an immutable
 // vector containing this information.
-const OrreryBodyVec& SpkOrrery::get_orrery_at(double jd)
+const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
 {
-    // for (int i = 0; i < bodies.size(); i++) {
-    //     segments[i].compute(jd, bodies[i]);
-    //     if (segments[i].center != 0) {
-    //         bodies[i].pos += bodies[segments[i].center_i].pos;
-    //     }
-    // }
+    for (int i = 0; i < ephemera.size(); i++) {
+        set_pos(s, *ephemera[i], bodies[i].pos);
+
+        if (ephemera[i]->center_code != 0) {
+            bodies[i].pos += bodies[center_idx[i]].pos;
+        }
+    }
     return bodies;
 }
 }

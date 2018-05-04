@@ -10,8 +10,13 @@
 */
 #pragma once
 
+#include <cmath>
+#include <unordered_map>
+#include <vector>
+
 #include "orrery.hpp"
 #include "spk.hpp"
+#include "vector.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -20,30 +25,22 @@ namespace orrery {
 
 using namespace daffile;
 
-struct SpkSegment {
-    std::string source; // official ephemeris name, like 'DE-0430LE-0430'
+inline void set_pos(double s, const Ephemeris& eph, sim::Vector& pos)
+{
+    Elements e = eph.evec[std::floor((s - eph.begin_s) / eph.interval_s)];
 
-    double start_second; // initial epoch, as seconds from J2000
-    double end_second;   // final epoch, as seconds from J2000
-    double start_jd;     // start_second, converted to a Julian Date
-    double end_jd;       // end_second, converted to a Julian Date
-    int    center;       // integer center identifier
-    int    target;       // integer target identifier
-    size_t center_i;     // index of segment/body refered as center
-    int    frame;        // integer frame identifier
-    int    data_type;    // integer data type identifier
-    size_t start_i;      // index where segment starts
-    size_t end_i;        // index where segment ends
-
-    // Given a julian date fill out (x, y, z) for the passed OrreryBody
-    void compute(double jd, OrreryBody& body);
-};
-
-typedef std::vector<SpkSegment> SpkSegmentVec;
+    pos.x = cheby_eval(e.t_mid, e.t_half, e.X, s);
+    pos.y = cheby_eval(e.t_mid, e.t_half, e.Y, s);
+    pos.z = cheby_eval(e.t_mid, e.t_half, e.Z, s);
+}
 
 class SpkOrrery : public Orrery {
 
-    SpkSegmentVec segments;
+    EphemerisVec ephemera;
+
+    std::vector<size_t> center_idx;
+    // center_idx[i] = index into ephemera for the body that serves as center
+    // for i. Undefined for bodies with center 0
 
 public:
     SpkOrrery()
@@ -52,8 +49,7 @@ public:
     }
     // Load SPK file "fname" and make the bodies in it available to us
     // Calling this repeatedly will load multiple SPK files.
-    // Bodies that appear multiple times will be over written such that
-    // only the last read version is kept
+    // If a body appears more than once, the later entries are disregarded
     bool load_orrery_model(std::string fname, double begin_jd, double end_jd);
 
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
