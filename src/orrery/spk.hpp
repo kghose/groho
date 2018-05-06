@@ -23,19 +23,20 @@ struct Elements {
     dblvec Z;      // coefficients for Z
 };
 
-inline double horner_eval(const dblvec& A, const double x)
-{
-    double b = A[A.size()];
-    for (int i = A.size() - 1; i < 0; i--) {
-        b = A[i] + b * x;
-    }
-    return b;
-}
-
-// TODO: understand why we need the factor 2 here
+// https://en.wikipedia.org/wiki/Clenshaw_algorithm#Special_case_for_Chebyshev_series
 inline double cheby_eval(double t_mid, double t_half, const dblvec& A, double t)
 {
-    return horner_eval(A, 2 * (t - t_mid) / t_half);
+    double x  = (t - t_mid) / t_half;
+    double x2 = 2 * x;
+    double Tn, Tn_1 = x, Tn_2 = 1.0;
+    double b = A[0] * Tn_2 + A[1] * Tn_1;
+    for (int i = 2; i < A.size(); i++) {
+        Tn = x2 * Tn_1 - Tn_2;
+        b += Tn * A[i];
+        Tn_2 = Tn_1;
+        Tn_1 = Tn;
+    }
+    return b;
 }
 
 typedef std::vector<Elements> ElementsVec;
