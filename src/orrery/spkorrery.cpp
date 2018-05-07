@@ -1,5 +1,6 @@
 #include <unordered_set>
 
+#include "solar_system.hpp"
 #include "spkorrery.hpp"
 
 namespace orrery {
@@ -75,6 +76,19 @@ std::vector<size_t> create_center_indexes(const EphemerisVec& srt)
     return ci;
 }
 
+OrreryBodyVec create_bodies(const EphemerisVec& ephemera)
+{
+    OrreryBodyVec bodies;
+    for (auto e : ephemera) {
+        OrreryBody ob;
+        if (body_library.count(e->target_code)) {
+            ob = body_library[e->target_code];
+        }
+        bodies.push_back(ob);
+    }
+    return bodies;
+}
+
 // TODO: Handle files of both endian-ness
 bool SpkOrrery::load_orrery_model(
     std::string fname, double begin_jd, double end_jd)
@@ -87,17 +101,10 @@ bool SpkOrrery::load_orrery_model(
         return false;
     }
 
-    ephemera = sort_ephemerides(combine_ephemerides(
+    ephemera   = sort_ephemerides(combine_ephemerides(
         ephemera, load_spk(nasa_spk_file, begin_jd, end_jd)));
-
     center_idx = create_center_indexes(ephemera);
-
-    // TODO: Include table of planetary constants so we can fill these out
-    bodies.clear();
-    for (auto e : ephemera) {
-        OrreryBody ob;
-        bodies.push_back(ob);
-    }
+    bodies     = create_bodies(ephemera);
 
     ok = true;
     return ok;
