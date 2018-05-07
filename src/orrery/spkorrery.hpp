@@ -1,13 +1,12 @@
 /*
-  Subclasses Orrery and incorporates code to read JPL/NASA SPK/DAF files.
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-  Allows us to load one or more SPK files into memory and then does the
-  computations required on the loaded data to return helio-centric cartesian
-  coordinates at given time points.
-
-  Order of the SPK files matter if a body is duplicated - only data for the last
-  load is used.
+Subclasses Orrery and incorporates code to read JPL/NASA SPK/DAF files.
+One or more SPK files can be loaded into memory and body position computed
+at given times.
 */
+
 #pragma once
 
 #include <cmath>

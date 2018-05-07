@@ -1,17 +1,11 @@
 /*
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-  Segments are organized into a list (vector) such that any object that serves
-  as a center (reference) for a body appears earlier
-  a 'center' appears earlier in the list than any object tha
-  (such as barycenters) are placed before any bodies that are computed
-  with reference to them.
-
-
-  For this reason body 3 (Earth-Moon barycenter)
-  referenced to the solar system barycenter 0, is placed before 399 (Earth)
-  or 301 (moon). This sorting is done by placing bodies <= 10 at the begining
-  of the list. The order of succeeding bodies is irrelevant
+The following code handles loading of NASA/JPL SPK/DAF files that carry
+information for planetary ephemerides.
 */
+
 #include <cmath>
 #include <fstream>
 #include <optional>
@@ -23,29 +17,22 @@
 
 namespace daffile {
 
-// https://en.wikipedia.org/wiki/Earth-centered_inertial#J2000
-// One commonly used ECI frame is defined with the Earth's Mean Equator and
-// Equinox at 12:00 Terrestrial Time on 1 January 2000. It can be referred to as
-// J2000 or EME2000. The x-axis is aligned with the mean equinox. The z-axis is
-// aligned with the Earth's spin axis or celestial North Pole. The y-axis is
-// rotated by 90° East about the celestial equator.[5]
-
 // In the following section all structures that closely reflect some part of the
 // SPK/DAF file structure are named adhering to the nomenclature JPL/NASA
 // adopted. The final structure (Emphemeris) which collates and organizes the
 // data in a manner suitable for this program is named to match it's logical
 // function.
 
-//   Thanks go to JPL/NASA NAIF docs
-//   ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
+//  Thanks go to JPL/NASA NAIF docs
+//  ftp://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/daf.html
 
-//   the jplemphem Python code by Brandon Rhodes
-//   https://github.com/brandon-rhodes/python-jplephem
+//  the jplemphem Python code by Brandon Rhodes
+//  https://github.com/brandon-rhodes/python-jplephem
 
-//   And this stackoverflow answer
-//   https://space.stackexchange.com/a/20715
-//   to this question
-//   https://space.stackexchange.com/questions/12506/what-is-the-exact-format-of-the-jpl-ephemeris-files
+//  And this stackoverflow answer
+//  https://space.stackexchange.com/a/20715
+//  to this question
+//  https://space.stackexchange.com/questions/12506/what-is-the-exact-format-of-the-jpl-ephemeris-files
 
 // The file is organized in 1024 byte blocks
 const size_t block_size = 1024;

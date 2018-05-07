@@ -1,23 +1,32 @@
 /*
-Solar system bodies, their names, radii, GM values and SPK IDs
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-Source data for this table are as follows
+The following code stores a mapping from a SPK ID of a solar system bod to a
+structure carrying information about its name, GM and radius
 
-NASA/JPL
+This table has been compiled from:
 
-Names:
+Names correspondng to SPK IDs: [NAIF/JPL/NASA][naif] and, for the smaller
+bodies, [SSD/JPL/NASA][ssd]
+
+GM: [NAIF/JPL/NASA][naif2]
+
+Radii from [NAIF/JPL/NASA][naif3] and for the three moons of Pluto, from
+[wikipedia][wp]
+
+
+[naif]:
 https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/naif_ids.html#NAIF%20Object%20ID%20numbers
-and
-https://ssd.jpl.nasa.gov/sbdb.cgi
+[ssd]: https://ssd.jpl.nasa.gov/sbdb.cgi
 
-GM: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de431.tpc
-Radii: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc
+[naif2]: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de431.tpc
 
-And, for the other three moons of Pluto
-https://en.wikipedia.org/wiki/List_of_Solar_System_objects_by_size
+[naif3]: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc
 
-
+[wp]: https://en.wikipedia.org/wiki/List_of_Solar_System_objects_by_size
 */
+
 #pragma once
 
 #include <unordered_map>

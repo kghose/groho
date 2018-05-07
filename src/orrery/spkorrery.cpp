@@ -1,3 +1,12 @@
+/*
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+
+Subclasses Orrery and incorporates code to read JPL/NASA SPK/DAF files.
+One or more SPK files can be loaded into memory and body position computed
+at given times.
+*/
+
 #include <unordered_set>
 
 #include "solar_system.hpp"
@@ -76,6 +85,10 @@ std::vector<size_t> create_center_indexes(const EphemerisVec& srt)
     return ci;
 }
 
+// For every body in the SPK file create a mirror OrreryBody to store the
+// computed position information and some planetary constants. It is important
+// to note that this list contains barycenters which are dynamical (virtual)
+// points and not for display or gravitational computation.
 OrreryBodyVec create_bodies(const EphemerisVec& ephemera)
 {
     OrreryBodyVec bodies;

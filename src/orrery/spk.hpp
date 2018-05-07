@@ -1,8 +1,13 @@
 /*
-  Code to read NASA SPK files. The aim is to have a minimal interface that
-  allows us to load element data from a NASA SPK file and return it as a
-  self-contained structure.
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+
+The following code handles loading of NASA/JPL SPK/DAF files that carry
+information for planetary ephemerides. The functions defined here use the
+chebyshev coefficients stored in the SPK/DAF file to compute vector positions
+(x, y, z) for the included bodies
 */
+
 #pragma once
 
 #include <fstream>

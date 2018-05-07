@@ -1,11 +1,15 @@
 /*
-  This class sets up a common interface for dealing with Orreries.
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-  It provides a uniform interface where by
+This class sets up a common interface for dealing with Orreries.
+
+It provides a uniform interface where by
     - We can load Orrery model(s) from disk
     - Obtain a list of GM and (x, y, z) data for all bodies in the Orrery
       at a given time point
 */
+
 #pragma once
 
 #include <string>
