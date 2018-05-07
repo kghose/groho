@@ -24,7 +24,9 @@ struct OrreryBody {
     int         code; // SPK code for body (optional)
     float       GM;   // GM value for body
     float       r;    // Radius of body (for collision tests)
-    sim::Vector pos;  // Position referenced to solar system barycenter
+    bool real_body; // Is this a real solar system body for display purposes and
+                    // gravitational pull computations ?
+    sim::Vector pos; // Position referenced to solar system barycenter
 };
 
 typedef std::vector<OrreryBody> OrreryBodyVec;
