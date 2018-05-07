@@ -16,10 +16,11 @@
 namespace orrery {
 
 struct OrreryBody {
-    std::string name;
-    float       GM;  // GM value for body
-    sim::Vector pos; // Position referenced to solar system barycenter
-    float       r;   // Radius of body (for collision tests)
+    std::string name; // Human readable name for body
+    int         code; // SPK code for body (optional)
+    float       GM;   // GM value for body
+    float       r;    // Radius of body (for collision tests)
+    sim::Vector pos;  // Position referenced to solar system barycenter
 };
 
 typedef std::vector<OrreryBody> OrreryBodyVec;
