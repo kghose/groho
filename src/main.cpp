@@ -1,47 +1,42 @@
 #include <iostream>
-#include <stdexcept>
-#include <thread>
-#include <condition_variable>
+#include <signal.h>
 
+#include "scenario.hpp"
 #include "simulator.hpp"
-#include "display.hpp"
 
 #define LOGURU_IMPLEMENTATION 1
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
 
+volatile sig_atomic_t keep_running = true;
+
+void ctrl_c_pressed(int) { keep_running = false; }
 
 void print_usage()
 {
-  std::cout << "\nUsage:\n" <<  
-  "groho <scenario file>" << std::endl;
+    std::cout << "\nUsage:\n"
+              << "groho <scenario file> <result file>" << std::endl;
 }
 
-
-int main(int argc, char* argv[]) 
+int main(int argc, char* argv[])
 {
-  if( argc < 2 ) 
-  {
-    print_usage();
-    exit(0);
-  }
+    if (argc < 3) {
+        print_usage();
+        exit(0);
+    }
 
-  loguru::init(argc, argv);
+    loguru::init(argc, argv);
 
-  std::string scenario_file( argv[ 1 ] );
+    signal(SIGINT, ctrl_c_pressed);
 
-  sim::Simulator simulator( scenario_file );  
-  sim::Display display( simulator, 400, 400, "গ্রহ" );
+    std::string    scenario_file(argv[1]), result_file(argv[2]);
+    sim::Scenario  scenario(scenario_file);
+    sim::Simulator simulator(result_file);
 
-  std::thread simulator_thread( 
-    &sim::Simulator::run,
-    std::ref( simulator )
-  );
-    
-  display.show();
-  display.run();
-
-  simulator.quit();  
-  simulator_thread.join();
-  
+    while (keep_running) {
+        if (scenario.is_changed()) {
+            simulator.restart_with(scenario);
+        }
+        simulator.step();
+    }
 }
