@@ -4,6 +4,7 @@
 #pragma once
 
 #include "scenario.hpp"
+#include "spkorrery.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -21,6 +22,12 @@ public:
             scenario = scenario_;
 
             jd = scenario.configuration->begin_jd;
+            for (auto orrery_name : scenario.configuration->orrery) {
+                orrery.load_orrery_model(
+                    orrery_name,
+                    scenario.configuration->begin_jd,
+                    scenario.configuration->end_jd);
+            }
 
             LOG_S(INFO) << "Starting simulation";
         }
@@ -30,8 +37,11 @@ public:
 
 private:
     Scenario scenario;
-    bool     running;
-    double   jd;
+
+    orrery::SpkOrrery orrery;
+
+    bool   running;
+    double jd;
 };
 
 void Simulator::step()
