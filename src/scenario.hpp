@@ -30,7 +30,7 @@ struct Configuration {
 
     bool set_key_value(std::optional<KeyValue> kv)
     {
-        static std::unordered_map<sst, std::function<void(sst)>> keyword_map{
+        std::unordered_map<sst, std::function<void(sst)>> keyword_map{
 
             { "name", [=](sst v) { name      = v; } },
             { "begin", [=](sst v) { begin_jd = stof(v); } },
@@ -50,18 +50,34 @@ struct Configuration {
     };
 };
 
-class Scenario {
-public:
-    Scenario(std::string fname_) { fname = fname_; }
-    bool is_valid() { return valid; }
-    bool is_changed();
-    void change_noted() { changed = false; }
+bool        operator==(const Configuration& a, const Configuration& b);
+inline bool operator!=(const Configuration& a, const Configuration& b)
+{
+    return !(a == b);
+}
 
-private:
+std::optional<Configuration> parse_configuration(std::string fname);
+
+struct Scenario {
+
+    Scenario() { ; }
+    Scenario(std::string fname_)
+    {
+        fname = fname_;
+
+        configuration = parse_configuration(fname);
+    }
+
     std::string fname;
 
-    std::atomic<bool> changed = true, valid = false;
+    std::optional<Configuration> configuration;
 };
+
+bool        operator==(const Scenario& a, const Scenario& b);
+inline bool operator!=(const Scenario& a, const Scenario& b)
+{
+    return !(a == b);
+}
 }
 
 /*
