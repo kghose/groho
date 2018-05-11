@@ -1,5 +1,6 @@
 #include <iostream>
 #include <signal.h>
+#include <stdlib.h>
 
 #include "scenario.hpp"
 #include "simulator.hpp"
@@ -37,6 +38,11 @@ int main(int argc, char* argv[])
         if (scenario.is_changed()) {
             simulator.restart_with(scenario);
         }
-        simulator.step();
+        if (simulator.is_running()) {
+            simulator.step();
+        } else {
+            sleep(500);
+            // sleep for 500ms or so to avoid burning CPU
+        }
     }
 }
