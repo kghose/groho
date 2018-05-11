@@ -1,8 +1,6 @@
 #include <fstream>
 #include <iostream>
-#include <optional>
 #include <set>
-#include <unordered_map>
 
 #include "scenario.hpp"
 //#include "tokenizedscenario.hpp"
@@ -21,6 +19,25 @@ std::string trim_whitespace(std::string line)
     return line;
 }
 
+std::string trim_comments(std::string line)
+{
+    return line.erase(std::min(line.find_first_of(';'), line.size()));
+}
+
+std::optional<KeyValue> get_key_value(std::string line)
+{
+    KeyValue kv;
+    size_t   n0 = line.find_first_of('=');
+
+    if (n0 > line.size()) {
+        return {};
+    }
+
+    kv.key   = trim_whitespace(line.substr(0, n0 - 1));
+    kv.value = trim_whitespace(line.substr(n0 + 1));
+    return kv;
+}
+
 std::optional<Configuration> parse_configuration(std::string fname)
 {
 
@@ -29,45 +46,26 @@ std::optional<Configuration> parse_configuration(std::string fname)
     std::string   line;
     Configuration cfg;
 
-    std::unordered_map<std::string, std::function<void(std::string)>> m{
-        { "name", [&cfg](std::string val) { cfg.name      = val; } },
-        { "begin", [&cfg](std::string val) { cfg.begin_jd = stof(val); } },
-        { "end", [&cfg](std::string val) { cfg.end_jd     = stof(val); } }
-    };
+    LOG_S(INFO) << "Parsing scenario file " << fname;
 
     while (std::getline(cfile, line)) {
         line_no++;
 
-        // Trim out comments
-        line.erase(std::min(line.find_first_of(';'), line.size()));
+        line = trim_whitespace(trim_comments(line));
 
-        // Trim out whitespace
-        line = trim_whitespace(line);
-
-        // Ignore empty lines
-        if (line.length() == 0)
+        if (line.length() == 0) // Ignore empty lines
             continue;
 
-        std::string key, value;
-        size_t      n0 = line.find_first_of('=');
-
-        if (n0 > line.size()) {
+        std::optional<KeyValue> kv = get_key_value(line);
+        if (kv) {
+            if (!cfg.set_key_value(kv)) {
+                LOG_S(WARNING) << "Line " << line_no << ": Unknown key "
+                               << kv->key << ": ignoring";
+            }
+        } else {
             LOG_S(ERROR) << "Error parsing line: " << line_no << " (" << line
                          << ")";
-            return {};
         }
-
-        key   = trim_whitespace(line.substr(0, n0 - 1));
-        value = trim_whitespace(line.substr(n0 + 1));
-
-        if (m.count(key)) {
-            m[key](value);
-        } else {
-            LOG_S(WARNING) << "Line " << line_no << ": Unknown key " << key
-                           << ": ignoring";
-        }
-
-        LOG_S(INFO) << key << " = " << value;
     }
     return cfg;
 }

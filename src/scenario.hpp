@@ -4,18 +4,50 @@
 
 */
 #pragma once
+
+#include <optional>
+#include <set>
+#include <unordered_map>
 #include <vector>
 
 namespace sim {
 
-struct Configuration {
-    std::string name;
-    double      begin_jd;
-    double      end_jd;
-    double      step;
+struct KeyValue {
+    std::string key, value;
+};
 
-    std::vector<std::string> orrery;
-    std::vector<std::string> flightplan;
+struct Configuration {
+
+    std::string name     = "No name";
+    double      begin_jd = 2458248.5;
+    double      end_jd   = 2458249.5;
+    double      step     = 60;
+
+    std::set<std::string> orrery;
+    std::set<std::string> flightplan;
+
+    typedef std::string sst;
+
+    bool set_key_value(std::optional<KeyValue> kv)
+    {
+        static std::unordered_map<sst, std::function<void(sst)>> keyword_map{
+
+            { "name", [=](sst v) { name      = v; } },
+            { "begin", [=](sst v) { begin_jd = stof(v); } },
+            { "end", [=](sst v) { end_jd     = stof(v); } },
+            { "step", [=](sst v) { step      = stof(v); } },
+            { "orrery", [=](sst v) { orrery.insert(v); } },
+            { "flightplan", [=](sst v) { flightplan.insert(v); } }
+
+        };
+
+        if (keyword_map.count(kv->key)) {
+            keyword_map[kv->key](kv->value);
+            return true;
+        } else {
+            return false;
+        }
+    };
 };
 
 class Scenario {
