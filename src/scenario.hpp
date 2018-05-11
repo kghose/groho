@@ -4,15 +4,31 @@
 
 */
 #pragma once
+#include <vector>
 
 namespace sim {
+
+struct Configuration {
+    std::string name;
+    double      begin_jd;
+    double      end_jd;
+    double      step;
+
+    std::vector<std::string> orrery;
+    std::vector<std::string> flightplan;
+};
+
 class Scenario {
 public:
-    Scenario(std::string fname) { ; }
-    bool is_changed() { return changed; }
+    Scenario(std::string fname_) { fname = fname_; }
+    bool is_valid() { return valid; }
+    bool is_changed();
+    void change_noted() { changed = false; }
 
 private:
-    std::atomic<bool> changed = true;
+    std::string fname;
+
+    std::atomic<bool> changed = true, valid = false;
 };
 }
 

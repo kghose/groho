@@ -1,8 +1,16 @@
-# Anything after a # is ignored
-name: Earth to mars
-description: Tutorial example showing how to build an Earth to mars transfer
-orrery: simplesolarsystem
-start: 0
-stop: 300
-step: .1
-flightplan: durga.txt
+; Anything from a semi-colon is ignored
+    ; Leading and trailing whitespace is trimmed
+    ; Empty lines are ignored
+
+name  = Earth to Mars
+begin = 2458248.5 ; This is in Julian Date
+end   = 2458258.5
+step  = 60
+
+; Both orrery and flightplan can have multiple entries
+
+orrery = de430.bsp
+orrery = jup310.bsp
+
+flightplan = durga.txt
+flightplan = durga2.txt

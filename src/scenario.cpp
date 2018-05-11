@@ -1,21 +1,90 @@
 #include <fstream>
-#include <unordered_map>
+#include <iostream>
+#include <optional>
 #include <set>
+#include <unordered_map>
 
-#include "tokenizedscenario.hpp"
 #include "scenario.hpp"
+//#include "tokenizedscenario.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
 
+namespace sim {
 
-namespace sim
+const std::string wspace = " \t\n\r\f\v";
+
+std::string trim_whitespace(std::string line)
+{
+    line.erase(0, line.find_first_not_of(wspace));
+    line.erase(line.find_last_not_of(wspace) + 1);
+    return line;
+}
+
+std::optional<Configuration> parse_configuration(std::string fname)
 {
 
+    std::ifstream cfile(fname);
+    int           line_no = 0;
+    std::string   line;
+    Configuration cfg;
+
+    std::unordered_map<std::string, std::function<void(std::string)>> m{
+        { "name", [&cfg](std::string val) { cfg.name      = val; } },
+        { "begin", [&cfg](std::string val) { cfg.begin_jd = stof(val); } },
+        { "end", [&cfg](std::string val) { cfg.end_jd     = stof(val); } }
+    };
+
+    while (std::getline(cfile, line)) {
+        line_no++;
+
+        // Trim out comments
+        line.erase(std::min(line.find_first_of(';'), line.size()));
+
+        // Trim out whitespace
+        line = trim_whitespace(line);
+
+        // Ignore empty lines
+        if (line.length() == 0)
+            continue;
+
+        std::string key, value;
+        size_t      n0 = line.find_first_of('=');
+
+        if (n0 > line.size()) {
+            LOG_S(ERROR) << "Error parsing line: " << line_no << " (" << line
+                         << ")";
+            return {};
+        }
+
+        key   = trim_whitespace(line.substr(0, n0 - 1));
+        value = trim_whitespace(line.substr(n0 + 1));
+
+        if (m.count(key)) {
+            m[key](value);
+        } else {
+            LOG_S(WARNING) << "Line " << line_no << ": Unknown key " << key
+                           << ": ignoring";
+        }
+
+        LOG_S(INFO) << key << " = " << value;
+    }
+    return cfg;
+}
+
+bool Scenario::is_changed()
+{
+    std::optional<Configuration> new_config = parse_configuration(fname);
+
+    changed = false;
+    return changed;
+}
+
+/*
 const double sec_per_jd = 86400;
 
 
-time_t 
+time_t
 file_last_modified_time( std::string fname )
 {
   struct stat result;
@@ -25,27 +94,28 @@ file_last_modified_time( std::string fname )
   }
   else
   {
-    LOG_S(ERROR) << "Could not stat " << fname;    
+    LOG_S(ERROR) << "Could not stat " << fname;
     return 0;  // This is our error value
   }
 }
 
 
-Scenario::Scenario( std::string fname ) 
-{ 
-  main_file_name = fname; 
+Scenario::Scenario( std::string fname )
+{
+  main_file_name = fname;
   load();
 }
 
 void
 Scenario::load()
 {
-  DLOG_S(INFO) << "Loading " << main_file_name;    
+  DLOG_S(INFO) << "Loading " << main_file_name;
   time_t tmod = fetch_scenario_modification_time();
 
-  // do the work of loading the files here 
-  valid_scenario = true;  
+  // do the work of loading the files here
+  valid_scenario = true;
   load_main_file();
+
 
   scenario_last_modified = tmod;
 }
@@ -73,7 +143,7 @@ bool different( const T a, const T b )
 template<class T>
 bool different( const std::vector<T> a, const std::vector<T> b )
 {
-  std::set<std::string> 
+  std::set<std::string>
     old_set( a.begin(), a.end() ),
     new_set( b.begin(), b.end() );
   return( a != b );
@@ -82,7 +152,7 @@ bool different( const std::vector<T> a, const std::vector<T> b )
 
 template<class T>
 void
-Scenario::copy_new_params_and_diff( 
+Scenario::copy_new_params_and_diff(
   T& old, T _new, uint16_t type_of_change )
 {
   if( different( old, _new ) ) {
@@ -92,7 +162,7 @@ Scenario::copy_new_params_and_diff(
 }
 
 
-void 
+void
 Scenario::load_main_file()
 {
   std::ifstream main_file( main_file_name );
@@ -100,51 +170,51 @@ Scenario::load_main_file()
   main_file >> ts;
 
   copy_new_params_and_diff(
-    name, 
+    name,
     ts.get_parameter( "name", "No Name" ),
-    ScnLabelsChange 
+    ScnLabelsChange
   );
 
   copy_new_params_and_diff(
-    description, 
+    description,
     ts.get_parameter( "description", "No description" ),
-    ScnLabelsChange 
+    ScnLabelsChange
   );
-  
+
   copy_new_params_and_diff(
-    step_jd, 
+    step_jd,
     std::stod( ts.get_parameter( "step",  "0.00001"   ) ),
-    ScnNeedsFullRecompute 
+    ScnNeedsFullRecompute
   );
   dt = step_jd * sec_per_jd;
   dt2 = dt * dt;
 
   copy_new_params_and_diff(
-    start_jd, 
+    start_jd,
     std::stod( ts.get_parameter( "start", "2458066.5" ) ),
-    ScnNeedsFullRecompute 
+    ScnNeedsFullRecompute
   );
 
   copy_new_params_and_diff(
-    stop_jd, 
+    stop_jd,
     std::stod( ts.get_parameter( "stop",  "2458061.5" ) ),
-    ScnNeedsPartRecompute 
+    ScnNeedsPartRecompute
   );
 
   copy_new_params_and_diff(
-    orrery_files, 
+    orrery_files,
     ts.get_parameter_list( "orrery", "", Expecting::ZeroOrMore ),
-    ScnNeedsFullRecompute 
+    ScnNeedsFullRecompute
   );
 
   copy_new_params_and_diff(
-    flight_plan_files, 
+    flight_plan_files,
     ts.get_parameter_list( "flightplan", "", Expecting::ZeroOrMore ),
-    ScnNeedsFullRecompute 
+    ScnNeedsFullRecompute
   );
 }
 
-time_t 
+time_t
 Scenario::fetch_scenario_modification_time()
 {
   time_t t = file_last_modified_time( main_file_name );
@@ -157,5 +227,12 @@ Scenario::fetch_scenario_modification_time()
 
 void verify_program_is_sorted() {}
 
+
+std::istream& operator Scenario::>> ( std::istream& is )
+{
+
+}
+
+*/
 
 } // namespace sim
