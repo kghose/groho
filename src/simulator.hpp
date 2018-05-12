@@ -12,26 +12,15 @@
 // using namespace sim;
 namespace sim {
 
+const double T0        = 2451545.0;
+const double S_PER_DAY = 86400.0;
+
+inline double jd2s(double jd) { return (jd - T0) * S_PER_DAY; }
+
 class Simulator {
 public:
-    Simulator(std::string result_file) { running = false; }
-    void restart_with(const Scenario scenario_)
-    {
-        if (scenario_.configuration) {
-            running  = true;
-            scenario = scenario_;
-
-            jd = scenario.configuration->begin_jd;
-            for (auto orrery_name : scenario.configuration->orrery) {
-                orrery.load_orrery_model(
-                    orrery_name,
-                    scenario.configuration->begin_jd,
-                    scenario.configuration->end_jd);
-            }
-
-            LOG_S(INFO) << "Starting simulation";
-        }
-    }
+    Simulator(std::string result_file);
+    void restart_with(const Scenario scenario_);
     void step();
     bool is_running() { return running; }
 
@@ -41,19 +30,8 @@ private:
     orrery::SpkOrrery orrery;
 
     bool   running;
-    double jd;
+    double t_s;
+    double begin_s;
+    double end_s;
 };
-
-void Simulator::step()
-{
-    if (running) {
-        if (jd < scenario.configuration->end_jd) {
-            // pretend to do something
-            jd += scenario.configuration->step;
-        } else {
-            running = false;
-            LOG_S(INFO) << "Stopping simulation";
-        }
-    }
-}
 }
