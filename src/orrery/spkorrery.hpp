@@ -49,10 +49,10 @@ public:
     // Load SPK file "fname" and make the bodies in it available to us
     // Calling this repeatedly will load multiple SPK files.
     // If a body appears more than once, the later entries are disregarded
-    bool load_orrery_model(std::string fname, double begin_jd, double end_jd);
+    bool load_orrery_model(std::string fname, double begin_s, double end_s);
 
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
     // vector containing this information.
-    const OrreryBodyVec& get_orrery_at(double jd);
+    const OrreryBodyVec& get_orrery_at(double t_s);
 };
 }

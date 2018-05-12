@@ -104,7 +104,7 @@ OrreryBodyVec create_bodies(const EphemerisVec& ephemera)
 
 // TODO: Handle files of both endian-ness
 bool SpkOrrery::load_orrery_model(
-    std::string fname, double begin_jd, double end_jd)
+    std::string fname, double begin_s, double end_s)
 {
     std::ifstream nasa_spk_file(fname, std::ios::binary);
 
@@ -114,8 +114,8 @@ bool SpkOrrery::load_orrery_model(
         return false;
     }
 
-    ephemera   = sort_ephemerides(combine_ephemerides(
-        ephemera, load_spk(nasa_spk_file, begin_jd, end_jd)));
+    ephemera = sort_ephemerides(
+        combine_ephemerides(ephemera, load_spk(nasa_spk_file, begin_s, end_s)));
     center_idx = create_center_indexes(ephemera);
     bodies     = create_bodies(ephemera);
 
