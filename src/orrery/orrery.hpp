@@ -47,6 +47,9 @@ public:
     load_orrery_model(std::string fname, double begin_s, double end_s)
         = 0;
 
+    // Just return the list of bodies with the positions in an undefined state
+    const OrreryBodyVec& get_orrery() { return bodies; }
+
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
     // vector containing this information.
     virtual const OrreryBodyVec& get_orrery_at(double s) = 0;
