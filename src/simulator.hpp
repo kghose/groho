@@ -3,6 +3,7 @@
 */
 #pragma once
 
+#include "buffer.hpp"
 #include "scenario.hpp"
 #include "spkorrery.hpp"
 
@@ -19,7 +20,11 @@ inline double jd2s(double jd) { return (jd - T0) * S_PER_DAY; }
 
 class Simulator {
 public:
-    Simulator(std::string result_file);
+    Simulator(std::string result_file_)
+    {
+        running     = false;
+        result_file = result_file_;
+    }
     void restart_with(const Scenario scenario_);
     void step();
     bool is_running() { return running; }
@@ -28,6 +33,10 @@ private:
     Scenario scenario;
 
     orrery::SpkOrrery orrery;
+
+    std::string result_file;
+
+    Buffer buffer;
 
     bool   running;
     double t_s;
