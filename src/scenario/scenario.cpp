@@ -29,6 +29,21 @@ Scenario::Scenario(std::string fname_)
     }
 }
 
+time_t Scenario::latest_modification()
+{
+    std::vector<std::string> fnames;
+    fnames.push_back(fname);
+    fnames.insert(
+        fnames.end(),
+        configuration->orrery_fnames.begin(),
+        configuration->orrery_fnames.end());
+    fnames.insert(
+        fnames.end(),
+        configuration->flightplan_fnames.begin(),
+        configuration->flightplan_fnames.end());
+    return file_modification_time(fnames);
+}
+
 bool operator==(const Scenario& a, const Scenario& b)
 {
     if (*a.configuration != *b.configuration)

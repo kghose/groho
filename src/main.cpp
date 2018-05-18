@@ -26,13 +26,24 @@ std::atomic<bool> scenario_file_changed = true;
 void monitor_scenario_file(sim::Scenario& scenario, unsigned int interval_ms)
 {
     std::thread([&scenario, interval_ms]() {
+        time_t last_mod_time = scenario.latest_modification();
         while (keep_running) {
+            if (last_mod_time >= scenario.latest_modification()) {
+                continue;
+            }
+
+            LOG_S(INFO) << "Reloading scenario files";
+
             sim::Scenario new_scenario(scenario.fname);
-            if (new_scenario != scenario) {
+            // if (new_scenario != scenario) {
+            if (true) {
                 scenario              = new_scenario;
                 scenario_file_changed = true;
                 LOG_S(INFO) << "Scenario file changed";
             }
+
+            last_mod_time = scenario.latest_modification();
+
             std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms));
         }
     })

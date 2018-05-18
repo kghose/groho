@@ -20,6 +20,8 @@ struct Scenario {
     Scenario() { ; }
     Scenario(std::string fname_);
 
+    time_t latest_modification();
+
     std::string fname;
 
     std::optional<Configuration> configuration;
