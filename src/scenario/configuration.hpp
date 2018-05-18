@@ -22,8 +22,8 @@ struct Configuration {
     double      end_jd   = 2458249.5;
     double      step     = 60;
 
-    std::set<std::string> orrery;
-    std::set<std::string> flightplan;
+    std::set<std::string> orrery_fnames;
+    std::set<std::string> flightplan_fnames;
 
     typedef std::string sst;
 
@@ -35,8 +35,8 @@ struct Configuration {
             { "begin", [=](sst v) { begin_jd = stof(v); } },
             { "end", [=](sst v) { end_jd     = stof(v); } },
             { "step", [=](sst v) { step      = stof(v); } },
-            { "orrery", [=](sst v) { orrery.insert(v); } },
-            { "flightplan", [=](sst v) { flightplan.insert(v); } }
+            { "orrery", [=](sst v) { orrery_fnames.insert(v); } },
+            { "flightplan", [=](sst v) { flightplan_fnames.insert(v); } }
 
         };
 

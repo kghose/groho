@@ -15,6 +15,20 @@ This defines some functions for the simulation scenario data structure
 
 namespace sim {
 
+Scenario::Scenario(std::string fname_)
+{
+    fname = fname_;
+
+    configuration = parse_configuration(fname);
+    if (configuration) {
+        for (auto& fp_name : configuration->flightplan_fnames) {
+            auto fp = parse_flight_plan(fp_name);
+            if (fp)
+                flight_plans.push_back(*fp);
+        }
+    }
+}
+
 bool operator==(const Scenario& a, const Scenario& b)
 {
     if (*a.configuration != *b.configuration)

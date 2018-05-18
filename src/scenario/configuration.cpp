@@ -55,9 +55,9 @@ bool operator==(const Configuration& a, const Configuration& b)
         return false;
     if (a.step != b.step)
         return false;
-    if (a.orrery != b.orrery)
+    if (a.orrery_fnames != b.orrery_fnames)
         return false;
-    if (a.flightplan != b.flightplan)
+    if (a.flightplan_fnames != b.flightplan_fnames)
         return false;
     return true;
 }
