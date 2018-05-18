@@ -9,25 +9,28 @@ namespace sim {
 
 void Simulator::restart_with(const Scenario scenario_)
 {
-    if (scenario_.configuration) {
-        running  = true;
-        scenario = scenario_;
+    // TODO: Move the details of the check into scenario
+    if (!scenario_.configuration)
+        return;
 
-        begin_s = jd2s(scenario.configuration->begin_jd);
-        end_s   = jd2s(scenario.configuration->end_jd);
-        t_s     = begin_s;
+    running  = true;
+    scenario = scenario_;
 
-        for (auto orrery_name : scenario.configuration->orrery) {
-            orrery.load_orrery_model(orrery_name, begin_s, end_s);
-        }
+    begin_s = jd2s(scenario.configuration->begin_jd);
+    end_s   = jd2s(scenario.configuration->end_jd);
+    t_s     = begin_s;
 
-        buffer = Buffer(result_file);
-        for (auto& o : orrery.get_orrery()) {
-            buffer.add_body(o.code);
-        }
-
-        LOG_S(INFO) << "Starting simulation";
+    orrery = orrery::SpkOrrery();
+    for (auto orrery_name : scenario.configuration->orrery_fnames) {
+        orrery.load_orrery_model(orrery_name, begin_s, end_s);
     }
+
+    buffer = Buffer(result_file);
+    for (auto& o : orrery.get_orrery()) {
+        buffer.add_body(o.code);
+    }
+
+    LOG_S(INFO) << "Starting simulation";
 }
 
 void Simulator::step()
