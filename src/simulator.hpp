@@ -1,6 +1,10 @@
 /*
-  Handles the simulation part
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+
+This file declares the simulator code
 */
+
 #pragma once
 
 #include <thread>

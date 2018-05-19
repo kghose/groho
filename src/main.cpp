@@ -1,3 +1,10 @@
+/*
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+
+Entry point function for command line program
+*/
+
 #include <functional>
 #include <iostream>
 #include <signal.h>
@@ -15,6 +22,15 @@ volatile sig_atomic_t keep_running = true;
 
 void ctrl_c_pressed(int) { keep_running = false; }
 
+void print_license()
+{
+    std::cout <<
+        R"(  Groho 0.3.0
+  Copyright (c) 2018 Kaushik Ghose. All rights reserved.
+  Released under the MIT License)"
+              << std::endl;
+}
+
 void print_usage()
 {
     std::cout << "\nUsage:\n"
@@ -23,6 +39,8 @@ void print_usage()
 
 int main(int argc, char* argv[])
 {
+    print_license();
+
     if (argc < 3) {
         print_usage();
         exit(0);
