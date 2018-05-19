@@ -11,6 +11,7 @@ Entry point function for command line program
 #include <stdlib.h>
 #include <thread>
 
+#include "app.hpp"
 #include "scenario.hpp"
 #include "simulator.hpp"
 
@@ -80,7 +81,14 @@ int main(int argc, char* argv[])
         simulator.stop();
     });
 
+    GrohoApp app({ argc, argv });
+    int      ret_val = app.exec();
+
+    keep_running = false;
+
     if (simulator_thread.joinable()) {
         simulator_thread.join();
     }
+
+    return ret_val;
 }
