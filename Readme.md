@@ -19,10 +19,9 @@ planetary system but is more of a mouthful.*
 Compilation
 ===========
 Dependencies: 
-  - FLTK 
+  - Magnum/Corrade 
 
-macOS: `brew install fltk`  
-Linux: `sudo apt-get install fltk`  
+macOS: `brew install mosra/magnum/magnum` and `brew install mosra/magnum/corrade`
 
 Compile:
 ```
@@ -75,4 +74,4 @@ Included in the code are the following fine pieces of software
 
 1. [loguru](https://github.com/emilk/loguru) from Emil Ernerfeldt
 2. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash
-3. [glm](https://github.com/g-truc/glm) - [OpenGL Mathematics](http://glm.g-truc.net/)
+3. [magnum/corrade](https://http://magnum.graphics/) from Mosra (Vladimír Von­druš)
