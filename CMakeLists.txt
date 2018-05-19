@@ -15,26 +15,26 @@ if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )
 message( FATAL_ERROR "Please make an out of source build: create a build directory and invoke cmake from there." )
 endif()
 
-set(CMAKE_CXX_COMPILER "g++")
+set(CMAKE_CXX_COMPILER "clang++")
 set(CMAKE_CXX_FLAGS "-std=c++1z -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 # NDEBUG will suppress some loguru outputs in Release
 
-FIND_PACKAGE( FLTK REQUIRED )
-FIND_PACKAGE( OpenGL REQUIRED )
 
 file(GLOB SOURCES 
     "src/*.cpp" 
-    "src/opengl/*.cpp" )
+    "src/orrery/*.cpp"
+    "src/scenario/*.cpp"
+)
+
 set(SOURCE_FILES ${SOURCES})
 add_executable( groho ${SOURCE_FILES} )
 include_directories(
     "src/" 
+    "src/orrery"
+    "src/scenario"
     "src/external" 
-    "src/opengl"
 )
 target_link_libraries( 
     groho 
-    ${FLTK_LIBRARIES} 
-    ${OPENGL_LIBRARIES} 
 )
