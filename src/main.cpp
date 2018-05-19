@@ -21,35 +21,6 @@ void print_usage()
               << "groho <scenario file> <result file>" << std::endl;
 }
 
-std::atomic<bool> scenario_file_changed = true;
-
-void monitor_scenario_file(sim::Scenario& scenario, unsigned int interval_ms)
-{
-    std::thread([&scenario, interval_ms]() {
-        time_t last_mod_time = scenario.latest_modification();
-        while (keep_running) {
-            if (last_mod_time >= scenario.latest_modification()) {
-                continue;
-            }
-
-            LOG_S(INFO) << "Reloading scenario files";
-
-            sim::Scenario new_scenario(scenario.fname);
-            // if (new_scenario != scenario) {
-            if (true) {
-                scenario              = new_scenario;
-                scenario_file_changed = true;
-                LOG_S(INFO) << "Scenario file changed";
-            }
-
-            last_mod_time = scenario.latest_modification();
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms));
-        }
-    })
-        .detach();
-}
-
 int main(int argc, char* argv[])
 {
     if (argc < 3) {
@@ -61,22 +32,37 @@ int main(int argc, char* argv[])
 
     signal(SIGINT, ctrl_c_pressed);
 
-    std::string    scenario_file(argv[1]), result_file(argv[2]);
-    sim::Scenario  scenario(scenario_file);
-    sim::Simulator simulator(result_file);
+    std::string    scn_file(argv[1]), result_file(argv[2]);
+    sim::Simulator simulator;
 
-    monitor_scenario_file(scenario, 500);
+    unsigned int interval_ms = 500;
 
-    while (keep_running) {
-        if (scenario_file_changed) {
-            simulator.restart_with(scenario);
-            scenario_file_changed = false;
+    auto simulator_thread = std::thread([&simulator, scn_file, interval_ms]() {
+        sim::Scenario scenario(scn_file);
+        simulator.restart_with(scenario);
+
+        time_t last_mod_time = scenario.latest_modification();
+        while (keep_running) {
+            if (last_mod_time < scenario.latest_modification()) {
+
+                LOG_S(INFO) << "Reloading scenario files";
+
+                sim::Scenario new_scenario(scenario.fname);
+                // if (new_scenario != scenario) {
+                if (true) {
+                    LOG_S(INFO) << "Scenario file changed";
+                    scenario = new_scenario;
+                    simulator.restart_with(scenario);
+                    last_mod_time = scenario.latest_modification();
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms));
         }
-        if (simulator.is_running()) {
-            simulator.step();
-        } else {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            // sleep for 500ms or so to avoid burning CPU
-        }
+        simulator.stop();
+    });
+
+    if (simulator_thread.joinable()) {
+        simulator_thread.join();
     }
 }

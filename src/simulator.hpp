@@ -3,6 +3,8 @@
 */
 #pragma once
 
+#include <thread>
+
 #include "buffer.hpp"
 #include "scenario.hpp"
 #include "spkorrery.hpp"
@@ -20,16 +22,15 @@ inline double jd2s(double jd) { return (jd - T0) * S_PER_DAY; }
 
 class Simulator {
 public:
-    Simulator(std::string result_file_)
-    {
-        running     = false;
-        result_file = result_file_;
-    }
+    Simulator() { running = false; }
     void restart_with(const Scenario scenario_);
-    void step();
-    bool is_running() { return running; }
+    void run();
+    void stop();
 
 private:
+    bool time_range_changed(const Scenario& a, const Scenario& b);
+    bool orrery_changed(const Scenario& a, const Scenario& b);
+
     Scenario scenario;
 
     orrery::SpkOrrery orrery;
@@ -38,9 +39,14 @@ private:
 
     Buffer buffer;
 
-    bool   running;
+    std::atomic<bool> running;
+
     double t_s;
+    double step_s;
     double begin_s;
     double end_s;
+
+    std::thread compute_thread;
+    // The simulation loop runs in this thread
 };
 }

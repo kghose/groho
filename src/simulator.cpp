@@ -7,49 +7,83 @@ namespace sim {
 
 // Simulator::Simulator(std::string result_file) { running = false; }
 
+bool Simulator::time_range_changed(const Scenario& a, const Scenario& b)
+{
+    return (a.configuration->begin_jd != b.configuration->begin_jd)
+        || (a.configuration->end_jd != b.configuration->end_jd);
+}
+
+bool Simulator::orrery_changed(const Scenario& a, const Scenario& b)
+{
+    return (a.configuration->orrery_fnames != b.configuration->orrery_fnames);
+}
+
+void Simulator::stop()
+{
+    running = false;
+    if (compute_thread.joinable()) {
+        compute_thread.join();
+    }
+}
+
 void Simulator::restart_with(const Scenario scenario_)
 {
     // TODO: Move the details of the check into scenario
     if (!scenario_.configuration)
         return;
 
-    running  = true;
+    stop();
+
+    // trying to figure out if we should reload the Orrery
+    bool reload_orrery = !scenario.configuration
+        || time_range_changed(scenario, scenario_)
+        || orrery_changed(scenario, scenario_);
+
     scenario = scenario_;
 
     begin_s = jd2s(scenario.configuration->begin_jd);
     end_s   = jd2s(scenario.configuration->end_jd);
     t_s     = begin_s;
+    step_s  = scenario.configuration->step;
 
-    orrery = orrery::SpkOrrery();
-    for (auto orrery_name : scenario.configuration->orrery_fnames) {
-        orrery.load_orrery_model(orrery_name, begin_s, end_s);
+    if (reload_orrery) {
+        orrery = orrery::SpkOrrery();
+        for (auto orrery_name : scenario.configuration->orrery_fnames) {
+            orrery.load_orrery_model(orrery_name, begin_s, end_s);
+        }
     }
 
-    buffer = Buffer(result_file);
+    buffer = Buffer("temporary.bin");
     for (auto& o : orrery.get_orrery()) {
         buffer.add_body(o.code);
     }
 
-    LOG_S(INFO) << "Starting simulation";
+    running = true;
+
+    // once more unto the breach
+    compute_thread = std::thread(&sim::Simulator::run, std::ref(*this));
 }
 
-void Simulator::step()
+void Simulator::run()
 {
-    if (running) {
-        if (t_s < end_s) {
-            // pretend to do something
-            auto obv = orrery.get_orrery_at(t_s);
-            for (int i = 0; i < obv.size(); i++) {
-                buffer.append(i, obv[i].pos);
-            }
+    if (!running)
+        return;
 
-            t_s += scenario.configuration->step;
-        } else {
-            buffer.serialize();
-            running = false;
-            LOG_S(INFO) << "Stopping simulation";
+    LOG_S(INFO) << "Starting simulation";
+
+    while (running && (t_s < end_s)) {
+
+        auto obv = orrery.get_orrery_at(t_s);
+        for (int i = 0; i < obv.size(); i++) {
+            buffer.append(i, obv[i].pos);
         }
+
+        t_s += step_s;
     }
+    running = false;
+
+    buffer.serialize();
+    LOG_S(INFO) << "Stopping simulation";
 }
 
 } // namespace sim
