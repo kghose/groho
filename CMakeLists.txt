@@ -33,6 +33,7 @@ find_package(
 
 file(GLOB SOURCES 
     "src/*.cpp" 
+    "src/buffer/*.cpp" 
     "src/orrery/*.cpp"
     "src/scenario/*.cpp"
     "src/magnumapp/*.cpp"
@@ -43,6 +44,7 @@ add_executable( groho ${SOURCE_FILES} )
 
 include_directories(
     "src/"
+    "src/buffer" 
     "src/orrery"
     "src/scenario"
     "src/magnumapp"
