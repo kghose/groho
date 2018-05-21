@@ -23,7 +23,13 @@ set(CMAKE_CXX_FLAGS "-std=c++1z -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 # NDEBUG will suppress some loguru outputs in Release
 
-find_package( Magnum REQUIRED GL Sdl2Application )
+find_package( 
+    Magnum 
+    REQUIRED 
+    GL
+    Shaders
+    Sdl2Application 
+)
 
 file(GLOB SOURCES 
     "src/*.cpp" 
@@ -36,7 +42,7 @@ set(SOURCE_FILES ${SOURCES})
 add_executable( groho ${SOURCE_FILES} )
 
 include_directories(
-    "src/" 
+    "src/"
     "src/orrery"
     "src/scenario"
     "src/magnumapp"
@@ -47,5 +53,6 @@ target_link_libraries(
     groho
     Magnum::Application
     Magnum::GL
-    Magnum::Magnum 
+    Magnum::Magnum
+    Magnum::Shaders
 )
