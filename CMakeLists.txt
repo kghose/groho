@@ -28,7 +28,13 @@ find_package(
     REQUIRED 
     GL
     Shaders
-    Sdl2Application 
+    Sdl2Application
+)
+
+find_package(
+    Corrade
+    REQUIRED
+    Containers
 )
 
 file(GLOB SOURCES 
@@ -57,4 +63,6 @@ target_link_libraries(
     Magnum::GL
     Magnum::Magnum
     Magnum::Shaders
+#    Corrade::Corrade
+#    Corrade::Containers
 )
