@@ -1,5 +1,29 @@
+Code organization
+=================
+
+* buffer - code to handle data storage and sharing
+* external - external libraries, currently just loguru
+* magnumapp - Visualization window based on Magnum/Corrade
+* orrery - Orrery models (NASA/JPL SPK files) loading and computation
+* scenario - Scenario and flightplan loading and parsing
+
+
 Notes on C++
 ============
+I learned several things about C++ coding while doing this project. My haphazard
+notes are here.
+
+
+Mutable
+-------
+My strategy to pass data from the Simulator to the Display was to share a data
+buffer between the two. The Buffer object contains a lock. I wanted to make sure
+that a display (reader/consumer) could never alter the Buffer - it was the solely
+the simulator's job to write to it. I was passing the Buffer as a `const` (pointer)
+to the Display, but because of the mutex lock the compiler would complain. This
+is fixed by `mutable` which allows us to mark out particular variables as
+exceptions to the `const` requirement.
+
 
 Building
 --------
@@ -39,6 +63,15 @@ Template classes must be defined in the header file
 --------------------------------------------------
 This was mildly annoying to find out. https://www.codeproject.com/Articles/48575/How-to-define-a-template-class-in-a-h-file-and-imp
 
+
+Units (user defined literals)
+-----------------------------
+
+
+std::optional
+-------------
+Used in code under `orrery` because we consider the possibility we are given an 
+Orrery file that we can't parse.
 
 
 
@@ -92,6 +125,12 @@ We do this by having thread safe accessors that lock just the part of the data
 we want to read/write
 
 
+Parsing text files
+==================
+C++ is annoying in this department. Also the lack of a module system really 
+gets annoying here.
+
+
 OpenGL specific
 ===============
 After a lot of thrashing around and getting bits and pieces, I found Tom Dalling's
@@ -128,6 +167,17 @@ From the OpenGL [wiki](https://www.khronos.org/opengl/wiki/Buffer_Object#Mapping
 
 NICE!!! This is exactly what I'm looking for. The rest of the wiki tells us how to do this
 
+Fonts, FLTK and OpenGL3
+-----------------------
+
+FLTK uses ftgl
+
+
+http://jonmacey.blogspot.com/2011/10/text-rendering-using-opengl-32.html
+
+http://devcry.heiho.net/html/2012/20120115-opengl-font-rendering.html
+
+https://github.com/wjakob/nanogui
 
 
 Misc
