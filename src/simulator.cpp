@@ -58,10 +58,12 @@ void Simulator::restart_with(const Scenario scenario_)
         }
     }
 
-    buffer = Buffer("temporary.bin");
+    buffer = std::shared_ptr<Buffer>(new Buffer);
+    buffer->lock();
     for (auto& o : orrery.get_orrery()) {
-        buffer.add_body(o.code);
+        buffer->add_body(Metadata{ o.code, o.name });
     }
+    buffer->release();
 
     running = true;
 
@@ -79,15 +81,16 @@ void Simulator::run()
     while (running && (t_s < end_s)) {
 
         auto obv = orrery.get_orrery_at(t_s);
+        buffer->lock();
         for (int i = 0; i < obv.size(); i++) {
-            buffer.append(i, obv[i].pos);
+            buffer->append(i, obv[i].pos);
         }
-
+        buffer->release();
         t_s += step_s;
     }
     running = false;
 
-    buffer.serialize();
+    buffer->finalize();
     LOG_S(INFO) << "Stopping simulation";
 }
 

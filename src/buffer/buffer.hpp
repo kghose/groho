@@ -2,7 +2,15 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-Samples simulation data, stores it and finally serialises it to file
+Samples and stores simulation data.
+
+This supplies a simple interface to the Simulator for saving simulation data
+and to other entities - like a display - for reading data. Reading and writing
+are thread-safe.
+
+In this first iteration each sub-buffer is locked for writing and reading. It
+sounds like this will be a lot of overhead, but it is easy to code and we
+should see if this is fast enough for us.
 */
 
 #pragma once
@@ -16,58 +24,67 @@ Samples simulation data, stores it and finally serialises it to file
 
 namespace sim {
 
-struct PositionData {
-    PositionData(int spkid_)
-    {
-        spkid   = spkid_;
-        sampler = FractalDownsampler();
-    }
-    void append(const Vector& v)
-    {
-        if (sampler(v))
-            pos.push_back(v);
-    }
-    void serialize(std::ofstream& fout)
-    {
-        LOG_S(INFO) << spkid << ": " << pos.size() << " points";
-        unsigned int N = pos.size();
-        fout.write((char*)&spkid, sizeof(int));
-        fout.write((char*)&N, sizeof(unsigned int));
-        fout.write((char*)pos.data(), sizeof(Vector) * pos.size());
-        pos.clear();
-    }
-
-    int                 spkid;
-    std::vector<Vector> pos;
-    FractalDownsampler  sampler;
+struct Metadata {
+    int         spkid;
+    std::string name;
 };
 
-struct Buffer {
-    Buffer() { ; }
-    Buffer(std::string fname_)
+struct SubBuffer {
+
+    SubBuffer(Metadata meta_)
     {
-        fname = fname_;
-        fout.open(fname, std::ios::out | std::ios::binary);
+        meta    = meta_;
+        sampler = FractalDownsampler();
     }
+
+    bool append(const Vector& v)
+    {
+        if (sampler(v)) {
+            data.push_back(v);
+            return true;
+        }
+        return false;
+    }
+
+    const Metadata& get_metadata() const { return meta; }
+
+    Metadata            meta;
+    FractalDownsampler  sampler;
+    std::vector<Vector> data;
+};
+
+class Buffer {
+public:
+    size_t          body_count() const { return sub_buffer.size(); }
+    const Metadata& metadata(size_t i) const
+    {
+        return sub_buffer[i].get_metadata();
+    }
+    size_t point_count() const { return _point_count; }
 
     // Add another body to the buffer
-    void add_body(int spkid) { position_data.push_back(PositionData(spkid)); }
+    void add_body(Metadata meta) { sub_buffer.push_back(SubBuffer(meta)); }
 
-    void append(size_t i, const Vector& v) { position_data[i].append(v); }
+    void lock() const { buffer_mutex.lock(); }
+    void release() const { buffer_mutex.unlock(); }
 
-    void serialize()
+    void append(size_t i, const Vector& v)
     {
-        LOG_S(INFO) << "Writing " << position_data.size() << " bodies";
-        unsigned int N = position_data.size();
-        fout.write((char*)&N, sizeof(unsigned int));
-        for (auto& b : position_data) {
-            b.serialize(fout);
-        }
+        if (sub_buffer[i].append(v))
+            _point_count++;
     }
 
-    std::string   fname;
-    std::ofstream fout;
+    void finalize() { finalized = true; }
 
-    std::vector<PositionData> position_data;
+    const std::vector<Vector>& get(size_t i) const
+    {
+        return sub_buffer[i].data;
+    }
+
+private:
+    size_t                 _point_count = 0;
+    std::vector<SubBuffer> sub_buffer;
+    std::atomic<bool>      finalized = false;
+    mutable std::mutex     buffer_mutex;
 };
 }

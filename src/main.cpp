@@ -12,6 +12,7 @@ Entry point function for command line program
 #include <thread>
 
 #include "app.hpp"
+#include "buffer.hpp"
 #include "scenario.hpp"
 #include "simulator.hpp"
 
@@ -51,7 +52,8 @@ int main(int argc, char* argv[])
 
     signal(SIGINT, ctrl_c_pressed);
 
-    std::string    scn_file(argv[1]), result_file(argv[2]);
+    std::string scn_file(argv[1]), result_file(argv[2]);
+
     sim::Simulator simulator;
 
     unsigned int interval_ms = 500;
@@ -81,7 +83,7 @@ int main(int argc, char* argv[])
         simulator.stop();
     });
 
-    GrohoApp app({ argc, argv });
+    GrohoApp app({ argc, argv }, simulator);
     int      ret_val = app.exec();
 
     keep_running = false;

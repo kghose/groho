@@ -31,6 +31,8 @@ public:
     void run();
     void stop();
 
+    std::shared_ptr<const Buffer> get_buffer() const { return buffer; }
+
 private:
     bool time_range_changed(const Scenario& a, const Scenario& b);
     bool orrery_changed(const Scenario& a, const Scenario& b);
@@ -41,7 +43,7 @@ private:
 
     std::string result_file;
 
-    Buffer buffer;
+    std::shared_ptr<Buffer> buffer;
 
     std::atomic<bool> running;
 
