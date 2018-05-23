@@ -18,12 +18,17 @@ planetary system but is more of a mouthful.*
 
 Compilation
 ===========
-Dependencies: 
-  - Magnum/Corrade 
+Dependencies
+------------
+## [Magnum/Corrade][magnum]
+
+You should follow the instructions on the [Magnum project page][magnum-install], 
+but in brief:
 
 macOS: `brew install mosra/magnum/magnum` and `brew install mosra/magnum/corrade`
 
-Compile:
+Compile
+-------
 ```
 git clone git@github.com:kghose/groho.git
 cd groho && \
@@ -74,4 +79,7 @@ Included in the code are the following fine pieces of software
 
 1. [loguru](https://github.com/emilk/loguru) from Emil Ernerfeldt
 2. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash
-3. [magnum/corrade](https://http://magnum.graphics/) from Mosra (Vladimír Von­druš)
+3. [magnum/corrade][magnum] from Mosra (Vladimír Von­druš)
+
+[magnum]: http://magnum.graphics/
+[magnum-install]: http://doc.magnum.graphics/magnum/building.html
