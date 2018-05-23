@@ -27,6 +27,8 @@ namespace sim {
 struct Metadata {
     int         spkid;
     std::string name;
+    uint32_t    color;
+    bool        real_body;
 };
 
 struct SubBuffer {
