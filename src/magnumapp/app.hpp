@@ -29,6 +29,7 @@ public:
 
 private:
     void drawEvent() override;
+    void viewportEvent(const Vector2i& size) override;
 
     void set_buffers();
 
@@ -84,6 +85,17 @@ void GrohoApp::drawEvent()
     orrery.draw(_shader);
 
     swapBuffers();
+}
+
+void GrohoApp::viewportEvent(const Vector2i& size)
+{
+    GL::defaultFramebuffer.setViewport(Range2Di{ { 0, 0 }, size });
+
+    _projection = Matrix4::perspectiveProjection(
+                      35.0_degf, size.aspectRatio(), 0.01f, 100.0f)
+        * Matrix4::translation(Vector3::zAxis(-10.0f));
+
+    redraw();
 }
 
 void GrohoApp::mousePressEvent(MouseEvent& event)
