@@ -39,9 +39,9 @@ struct SubBuffer {
         sampler = FractalDownsampler();
     }
 
-    bool append(const Vector& v)
+    bool append(const Vector& v, bool force)
     {
-        if (sampler(v)) {
+        if (sampler(v) || force) {
             data.push_back(v);
             return true;
         }
@@ -70,9 +70,9 @@ public:
     void lock() const { buffer_mutex.lock(); }
     void release() const { buffer_mutex.unlock(); }
 
-    void append(size_t i, const Vector& v)
+    void append(size_t i, const Vector& v, bool force)
     {
-        if (sub_buffer[i].append(v))
+        if (sub_buffer[i].append(v, force))
             _point_count++;
     }
 

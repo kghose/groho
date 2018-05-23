@@ -82,9 +82,12 @@ void Simulator::run()
 
         auto obv = orrery.get_orrery_at(t_s);
         buffer->lock();
+
+        bool final_step = t_s >= end_s - step_s;
         for (int i = 0; i < obv.size(); i++) {
-            buffer->append(i, obv[i].pos);
+            buffer->append(i, obv[i].pos, final_step);
         }
+
         buffer->release();
         t_s += step_s;
     }
