@@ -8,8 +8,8 @@ Code organization
 * scenario - Scenario and flightplan loading and parsing
 
 
-Notes on C++
-============
+C++ Language features
+=====================
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
 
@@ -23,6 +23,29 @@ the simulator's job to write to it. I was passing the Buffer as a `const` (point
 to the Display, but because of the mutex lock the compiler would complain. This
 is fixed by `mutable` which allows us to mark out particular variables as
 exceptions to the `const` requirement.
+
+
+Optional
+--------
+`std::optional` is a C++17 feature that I was eager to use. It works fine in
+practice. There are some creature comforts the compiler affords: inside the
+function you don't have to operate on `std::optional<Foo>` you can just work
+with `Foo` and `return Foo` and the compiler takes care of converting the
+type. Also, when you want to return a `None` object, you can simply do
+`return {}`. Examples are found in code used to load data, such as under 
+`orrery` or `scanario`
+
+
+Switch-board (Pythonic C++)
+------------ 
+Python doesn't have a switch statement while C++ does. One can create quite
+an elegant switch statement by setting up a dictionary whose keys are the
+options and values are lambda functions that perform apropriate actions.
+
+In "modern" C++ thanks to `std::map`, initializer lists and lambda functions
+one can use an identical paradigm with identical elegance. This came in very 
+handy in scenario file parsing - I used this construct extensively
+to interpret key value pairs and verb/noun lines.
 
 
 Building
@@ -68,10 +91,6 @@ Units (user defined literals)
 -----------------------------
 
 
-std::optional
--------------
-Used in code under `orrery` because we consider the possibility we are given an 
-Orrery file that we can't parse.
 
 
 
@@ -111,24 +130,6 @@ using std::ref
 - issue with atomic
 
 http://en.cppreference.com/w/cpp/thread/condition_variable
-
-
-Sharing a data structure
-------------------------
-Our use case is that we have a data structure that is written to from one
-thread and read from another. The data structure is a container for a series
-of pointers to our data. We'd like to not freeze the entire data structure
-at any time - so we'd like to be able to read some data while writing other
-data to avoid slowing down our code unecessarily.
-
-We do this by having thread safe accessors that lock just the part of the data
-we want to read/write
-
-
-Parsing text files
-==================
-C++ is annoying in this department. Also the lack of a module system really 
-gets annoying here.
 
 
 OpenGL specific
@@ -239,3 +240,26 @@ This annoyed the heck out of me until I ran into a compile error and read [this]
 which explains that C++ templates are strict and since
 the underlying functions operate of floats, passing a number like 2.0 
 
+
+Computation strategies
+======================
+
+Sharing a data buffer between writer and reader
+-----------------------------------------------
+In my application I have a producer (A Simulator) that continuously generates
+data. A consumer (the Display) would, ideally, like to reflect the current
+state of the data without hindering the producer.
+
+The simplest solution is to lock the data structure, say an array, when writing
+or reading. In my application this works fine because the Display only needs to
+read occasionally, so there is not much contention.
+
+For a more intensive application (reader reads very often) we can segment the
+data into blocks. The writer works on a block, closes it and then moves onto
+a new block. The reader can read any block except the one the writer is 
+currently working on.
+
+In fact, if we ensure that the current block is never reallocated e.g. we 
+use a vector and preallocate the block, we can then let the reader read upto
+the current data point (that the writer is working on). This code is more 
+involved, however.
