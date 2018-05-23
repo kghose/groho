@@ -80,7 +80,6 @@ void GrohoApp::drawEvent()
 
     // TODO: make this work for multiple buffers
     // TODO: load this using a timer
-    // TODO: only load this when needed
     orrery.reload_from_buffer(simulator.get_buffer());
     orrery.draw(_shader);
 
@@ -109,8 +108,6 @@ void GrohoApp::mousePressEvent(MouseEvent& event)
 
 void GrohoApp::mouseReleaseEvent(MouseEvent& event)
 {
-    //_color = Color3::fromHsv(_color.hue() + 50.0_degf, 1.0f, 1.0f);
-
     event.setAccepted();
     redraw();
 }

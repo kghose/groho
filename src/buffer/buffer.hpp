@@ -62,7 +62,10 @@ public:
     {
         return sub_buffer[i].get_metadata();
     }
-    size_t point_count() const { return _point_count; }
+
+    void set_simulation_serial(unsigned int _s) { _simulation_serial = _s; }
+    unsigned int simulation_serial() const { return _simulation_serial; }
+    size_t       point_count() const { return _point_count; }
 
     // Add another body to the buffer
     void add_body(Metadata meta) { sub_buffer.push_back(SubBuffer(meta)); }
@@ -84,7 +87,9 @@ public:
     }
 
 private:
-    size_t                 _point_count = 0;
+    size_t       _point_count = 0;
+    unsigned int _simulation_serial;
+
     std::vector<SubBuffer> sub_buffer;
     std::atomic<bool>      finalized = false;
     mutable std::mutex     buffer_mutex;

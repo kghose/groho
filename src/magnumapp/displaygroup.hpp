@@ -23,25 +23,37 @@ class DisplayGroup {
 public:
     void reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     {
-        if (buffer != nullptr) {
-            paths.clear();
+        if (buffer == nullptr) {
+            return;
+        }
 
-            buffer->lock();
+        if ((buffer->simulation_serial() == simulation_serial)
+            && buffer->point_count() == point_count) {
+            return;
+        }
 
-            for (size_t i = 0; i < buffer->body_count(); i++) {
+        LOG_S(INFO) << "Reloading buffer";
 
-                if (!buffer->metadata(i).real_body) {
-                    continue;
-                }
+        paths.clear();
 
-                auto p = std::shared_ptr<DisplayPath>(new DisplayPath);
-                p->set_color(Color3(buffer->metadata(i).color));
-                p->set_data(buffer->get(i));
-                paths.push_back(p);
+        buffer->lock();
+
+        for (size_t i = 0; i < buffer->body_count(); i++) {
+
+            if (!buffer->metadata(i).real_body) {
+                continue;
             }
 
-            buffer->release();
+            auto p = std::shared_ptr<DisplayPath>(new DisplayPath);
+            p->set_color(Color3(buffer->metadata(i).color));
+            p->set_data(buffer->get(i));
+            paths.push_back(p);
         }
+
+        simulation_serial = buffer->simulation_serial();
+        point_count       = buffer->point_count();
+
+        buffer->release();
     }
 
     void draw(Shaders::Flat3D& shader)
@@ -53,5 +65,9 @@ public:
 
 private:
     std::vector<std::shared_ptr<DisplayPath>> paths;
+
+    // Metadata to figure out if we should reload a buffer
+    unsigned int simulation_serial = -1;
+    size_t       point_count       = 0;
 };
 }

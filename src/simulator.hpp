@@ -41,9 +41,10 @@ private:
 
     orrery::SpkOrrery orrery;
 
-    std::string result_file;
+    // std::string result_file;
 
-    std::shared_ptr<Buffer> buffer;
+    std::shared_ptr<Buffer>   buffer;
+    std::atomic<unsigned int> _simulation_serial = 0;
 
     std::atomic<bool> running;
 
