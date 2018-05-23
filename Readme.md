@@ -16,6 +16,8 @@ and compose (combine together) simulations.
 *Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the word for 
 planetary system but is more of a mouthful.*
 
+![Groho 0.3.0 screenshot](docs/milestone-images/groho-0.3.0.png "Groho 0.3.0 screenshot")
+
 Compilation
 ===========
 Dependencies
