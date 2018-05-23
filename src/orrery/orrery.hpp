@@ -26,7 +26,8 @@ struct OrreryBody {
     float       r;    // Radius of body (for collision tests)
     bool real_body; // Is this a real solar system body for display purposes and
                     // gravitational pull computations ?
-    sim::Vector pos; // Position referenced to solar system barycenter
+    uint32_t    color; // For display purposes
+    sim::Vector pos;   // Position referenced to solar system barycenter
 };
 
 typedef std::vector<OrreryBody> OrreryBodyVec;
