@@ -7,124 +7,29 @@ as we generate them, is convenient from a writing point of view, but makes
 reading awkward, especially for javascript. What seems to be more convenient 
 is to save data in blocks of homogeneous types.
 
-We pick a block size, guided either by simulation time or based on how much
-data we've generated so far. When we have a complete block we dump each class of 
-data as a contiguous section.
+In this first implementation we drop the data as blocks of positions prefaced
+by the body id and the number of points followed by the point data itself.
 
-For each block we save, in order, object positions, events and full object 
-state.
 
 ```
-# HEADER
+# POSITION BLOCK
 
-# DATA BLOCK
+* spkid - id
+* N - number of points
+* x0, y0, z0, x1, y1, z1, .... x(N-1), y(N-1), z(N-1)
 
-    * pointer to previous block
-    * pointer to next block
-    * t_start
-    * t_end
-
-    * Nbp - number of bodies for position data
-
-        # POSITION BLOCK
-
-        * spkid  - id
-        * N - number of points
-        * t0, t1, .... t(N-1)
-        * x0, y0, z0, x1, y1, z1, .... x(N-1), y(N-1), z(N-1)
-
-        # POSITION BLOCK REPEATS
-    
-    * Ne - number of events
-    * t0, t1, ...., t(Ne-1)          - event times
-    * id0, id1, ...., id(Ne-1)       - object A ids
-    * id0, id1, ...., id(Ne-1)       - object B ids
-    * code0, code1, ...., code(Ne-1) - event code
-    
-    * Nos - number of bodies for full object state
-
-        # OBJECT BLOCK
-
-        * spkid  - id
-        * N - number of points
-        * t0, t1, .... t(N-1)
-        * x0, y0, z0, x1, y1, z1, .... x(N-1), y(N-1), z(N-1)
-        * vx0, vy0, vz0, vx1, vy1, vz1, .... vx(N-1), vy(N-1), vz(N-1)
-        * tx0, ty0, tz0, tx1, ty1, tz1, .... tx(N-1), ty(N-1), tz(N-1)        
-        * f0, f1, .... f(N-1)
-
-        # OBJECT BLOCK REPEATS
-
-# DATA BLOCK REPEATS
+# POSITION BLOCK REPEATS
 ```
 
+When loading the file, we load the data in these blocks and use the spkid to
+just append the positions to the correct object.
 
-Positions
----------
-These the only data saved for orrery bodies. This data can also be saved for
-simulation bodies. 
-
-spkid
-N
-t        (double) * N    N * 8
-pos      (double, double, double) * N  N * 3 * 8
+This format does not store times with the positions has no provision for events.
+This is really v0.0 for simple display testing
 
 
-
-
-
-
-
-
-
-
-
-
-we pick a block size that corresponds to
-a certain maximum number of points and save the data as follows
-
-
-header
-
-for every object ----
-spkid       int 4
-N        uint64 8
-t        (double) * N    N * 8
-pos      (double, double, double) * N  N * 3 * 8
-vel      (double, double, double) * N  N * 3 * 8
-thrust   (double, double, double) * N  N * 3 * 8
-fuel     
-
-
-
-
-
-
-t    double   8  
-id   int      4
-x    float    4
-y    float    4
-z    float    4
-vx   float    4
-vy   float    4
-vz   float    4
-tx   float    4
-ty   float    4
-tz   float    4
-f    float    4
-e    uint32   4
-
-12 * 4 + 8 = 56 bytes per data point
-
-
-
-
-
-
-
-
-
-
+Other things I considered
+-------------------------
 
 
 My first instinct is to write my own serialization format. This is understandable

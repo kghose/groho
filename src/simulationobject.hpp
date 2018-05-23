@@ -1,16 +1,4 @@
 /*
-  This implements a thread-safe data buffer that the Simulator writes to and the
-  Display can read from. 
-
-  The Simulator writes to the last (newest) node and the Display can only read
-  upto the penultimate one.
-
-  We enforce this by supplying `append` methods that add a single vector/event
-  to the buffer at a location that the reader will never touch 
-  and `get` methods that return const references to the data but do not allow us 
-  to regions where data is being actively written
-
-  The methods are not optimized yet for only accessing changed parts of the data
 */
 #pragma once
 
@@ -29,6 +17,7 @@ namespace config
   const size_t evt_buf_size = 100;
   const size_t node_count = 100;
 }
+
 
 namespace sim
 {

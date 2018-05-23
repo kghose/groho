@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "vector.hpp"
+#include "flightplan.hpp"
 #include "simulationobject.hpp"
 
 namespace sim
@@ -27,6 +28,8 @@ public:
   Vector        attitude = { 0, 0, 0 };
   double        engine_level = 0.0;
   double        fuel = 0.0;
+
+  
 
   FlightState   flight_state;
   LatLon        surface_ll;   // Only valid if ship is landed or crashed

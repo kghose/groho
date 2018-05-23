@@ -63,7 +63,7 @@ Notes:         This causes this flight-plan to be *soft*-dependent on the
 
 
 ```
-Action:        interaction-remove-event
+Action:        interaction-deactivate-event
 Arguments:     spaceship s, float r, string id
 Description:   If the spaceship s comes within r m of us, on or after the action
                timestamp remove us from the simulation. Effective on or after 
@@ -73,8 +73,6 @@ Notes:         This causes this flight-plan to be *soft*-dependent on the
                before this, this event check will be rerun and the simulation
                will be clipped at this point if needed.   
 ```
-
-
 
 
 ```
@@ -129,7 +127,7 @@ Notes:         This parks the spacecraft in the plane it currently is in.
 ```
 Action:        change-plane
 Arguments:     TBD 
-Description:   Cange plane of orbit
+Description:   Change plane of orbit
 Blocking:      This action blocks
 Termination:   TBD
 ```
@@ -138,3 +136,14 @@ Notes:
 
 1. Blocking commands (like park) only release control if their termination condition
    is met or a `cancel` command executes
+
+C++ developer notes
+===================
+
+A flight plan is stored internally as a list of command objects. Each command
+object takes as input the state of the simulation and produces as output
+changes to the attitude and engine level of the spaceship. Multiple command
+objects can be active at the same time and will be executed in the order in which
+they first became active. A command object becomes active once the simulation
+time crosses it's activation time. A command deactivates when it terminates.
+A `cancel` command will terminate all active commands.

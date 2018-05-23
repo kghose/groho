@@ -13,7 +13,8 @@ target_include_directories( Catch INTERFACE ${CATCH_INCLUDE_DIR} )
 include_directories( 
   ../src 
   ../src/opengl 
-  ../src/external )
+  ../src/external
+  ../src/orrery )
 
 # Make test executable
 set( SOURCES 

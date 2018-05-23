@@ -83,8 +83,9 @@ int main(int argc, char* argv[])
         simulator.stop();
     });
 
-    GrohoApp app({ argc, argv }, simulator);
-    int      ret_val = app.exec();
+    sim::GrohoApp app({ argc, argv }, simulator);
+
+    int ret_val = app.exec();
 
     keep_running = false;
 
