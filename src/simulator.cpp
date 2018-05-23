@@ -61,7 +61,7 @@ void Simulator::restart_with(const Scenario scenario_)
     buffer = std::shared_ptr<Buffer>(new Buffer);
     buffer->lock();
     for (auto& o : orrery.get_orrery()) {
-        buffer->add_body(Metadata{ o.code, o.name });
+        buffer->add_body(Metadata{ o.code, o.name, o.color, o.real_body });
     }
     buffer->release();
 
