@@ -30,6 +30,7 @@ public:
 private:
     void drawEvent() override;
     void viewportEvent(const Vector2i& size) override;
+    void tickEvent() override;
 
     void set_buffers();
 
@@ -78,9 +79,6 @@ void GrohoApp::drawEvent()
 
     _shader.setTransformationProjectionMatrix(_projection * _transformation);
 
-    // TODO: make this work for multiple buffers
-    // TODO: load this using a timer
-    orrery.reload_from_buffer(simulator.get_buffer());
     orrery.draw(_shader);
 
     swapBuffers();
@@ -95,6 +93,14 @@ void GrohoApp::viewportEvent(const Vector2i& size)
         * Matrix4::translation(Vector3::zAxis(-10.0f));
 
     redraw();
+}
+
+void GrohoApp::tickEvent()
+{
+    // TODO: make this work for multiple buffers
+    if (orrery.reload_from_buffer(simulator.get_buffer())) {
+        redraw();
+    }
 }
 
 void GrohoApp::mousePressEvent(MouseEvent& event)

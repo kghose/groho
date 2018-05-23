@@ -59,7 +59,7 @@ void Simulator::restart_with(const Scenario scenario_)
     }
 
     buffer = std::shared_ptr<Buffer>(new Buffer);
-    buffer->set_simulation_serial(_simulation_serial++);
+    buffer->set_simulation_serial(++_simulation_serial);
 
     buffer->lock();
     for (auto& o : orrery.get_orrery()) {
@@ -94,8 +94,8 @@ void Simulator::run()
         t_s += step_s;
     }
     running = false;
-
     buffer->finalize();
+
     LOG_S(INFO) << "Stopping simulation";
 }
 

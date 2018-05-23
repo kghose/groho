@@ -21,15 +21,16 @@ using namespace Magnum;
 class DisplayGroup {
 
 public:
-    void reload_from_buffer(std::shared_ptr<const Buffer> buffer)
+    // return true if a reload ocurred
+    bool reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     {
         if (buffer == nullptr) {
-            return;
+            return false;
         }
 
         if ((buffer->simulation_serial() == simulation_serial)
             && buffer->point_count() == point_count) {
-            return;
+            return false;
         }
 
         LOG_S(INFO) << "Reloading buffer";
@@ -54,6 +55,8 @@ public:
         point_count       = buffer->point_count();
 
         buffer->release();
+
+        return true;
     }
 
     void draw(Shaders::Flat3D& shader)

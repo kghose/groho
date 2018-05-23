@@ -87,8 +87,8 @@ public:
     }
 
 private:
-    size_t       _point_count = 0;
-    unsigned int _simulation_serial;
+    std::atomic<size_t>       _point_count = 0;
+    std::atomic<unsigned int> _simulation_serial;
 
     std::vector<SubBuffer> sub_buffer;
     std::atomic<bool>      finalized = false;

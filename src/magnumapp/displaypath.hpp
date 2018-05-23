@@ -29,6 +29,12 @@ public:
     void set_data(const std::vector<Vector> pos)
     {
         size_t size = pos.size();
+
+        // If we try to map zero points we get a runtime error ...
+        if (size == 0) {
+            return;
+        }
+
         _buffer.setData(
             { nullptr, size * sizeof(Vector3) }, GL::BufferUsage::StaticDraw);
         Containers::ArrayView<Vector3> data
