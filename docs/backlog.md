@@ -1,3 +1,14 @@
+Backlog
+=======
+(Just an unprioritized list of ideas and things to work on)
+
+* Refactor body objects to unify metadata scheme
+* Introduce space craft into the simulation
+* Figure out way to combine flight plan actions with spacecraft
+* Display buffer data should include time so that we can scroll to or limit display by time
+* Work on UI specifications (this is possibly in an older commit)
+
+
 Version planning
 ================
 
