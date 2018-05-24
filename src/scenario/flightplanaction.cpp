@@ -12,19 +12,43 @@ via the flight plans.
 #include <string>
 #include <unordered_map>
 
+#include "body.hpp"
 #include "flightplanaction.hpp"
 #include "scenariolib.hpp"
 #include "vector.hpp"
 
-namespace sim {
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
 
-// Each verb gets a meaningfully named enum here
-enum Verb : unsigned int { SET_ATTITUDE, SET_ACCEL };
+namespace sim {
 
 typedef std::string                     str_t;
 typedef std::vector<std::string>        strv_t;
 typedef FlightPlanAction                fpa_t;
 typedef std::optional<FlightPlanAction> fpao_t;
+
+///////////////////////////////
+// AVAILABLE ACTIONS (VERBS) //
+///////////////////////////////
+
+Body SET_ATTITUDE(Body b, fpa_t& fpa)
+{
+    b.att = fpa.noun.vector;
+    return b;
+}
+
+Body SET_ACCEL(Body b, fpa_t& fpa)
+{
+    if (fpa.noun.scalar > b.max_acc) {
+        fpa.noun.scalar = b.max_acc;
+        LOG_S(WARNING) << fpa.line_no << ": SET_ACCEL for " << b.name
+                       << " exceeds max_acc";
+    }
+    b.acc = fpa.noun.scalar;
+    return b;
+}
+
+///////////////////////////////
 
 std::unordered_map<str_t, std::function<fpao_t(strv_t, fpa_t)>> actions{
 
@@ -46,19 +70,21 @@ std::unordered_map<str_t, std::function<fpao_t(strv_t, fpa_t)>> actions{
               LOG_S(ERROR) << "Can't parse accelaration fraction";
               return {};
           }
-          fpa.verb          = SET_ACCEL;
-          fpa.noun.fraction = stof(tokens[2]);
+          fpa.verb        = SET_ACCEL;
+          fpa.noun.scalar = stof(tokens[2]);
           return fpa;
       } }
 };
 
-std::optional<FlightPlanAction> parse_line_into_action(std::string line)
+std::optional<FlightPlanAction>
+parse_line_into_action(std::string line, size_t line_no)
 {
 
     std::vector<std::string> tokens = split(line);
 
     FlightPlanAction fpa;
-    fpa.jd = stof(tokens[0]);
+    fpa.jd      = stof(tokens[0]);
+    fpa.line_no = line_no;
 
     if (actions.count(tokens[1])) {
         return actions[tokens[1]](tokens, fpa);

@@ -13,15 +13,19 @@ available to control spacecraft via the flight plans.
 
 namespace sim {
 
+struct FlightPlanAction;
+
 // These are actions spacecraft can be scripted to do
-enum Verb : unsigned int;
+// TODO: For some Verbs we may need to pass some kind of readonly world state
+// Need to think about this ...
+typedef std::function<Body(Body, FlightPlanAction&)> Verb;
 
 // Each noun has one of the datatypes listed here, including complex data types
 // as needed
 union Noun {
     Vector vector;
-    double fraction;
-    Noun() { fraction = 0.0; }
+    double scalar;
+    Noun() { scalar = 0.0; }
 };
 
 // An action consists of a date, a verb and a noun
@@ -29,8 +33,10 @@ struct FlightPlanAction {
     double      jd;
     Verb        verb;
     Noun        noun;
+    size_t      line_no;
     std::string help;
 };
 
-std::optional<FlightPlanAction> parse_line_into_action(std::string line);
+std::optional<FlightPlanAction>
+parse_line_into_action(std::string line, size_t line_no);
 }

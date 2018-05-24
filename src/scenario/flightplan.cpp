@@ -49,7 +49,7 @@ std::optional<FlightPlan> parse_flight_plan(std::string fname)
                     << "Error parsing line: " << line_no << " (" << line << ")";
             }
         } else {
-            auto fpa = parse_line_into_action(line);
+            auto fpa = parse_line_into_action(line, line_no);
             if (fpa) {
                 flt.plan.push_back(*fpa);
             }
