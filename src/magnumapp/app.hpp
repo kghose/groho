@@ -42,8 +42,6 @@ private:
     const sim::Simulator& simulator;
     DisplayGroup          orrery;
 
-    // std::shared_ptr<const sim::Buffer> buffer;
-
     Shaders::Flat3D _shader;
 
     Matrix4  _transformation, _projection;
@@ -56,9 +54,11 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
                                  .setTitle("Groho orbit display")
                                  .setWindowFlags(
                                      Platform::Sdl2Application::Configuration::
-                                         WindowFlag::Resizable) }
+                                         WindowFlag::Resizable)
+                                 .setSampleCount(3) }
     , simulator(simulator)
 {
+    // TODO: Figure out correct way to do anti-aliasing
     using namespace Math::Literals;
 
     _transformation

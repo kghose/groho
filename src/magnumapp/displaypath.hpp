@@ -61,8 +61,10 @@ public:
 
     void draw(Shaders::Flat3D& shader)
     {
-        shader.setColor(_color);
-        _mesh.draw(shader);
+        // shader.setColor(_color);
+        // using namespace Math::Literals;
+        // shader.setColor(0xff0000_rgbf);
+        _mesh.draw(shader.setColor(_color));
     }
 
 private:

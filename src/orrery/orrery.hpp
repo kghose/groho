@@ -15,20 +15,24 @@ It provides a uniform interface where by
 #include <string>
 #include <vector>
 
+#include "body.hpp"
 #include "vector.hpp"
 
 namespace orrery {
 
-struct OrreryBody {
-    std::string name; // Human readable name for body
-    int         code; // SPK code for body (optional)
-    float       GM;   // GM value for body
-    float       r;    // Radius of body (for collision tests)
-    bool real_body; // Is this a real solar system body for display purposes and
-                    // gravitational pull computations ?
-    uint32_t    color; // For display purposes
-    sim::Vector pos;   // Position referenced to solar system barycenter
-};
+typedef sim::Body OrreryBody;
+
+// struct OrreryBody {
+//     std::string name; // Human readable name for body
+//     int         code; // SPK code for body (optional)
+//     float       GM;   // GM value for body
+//     float       r;    // Radius of body (for collision tests)
+//     bool real_body; // Is this a real solar system body for display purposes
+//     and
+//                     // gravitational pull computations ?
+//     uint32_t    color; // For display purposes
+//     sim::Vector pos;   // Position referenced to solar system barycenter
+// };
 
 typedef std::vector<OrreryBody> OrreryBodyVec;
 

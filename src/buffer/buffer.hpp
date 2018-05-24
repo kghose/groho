@@ -19,23 +19,17 @@ should see if this is fast enough for us.
 #include <string>
 #include <vector>
 
+#include "body.hpp"
 #include "fractaldownsampler.hpp"
 #include "vector.hpp"
 
 namespace sim {
 
-struct Metadata {
-    int         spkid;
-    std::string name;
-    uint32_t    color;
-    bool        real_body;
-};
-
 struct SubBuffer {
 
-    SubBuffer(Metadata meta_)
+    SubBuffer(const Body body_)
     {
-        meta    = meta_;
+        body    = body_;
         sampler = FractalDownsampler();
     }
 
@@ -48,17 +42,17 @@ struct SubBuffer {
         return false;
     }
 
-    const Metadata& get_metadata() const { return meta; }
+    const Body& get_metadata() const { return body; }
 
-    Metadata            meta;
+    Body                body;
     FractalDownsampler  sampler;
     std::vector<Vector> data;
 };
 
 class Buffer {
 public:
-    size_t          body_count() const { return sub_buffer.size(); }
-    const Metadata& metadata(size_t i) const
+    size_t      body_count() const { return sub_buffer.size(); }
+    const Body& metadata(size_t i) const
     {
         return sub_buffer[i].get_metadata();
     }
@@ -68,7 +62,7 @@ public:
     size_t       point_count() const { return _point_count; }
 
     // Add another body to the buffer
-    void add_body(Metadata meta) { sub_buffer.push_back(SubBuffer(meta)); }
+    void add_body(const Body body) { sub_buffer.push_back(SubBuffer(body)); }
 
     void lock() const { buffer_mutex.lock(); }
     void release() const { buffer_mutex.unlock(); }

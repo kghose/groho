@@ -41,7 +41,7 @@ public:
 
         for (size_t i = 0; i < buffer->body_count(); i++) {
 
-            if (!buffer->metadata(i).real_body) {
+            if (buffer->metadata(i).body_type == BARYCENTER) {
                 continue;
             }
 

@@ -13,23 +13,16 @@ them as lists of actions.
 #include <string>
 #include <unordered_map>
 
+#include "body.hpp"
 #include "flightplanaction.hpp"
 #include "scenariolib.hpp"
 #include "vector.hpp"
 
 namespace sim {
 
-enum FlightState { FALLING, LANDED };
-
 struct FlightPlan {
 
-    std::string name = "No name";
-    double      max_acc;
-    double      max_fuel;
-    double      fuel_cons_rate;
-    FlightState flight_state;
-    Vector      position;
-    Vector      velocity;
+    Body body;
 
     // TODO: How to handle landed state and landed position in initial
     // conditions
@@ -40,14 +33,19 @@ struct FlightPlan {
     {
         std::unordered_map<sst, std::function<void(sst)>> keyword_map{
 
-            { "name", [=](sst v) { name                     = v; } },
-            { "max-acceleration", [=](sst v) { max_acc      = stof(v); } },
-            { "max-fuel", [=](sst v) { max_fuel             = stof(v); } },
-            { "fuel-cons-rate", [=](sst v) { fuel_cons_rate = stof(v); } },
-            { "flight-state", [=](sst v) { flight_state     = FALLING; } },
+            { "name", [=](sst v) { body.name                = v; } },
+            { "max-acceleration", [=](sst v) { body.max_acc = stof(v); } },
+            { "max-fuel", [=](sst v) { body.max_fuel        = stof(v); } },
+            { "fuel-cons-rate", [=](sst v) { body.fuel_cons = stof(v); } },
+
+            { "flight-state", [=](sst v) { body.flight_state = FALLING; } },
             // TODO: handle landed state
-            { "position", [=](sst v) { position             = stoV(v); } },
-            { "velocity", [=](sst v) { velocity             = stoV(v); } }
+            { "position", [=](sst v) { body.pos              = stoV(v); } },
+            { "velocity", [=](sst v) { body.vel              = stoV(v); } },
+            { "attitude", [=](sst v) { body.att              = stoV(v); } },
+            //
+            { "fuel", [=](sst v) { body.fuel                 = stof(v); } },
+            { "acc", [=](sst v) { body.acc                   = stof(v); } },
 
         };
 

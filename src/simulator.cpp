@@ -63,7 +63,7 @@ void Simulator::restart_with(const Scenario scenario_)
 
     buffer->lock();
     for (auto& o : orrery.get_orrery()) {
-        buffer->add_body(Metadata{ o.code, o.name, o.color, o.real_body });
+        buffer->add_body(o);
     }
     buffer->release();
 
