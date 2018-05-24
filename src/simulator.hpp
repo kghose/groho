@@ -40,8 +40,7 @@ private:
     Scenario scenario;
 
     orrery::SpkOrrery orrery;
-
-    // std::string result_file;
+    std::vector<Body> spaceships;
 
     std::shared_ptr<Buffer>   buffer;
     std::atomic<unsigned int> _simulation_serial = 0;

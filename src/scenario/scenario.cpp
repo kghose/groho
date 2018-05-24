@@ -21,8 +21,9 @@ Scenario::Scenario(std::string fname_)
 
     configuration = parse_configuration(fname);
     if (configuration) {
+        int default_ship_code = -1000;
         for (auto& fp_name : configuration->flightplan_fnames) {
-            auto fp = parse_flight_plan(fp_name);
+            auto fp = parse_flight_plan(fp_name, --default_ship_code);
             if (fp)
                 flight_plans.push_back(*fp);
         }

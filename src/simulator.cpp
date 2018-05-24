@@ -58,11 +58,21 @@ void Simulator::restart_with(const Scenario scenario_)
         }
     }
 
+    spaceships.clear();
+    for (auto& fpa : scenario.flight_plans) {
+        spaceships.push_back(fpa.body);
+    }
+    LOG_S(INFO) << spaceships.size() << " spaceships in simulation.";
+
     buffer = std::shared_ptr<Buffer>(new Buffer);
     buffer->set_simulation_serial(++_simulation_serial);
 
     buffer->lock();
+    // buffer contains orrery bodies followed by spaceships
     for (auto& o : orrery.get_orrery()) {
+        buffer->add_body(o);
+    }
+    for (auto& o : spaceships) {
         buffer->add_body(o);
     }
     buffer->release();
@@ -73,6 +83,25 @@ void Simulator::restart_with(const Scenario scenario_)
     compute_thread = std::thread(&sim::Simulator::run, std::ref(*this));
 }
 
+// TODO: Use leap frog integration
+void step_spaceship(
+    Body& spaceship, const orrery::OrreryBodyVec& obv, double step_s)
+{
+    Vector gravity{ 0, 0, 0 };
+    for (auto& o : obv) {
+
+        if (o.body_type == BARYCENTER) {
+            continue;
+        }
+
+        auto r = o.pos - spaceship.pos;
+        auto f = o.GM / r.norm_sq();
+        gravity += r.normed() * f;
+    }
+    spaceship.vel += ((spaceship.acc * spaceship.att) + gravity) * step_s;
+    spaceship.pos += spaceship.vel * step_s;
+}
+
 void Simulator::run()
 {
     if (!running)
@@ -81,13 +110,22 @@ void Simulator::run()
     LOG_S(INFO) << "Starting simulation";
 
     while (running && (t_s < end_s)) {
-
         auto obv = orrery.get_orrery_at(t_s);
-        buffer->lock();
+        for (auto& s : spaceships) {
+            step_spaceship(s, obv, step_s);
+        }
 
         bool final_step = t_s >= end_s - step_s;
+
+        buffer->lock();
+
+        // First do the orrery
         for (int i = 0; i < obv.size(); i++) {
             buffer->append(i, obv[i].pos, final_step);
+        }
+        // Then the spaceships
+        for (int i = 0; i < spaceships.size(); i++) {
+            buffer->append(i + obv.size(), spaceships[i].pos, final_step);
         }
 
         buffer->release();

@@ -66,5 +66,5 @@ inline bool operator!=(const FlightPlan& a, const FlightPlan& b)
     return !(a == b);
 }
 
-std::optional<FlightPlan> parse_flight_plan(std::string fname);
+std::optional<FlightPlan> parse_flight_plan(std::string fname, int dssc);
 }

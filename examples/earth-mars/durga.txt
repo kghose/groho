@@ -14,13 +14,13 @@ fuel-cons-rate   = 0.1   ; u / s / a
 ; and some initial conditions ...
 
 flight-state     = falling    ; Either landed or falling 
-position         = 150e6 0 0  
+position         = 150e6 0 0   ; km
 ; If falling, this is position relative to Solar System bary-center
 ; If landed, this is lat longitude relative to a body, and would look like
 ; position  = 399 38.728521 -77.251199  
 ; 399 being the SPK ID for earth
 
-velocity         = 10 0 0     ; Initial velocity vector
+velocity         = 0 10 0     ; km/s Initial velocity vector
 
 
 ; This is followed by a plan section which is a list of actions. 

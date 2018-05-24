@@ -16,7 +16,7 @@ them as lists of actions.
 
 namespace sim {
 
-std::optional<FlightPlan> parse_flight_plan(std::string fname)
+std::optional<FlightPlan> parse_flight_plan(std::string fname, int default_code)
 {
 
     std::ifstream cfile(fname);
@@ -24,6 +24,15 @@ std::optional<FlightPlan> parse_flight_plan(std::string fname)
     std::string   line;
     FlightPlan    flt;
     bool          header_section = true;
+
+    if (!cfile) {
+        LOG_S(ERROR) << fname << ": Flight plan not found";
+        return {};
+    }
+
+    // Some miscellaneous defaults
+    flt.body.color = 0xffffff;
+    flt.body.code  = default_code;
 
     while (std::getline(cfile, line)) {
         line_no++;
