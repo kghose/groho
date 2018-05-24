@@ -14,6 +14,16 @@ I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
 
 
+Code formatting
+---------------
+I was first resistant to but now am a zealous convert to `clang-format`. I just
+have it trigger on file save and don't worry about formatting any more. How
+LaTeX-like! The only thing I ocassionally fiddle with is leaving gaps between
+variable declarations if I think the grouping leads to awkward formatting. My
+`.clang-format` is based off WebKit. And there is always `// clang-format off`
+for when I need it.
+
+
 Mutable
 -------
 My strategy to pass data from the Simulator to the Display was to share a data
@@ -47,6 +57,32 @@ one can use an identical paradigm with identical elegance. This came in very
 handy in scenario file parsing - I used this construct extensively
 to interpret key value pairs and verb/noun lines.
 
+```
+typedef std::string sst;
+
+bool set_key_value(std::optional<KeyValue> kv)
+{
+    std::unordered_map<sst, std::function<void(sst)>> keyword_map{
+
+        { "name", [=](sst v) { name                     = v; } },
+        { "max-acceleration", [=](sst v) { max_acc      = stof(v); } },
+        { "max-fuel", [=](sst v) { max_fuel             = stof(v); } },
+        { "fuel-cons-rate", [=](sst v) { fuel_cons_rate = stof(v); } },
+        { "flight-state", [=](sst v) { flight_state     = FALLING; } },
+        // TODO: handle landed state
+        { "position", [=](sst v) { position             = stoV(v); } },
+        { "velocity", [=](sst v) { velocity             = stoV(v); } }
+
+    };
+
+    if (keyword_map.count(kv->key)) {
+        keyword_map[kv->key](kv->value);
+        return true;
+    } else {
+        return false;
+    }
+};
+```
 
 Building
 --------
