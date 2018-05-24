@@ -58,11 +58,7 @@ void Simulator::restart_with(const Scenario scenario_)
         }
     }
 
-    spaceships.clear();
-    for (auto& fpa : scenario.flight_plans) {
-        spaceships.push_back(fpa.body);
-    }
-    LOG_S(INFO) << spaceships.size() << " spaceships in simulation.";
+    LOG_S(INFO) << scenario.flight_plans.size() << " spaceships in simulation.";
 
     buffer = std::shared_ptr<Buffer>(new Buffer);
     buffer->set_simulation_serial(++_simulation_serial);
@@ -72,8 +68,8 @@ void Simulator::restart_with(const Scenario scenario_)
     for (auto& o : orrery.get_orrery()) {
         buffer->add_body(o);
     }
-    for (auto& o : spaceships) {
-        buffer->add_body(o);
+    for (auto& fp : scenario.flight_plans) {
+        buffer->add_body(fp.body);
     }
     buffer->release();
 
@@ -111,8 +107,8 @@ void Simulator::run()
 
     while (running && (t_s < end_s)) {
         auto obv = orrery.get_orrery_at(t_s);
-        for (auto& s : spaceships) {
-            step_spaceship(s, obv, step_s);
+        for (auto& fp : scenario.flight_plans) {
+            step_spaceship(fp.body, obv, step_s);
         }
 
         bool final_step = t_s >= end_s - step_s;
@@ -124,8 +120,9 @@ void Simulator::run()
             buffer->append(i, obv[i].pos, final_step);
         }
         // Then the spaceships
-        for (int i = 0; i < spaceships.size(); i++) {
-            buffer->append(i + obv.size(), spaceships[i].pos, final_step);
+        for (int i = 0; i < scenario.flight_plans.size(); i++) {
+            buffer->append(
+                i + obv.size(), scenario.flight_plans[i].body.pos, final_step);
         }
 
         buffer->release();

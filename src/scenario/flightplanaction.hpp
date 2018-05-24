@@ -31,6 +31,7 @@ union Noun {
 // An action consists of a date, a verb and a noun
 struct FlightPlanAction {
     double      jd;
+    bool        active;
     Verb        verb;
     Noun        noun;
     size_t      line_no;

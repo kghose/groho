@@ -24,6 +24,8 @@ struct FlightPlan {
 
     Body body;
 
+    std::vector<FlightPlanAction> plan;
+
     // TODO: How to handle landed state and landed position in initial
     // conditions
 
@@ -56,8 +58,6 @@ struct FlightPlan {
             return false;
         }
     };
-
-    std::vector<FlightPlanAction> plan;
 };
 
 bool        operator==(const FlightPlan& a, const FlightPlan& b);

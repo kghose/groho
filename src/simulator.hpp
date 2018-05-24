@@ -37,10 +37,8 @@ private:
     bool time_range_changed(const Scenario& a, const Scenario& b);
     bool orrery_changed(const Scenario& a, const Scenario& b);
 
-    Scenario scenario;
-
+    Scenario          scenario;
     orrery::SpkOrrery orrery;
-    std::vector<Body> spaceships;
 
     std::shared_ptr<Buffer>   buffer;
     std::atomic<unsigned int> _simulation_serial = 0;
