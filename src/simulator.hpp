@@ -19,11 +19,6 @@ This file declares the simulator code
 // using namespace sim;
 namespace sim {
 
-const double T0        = 2451545.0;
-const double S_PER_DAY = 86400.0;
-
-inline double jd2s(double jd) { return (jd - T0) * S_PER_DAY; }
-
 class Simulator {
 public:
     Simulator() { running = false; }
