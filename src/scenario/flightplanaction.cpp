@@ -31,14 +31,13 @@ typedef std::optional<FlightPlanAction> fpao_t;
 // AVAILABLE ACTIONS (VERBS) //
 ///////////////////////////////
 
-Body SET_ATTITUDE(Body b, fpa_t& fpa)
+void SET_ATTITUDE(Body& b, fpa_t& fpa)
 {
-    b.att      = fpa.noun.vector;
+    b.att      = fpa.noun.vector.normed();
     fpa.active = false;
-    return b;
 }
 
-Body SET_ACCEL(Body b, fpa_t& fpa)
+void SET_ACCEL(Body& b, fpa_t& fpa)
 {
     if (fpa.noun.scalar > b.max_acc) {
         fpa.noun.scalar = b.max_acc;
@@ -47,7 +46,6 @@ Body SET_ACCEL(Body b, fpa_t& fpa)
     }
     b.acc      = fpa.noun.scalar;
     fpa.active = false;
-    return b;
 }
 
 ///////////////////////////////
@@ -85,7 +83,7 @@ parse_line_into_action(std::string line, size_t line_no)
     std::vector<std::string> tokens = split(line);
 
     FlightPlanAction fpa;
-    fpa.jd      = stof(tokens[0]);
+    fpa.t_s     = jd2s(stod(tokens[0]));
     fpa.active  = true;
     fpa.line_no = line_no;
 

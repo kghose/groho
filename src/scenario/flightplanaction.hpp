@@ -18,7 +18,7 @@ struct FlightPlanAction;
 // These are actions spacecraft can be scripted to do
 // TODO: For some Verbs we may need to pass some kind of readonly world state
 // Need to think about this ...
-typedef std::function<Body(Body, FlightPlanAction&)> Verb;
+typedef std::function<void(Body&, FlightPlanAction&)> Verb;
 
 // Each noun has one of the datatypes listed here, including complex data types
 // as needed
@@ -30,7 +30,7 @@ union Noun {
 
 // An action consists of a date, a verb and a noun
 struct FlightPlanAction {
-    double      jd;
+    double      t_s;
     bool        active;
     Verb        verb;
     Noun        noun;
