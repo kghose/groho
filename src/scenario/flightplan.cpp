@@ -31,8 +31,9 @@ std::optional<FlightPlan> parse_flight_plan(std::string fname, int default_code)
     }
 
     // Some miscellaneous defaults
-    flt.body.color = 0xffffff;
-    flt.body.code  = default_code;
+    flt.body.body_type = SPACESHIP;
+    flt.body.color     = 0xffffff;
+    flt.body.code      = default_code;
 
     while (std::getline(cfile, line)) {
         line_no++;
