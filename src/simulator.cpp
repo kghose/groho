@@ -98,6 +98,15 @@ void step_spaceship(
     spaceship.pos += spaceship.vel * step_s;
 }
 
+void execute_flight_plan(FlightPlan& fp, double t_s)
+{
+    for (auto& fpa : fp.plan) {
+        if (fpa.active && (t_s >= fpa.t_s)) {
+            fpa.verb(fp.body, fpa);
+        }
+    }
+}
+
 void Simulator::run()
 {
     if (!running)
@@ -109,6 +118,7 @@ void Simulator::run()
         auto obv = orrery.get_orrery_at(t_s);
         for (auto& fp : scenario.flight_plans) {
             step_spaceship(fp.body, obv, step_s);
+            execute_flight_plan(fp, t_s);
         }
 
         bool final_step = t_s >= end_s - step_s;
