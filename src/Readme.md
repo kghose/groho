@@ -299,3 +299,40 @@ In fact, if we ensure that the current block is never reallocated e.g. we
 use a vector and preallocate the block, we can then let the reader read upto
 the current data point (that the writer is working on). This code is more 
 involved, however.
+
+
+Simulation
+----------
+- Choosing a time step using [energy considerations][step]
+- [Leap frog integration][leap]
+- [My notes on the fractal downsampler][downsampler]
+
+
+[step]: https://physics.stackexchange.com/questions/258456/which-timestep-should-i-use-for-a-n-body-simulation-of-the-solar-system
+[leap]: https://en.wikipedia.org/wiki/Leapfrog_integration
+[downsampler]: ../docs/dev/adaptive-display-points.ipynb
+
+
+
+Scaling data for display
+------------------------
+If we wish for 1m resolution at solar system distances (40 AU for pluto) we need
+to use doubles assuming 1 unit represents 1m. 40 AU = 5.98391483e12 m and doubles
+give us integer resolution to [9007.199254740992e12 m][double-prec]. While a 
+float would give us integer resolution to [16.777216e6 m][single-prec] only.
+
+[double-prec]: https://en.wikipedia.org/wiki/Double-precision_floating-point_format#IEEE_754_double-precision_binary_floating-point_format:_binary64
+
+[single-prec]: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Precision_limits_on_integer_values
+
+This is fine for the simulation, but there are other considerations for the
+display. OpenGL commonly accepts data as floats and the large numbers we handle
+here would cause problems in terms of the matrix computations. For a fun 
+discussion related to all this see [here][large-environment]. The solutions 
+proposed there are complex and are needed when plotting textures and handling
+movements and interactions at different scales.
+
+For our purposes I decided that it would be easiest to scale the data before
+sending it to OpenGL. It works well so far and I'll revisit it if needed.
+
+[large-environment]: https://www.gamedev.net/forums/topic/557264-confused-very-large-environments/
