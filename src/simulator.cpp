@@ -12,13 +12,13 @@ This file defines the simulator code
 
 namespace sim {
 
-bool Simulator::time_range_changed(const Scenario& a, const Scenario& b)
+bool time_range_extended(const Scenario& a, const Scenario& b)
 {
-    return (a.configuration->begin_jd != b.configuration->begin_jd)
-        || (a.configuration->end_jd != b.configuration->end_jd);
+    return (b.configuration->begin_jd < a.configuration->begin_jd)
+        || (a.configuration->end_jd < b.configuration->end_jd);
 }
 
-bool Simulator::orrery_changed(const Scenario& a, const Scenario& b)
+bool orrery_changed(const Scenario& a, const Scenario& b)
 {
     return (a.configuration->orrery_fnames != b.configuration->orrery_fnames);
 }
@@ -41,7 +41,7 @@ void Simulator::restart_with(const Scenario scenario_)
 
     // trying to figure out if we should reload the Orrery
     bool reload_orrery = !scenario.configuration
-        || time_range_changed(scenario, scenario_)
+        || time_range_extended(scenario, scenario_)
         || orrery_changed(scenario, scenario_);
 
     scenario = scenario_;

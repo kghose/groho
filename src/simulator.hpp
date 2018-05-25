@@ -29,9 +29,6 @@ public:
     std::shared_ptr<const Buffer> get_buffer() const { return buffer; }
 
 private:
-    bool time_range_changed(const Scenario& a, const Scenario& b);
-    bool orrery_changed(const Scenario& a, const Scenario& b);
-
     Scenario          scenario;
     orrery::SpkOrrery orrery;
 
