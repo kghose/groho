@@ -33,7 +33,7 @@ public:
             return false;
         }
 
-        LOG_S(INFO) << "Reloading buffer";
+        // LOG_S(INFO) << "Reloading buffer";
 
         paths.clear();
 
