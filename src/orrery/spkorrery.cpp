@@ -136,4 +136,19 @@ const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
     }
     return bodies;
 }
+
+// This is a little expensive because we have to copy over the first set of
+// computations
+const OrreryBodyVec& SpkOrrery::get_orrery_with_vel_at(double s, double delta_s)
+{
+    OrreryBodyVec  obv2 = get_orrery_at(s + delta_s);
+    OrreryBodyVec& obv1 = const_cast<OrreryBodyVec&>(get_orrery_at(s));
+    // Yes, we know what we are doing here ...
+
+    for (size_t i = 0; i < obv1.size(); i++) {
+        obv1[i].vel = (obv2[i].pos - obv1[i].pos) / delta_s;
+    }
+
+    return obv1;
+}
 }

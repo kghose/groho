@@ -54,5 +54,12 @@ public:
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
     // vector containing this information.
     const OrreryBodyVec& get_orrery_at(double t_s);
+
+    // Sometimes we'll need the velocities of the bodies too.
+    // For e.g. when we initialize a ship in orbit round a body
+    // In this function we invoke get_orrery_at twice with the given interval
+    // And then use the position difference to fill out the velocity
+    const OrreryBodyVec&
+    get_orrery_with_vel_at(double t_s, double delta_s = 10);
 };
 }
