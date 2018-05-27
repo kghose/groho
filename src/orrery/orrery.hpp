@@ -59,4 +59,14 @@ public:
     // vector containing this information.
     virtual const OrreryBodyVec& get_orrery_at(double s) = 0;
 };
+
+inline size_t spkid_to_orrery_index(const OrreryBodyVec& obv, int spkid)
+{
+    for (size_t i = 0; i < obv.size(); i++) {
+        if (obv[i].code == spkid) {
+            return i;
+        }
+    }
+    return -1;
+}
 }
