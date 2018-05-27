@@ -20,11 +20,12 @@ them as lists of actions.
 
 namespace sim {
 
+// TODO: rename this as Ship
 struct FlightPlan {
 
     Body body;
 
-    std::vector<FlightPlanAction> plan;
+    std::vector<std::shared_ptr<FlightPlanAction>> plan;
 
     // TODO: How to handle landed state and landed position in initial
     // conditions

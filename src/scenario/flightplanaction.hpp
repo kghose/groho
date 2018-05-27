@@ -9,35 +9,41 @@ available to control spacecraft via the flight plans.
 
 #include <optional>
 
+#include "orrery.hpp"
+#include "scenariolib.hpp"
 #include "vector.hpp"
 
 namespace sim {
 
-struct FlightPlanAction;
+struct WorldState {
+    WorldState(double t_s, const orrery::OrreryBodyVec& obv)
+        : t_s(t_s)
+        , obv(obv)
+    {
+    }
+
+    double                       t_s;
+    const orrery::OrreryBodyVec& obv;
+};
 
 // These are actions spacecraft can be scripted to do
-// TODO: For some Verbs we may need to pass some kind of readonly world state
-// Need to think about this ...
-typedef std::function<void(Body&, FlightPlanAction&)> Verb;
-
-// Each noun has one of the datatypes listed here, including complex data types
-// as needed
-union Noun {
-    Vector vector;
-    double scalar;
-    Noun() { scalar = 0.0; }
-};
-
-// An action consists of a date, a verb and a noun
 struct FlightPlanAction {
-    double      t_s;
-    bool        active;
-    Verb        verb;
-    Noun        noun;
-    size_t      line_no;
-    std::string help;
+
+    FlightPlanAction(double jd, size_t line_no)
+        : t_s(jd2s(jd))
+        , line_no(line_no)
+    {
+        active = true;
+    }
+
+    virtual void operator()(Body&, const WorldState&) = 0;
+
+    const double t_s;
+    const size_t line_no;
+
+    bool active = false;
 };
 
-std::optional<FlightPlanAction>
+std::shared_ptr<FlightPlanAction>
 parse_line_into_action(std::string line, size_t line_no);
 }

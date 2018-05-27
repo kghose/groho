@@ -98,11 +98,11 @@ void step_spaceship(
     spaceship.pos += spaceship.vel * step_s;
 }
 
-void execute_flight_plan(FlightPlan& fp, double t_s)
+void execute_flight_plan(FlightPlan& fp, const WorldState& ws, double t_s)
 {
-    for (auto& fpa : fp.plan) {
-        if (fpa.active && (t_s >= fpa.t_s)) {
-            fpa.verb(fp.body, fpa);
+    for (auto& action : fp.plan) {
+        if (action->active && (t_s >= action->t_s)) {
+            (*action)(fp.body, ws);
         }
     }
 }
@@ -115,10 +115,12 @@ void Simulator::run()
     LOG_S(INFO) << "Starting simulation";
 
     while (running && (t_s < end_s)) {
-        auto obv = orrery.get_orrery_at(t_s);
+
+        WorldState ws(t_s, orrery.get_orrery_at(t_s));
+
         for (auto& fp : scenario.flight_plans) {
-            step_spaceship(fp.body, obv, step_s);
-            execute_flight_plan(fp, t_s);
+            step_spaceship(fp.body, ws.obv, step_s);
+            execute_flight_plan(fp, ws, t_s);
         }
 
         bool final_step = t_s >= end_s - step_s;
@@ -126,13 +128,15 @@ void Simulator::run()
         buffer->lock();
 
         // First do the orrery
-        for (int i = 0; i < obv.size(); i++) {
-            buffer->append(i, obv[i].pos, final_step);
+        for (int i = 0; i < ws.obv.size(); i++) {
+            buffer->append(i, ws.obv[i].pos, final_step);
         }
         // Then the spaceships
         for (int i = 0; i < scenario.flight_plans.size(); i++) {
             buffer->append(
-                i + obv.size(), scenario.flight_plans[i].body.pos, final_step);
+                i + ws.obv.size(),
+                scenario.flight_plans[i].body.pos,
+                final_step);
         }
 
         buffer->release();
