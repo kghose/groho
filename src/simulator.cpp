@@ -73,12 +73,6 @@ void Simulator::restart_with(const Scenario scenario_)
     }
     buffer->release();
 
-    // Now do any spaceship initializations that requires world state
-    WorldState ws(t_s, orrery.get_orrery_with_vel_at(t_s));
-    for (auto& ship : scenario.ships) {
-        ship.init(ws);
-    }
-
     running = true;
 
     // once more unto the breach
@@ -119,6 +113,12 @@ void Simulator::run()
         return;
 
     LOG_S(INFO) << "Starting simulation";
+
+    // Do any spaceship initializations that requires world state
+    WorldState ws(t_s, orrery.get_orrery_with_vel_at(t_s));
+    for (auto& ship : scenario.ships) {
+        ship.init(ws);
+    }
 
     while (running && (t_s < end_s)) {
 
