@@ -2,7 +2,7 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-This file contains declarations for the scenario flightplan data structure.
+This file contains declarations for the scenario Ship data structure.
 The code takes care of parsing flight plans from file, representing
 them as lists of actions.
 */
@@ -21,8 +21,7 @@ them as lists of actions.
 
 namespace sim {
 
-// TODO: rename this as Ship
-struct FlightPlan {
+struct Ship {
 
     Body body;
 
@@ -79,11 +78,8 @@ struct FlightPlan {
     void set_initial_state_as_orbiting(const WorldState& ws);
 };
 
-bool        operator==(const FlightPlan& a, const FlightPlan& b);
-inline bool operator!=(const FlightPlan& a, const FlightPlan& b)
-{
-    return !(a == b);
-}
+bool        operator==(const Ship& a, const Ship& b);
+inline bool operator!=(const Ship& a, const Ship& b) { return !(a == b); }
 
-std::optional<FlightPlan> parse_flight_plan(std::string fname, int dssc);
+std::optional<Ship> parse_flight_plan(std::string fname, int dssc);
 }

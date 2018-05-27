@@ -11,7 +11,7 @@ This declares the simulation scenario data structure
 #include <vector>
 
 #include "configuration.hpp"
-#include "flightplan.hpp"
+#include "ship.hpp"
 
 namespace sim {
 
@@ -25,7 +25,7 @@ struct Scenario {
     std::string fname;
 
     std::optional<Configuration> configuration;
-    std::vector<FlightPlan>      flight_plans;
+    std::vector<Ship>            ships;
 };
 
 bool        operator==(const Scenario& a, const Scenario& b);

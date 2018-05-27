@@ -9,7 +9,7 @@ them as lists of actions.
 
 #include <fstream>
 
-#include "flightplan.hpp"
+#include "ship.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -28,7 +28,7 @@ namespace sim {
 // Ship needs to be positioned at Rsun + (A + r) along Rsun
 // Ship needs a velocity along V_hat of magnitude sqrt(GM/(A + r)) relative to
 // Body. Which means DON'T FORGET TO ADD Vbody to V :D
-void FlightPlan::set_initial_state_as_orbiting(const WorldState& ws)
+void Ship::set_initial_state_as_orbiting(const WorldState& ws)
 {
     std::vector<std::string> tokens = split(initial_orbit);
     if (tokens.size() < 2) {
@@ -64,13 +64,13 @@ void FlightPlan::set_initial_state_as_orbiting(const WorldState& ws)
     body.flight_state = FALLING;
 }
 
-std::optional<FlightPlan> parse_flight_plan(std::string fname, int default_code)
+std::optional<Ship> parse_flight_plan(std::string fname, int default_code)
 {
 
     std::ifstream cfile(fname);
     int           line_no = 0;
     std::string   line;
-    FlightPlan    flt;
+    Ship          ship;
     bool          header_section = true;
 
     if (!cfile) {
@@ -79,9 +79,9 @@ std::optional<FlightPlan> parse_flight_plan(std::string fname, int default_code)
     }
 
     // Some miscellaneous defaults
-    flt.body.body_type = SPACESHIP;
-    flt.body.color     = 0xffffff;
-    flt.body.code      = default_code;
+    ship.body.body_type = SPACESHIP;
+    ship.body.color     = 0xffffff;
+    ship.body.code      = default_code;
 
     while (std::getline(cfile, line)) {
         line_no++;
@@ -97,7 +97,7 @@ std::optional<FlightPlan> parse_flight_plan(std::string fname, int default_code)
                 if (kv->key == "plan") {
                     header_section = false;
                 } else {
-                    if (!flt.set_key_value(kv)) {
+                    if (!ship.set_key_value(kv)) {
                         LOG_S(WARNING) << "Line " << line_no << ": Unknown key "
                                        << kv->key << ": ignoring";
                     }
@@ -109,10 +109,10 @@ std::optional<FlightPlan> parse_flight_plan(std::string fname, int default_code)
         } else {
             auto fpa = parse_line_into_action(line, line_no);
             if (fpa) {
-                flt.plan.push_back(fpa);
+                ship.plan.push_back(fpa);
             }
         }
     }
-    return flt;
+    return ship;
 }
 }

@@ -58,7 +58,7 @@ void Simulator::restart_with(const Scenario scenario_)
         }
     }
 
-    LOG_S(INFO) << scenario.flight_plans.size() << " spaceships in simulation.";
+    LOG_S(INFO) << scenario.ships.size() << " spaceships in simulation.";
 
     buffer = std::shared_ptr<Buffer>(new Buffer);
     buffer->set_simulation_serial(++_simulation_serial);
@@ -68,15 +68,15 @@ void Simulator::restart_with(const Scenario scenario_)
     for (auto& o : orrery.get_orrery()) {
         buffer->add_body(o);
     }
-    for (auto& fp : scenario.flight_plans) {
-        buffer->add_body(fp.body);
+    for (auto& ship : scenario.ships) {
+        buffer->add_body(ship.body);
     }
     buffer->release();
 
     // Now do any spaceship initializations that requires world state
     WorldState ws(t_s, orrery.get_orrery_with_vel_at(t_s));
-    for (auto& fp : scenario.flight_plans) {
-        fp.init(ws);
+    for (auto& ship : scenario.ships) {
+        ship.init(ws);
     }
 
     running = true;
@@ -104,11 +104,11 @@ void step_spaceship(
     spaceship.pos += spaceship.vel * step_s;
 }
 
-void execute_flight_plan(FlightPlan& fp, const WorldState& ws, double t_s)
+void execute_flight_plan(Ship& ship, const WorldState& ws, double t_s)
 {
-    for (auto& action : fp.plan) {
+    for (auto& action : ship.plan) {
         if (action->active && (t_s >= action->t_s)) {
-            (*action)(fp.body, ws);
+            (*action)(ship.body, ws);
         }
     }
 }
@@ -124,9 +124,9 @@ void Simulator::run()
 
         WorldState ws(t_s, orrery.get_orrery_at(t_s));
 
-        for (auto& fp : scenario.flight_plans) {
-            step_spaceship(fp.body, ws.obv, step_s);
-            execute_flight_plan(fp, ws, t_s);
+        for (auto& ship : scenario.ships) {
+            step_spaceship(ship.body, ws.obv, step_s);
+            execute_flight_plan(ship, ws, t_s);
         }
 
         bool final_step = t_s >= end_s - step_s;
@@ -138,11 +138,9 @@ void Simulator::run()
             buffer->append(i, ws.obv[i].pos, final_step);
         }
         // Then the spaceships
-        for (int i = 0; i < scenario.flight_plans.size(); i++) {
+        for (int i = 0; i < scenario.ships.size(); i++) {
             buffer->append(
-                i + ws.obv.size(),
-                scenario.flight_plans[i].body.pos,
-                final_step);
+                i + ws.obv.size(), scenario.ships[i].body.pos, final_step);
         }
 
         buffer->release();

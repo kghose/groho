@@ -8,7 +8,6 @@ This defines some functions for the simulation scenario data structure
 #include <set>
 
 #include "scenario.hpp"
-//#include "tokenizedscenario.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -23,9 +22,9 @@ Scenario::Scenario(std::string fname_)
     if (configuration) {
         int default_ship_code = -1000;
         for (auto& fp_name : configuration->flightplan_fnames) {
-            auto fp = parse_flight_plan(fp_name, --default_ship_code);
-            if (fp)
-                flight_plans.push_back(*fp);
+            auto ship = parse_flight_plan(fp_name, --default_ship_code);
+            if (ship)
+                ships.push_back(*ship);
         }
     }
 }
