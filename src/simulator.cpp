@@ -73,6 +73,12 @@ void Simulator::restart_with(const Scenario scenario_)
     }
     buffer->release();
 
+    // Now do any spaceship initializations that requires world state
+    WorldState ws(t_s, orrery.get_orrery_with_vel_at(t_s));
+    for (auto& fp : scenario.flight_plans) {
+        fp.init(ws);
+    }
+
     running = true;
 
     // once more unto the breach
