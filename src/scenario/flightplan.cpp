@@ -16,6 +16,54 @@ them as lists of actions.
 
 namespace sim {
 
+// This expects the Orrery to be computed with velocities
+// We place the ship in a pro-grade orbit at the given altitude
+// A (km) = desired altitude of ship
+// r (km) = radius of body
+// Rsun   = vector from SSB to Body
+// Vbody  = velocity vector of Body (rel to SSB)
+// U_hat  = Vbody X -Rsun ("normal to orbital plane")
+// V_hat  = -Rsun X U = tangent to planetary surface ("pro-grade vector")
+//
+// Ship needs to be positioned at Rsun + (A + r) along Rsun
+// Ship needs a velocity along V_hat of magnitude sqrt(GM/(A + r)) relative to
+// Body. Which means DON'T FORGET TO ADD Vbody to V :D
+void FlightPlan::set_initial_state_as_orbiting(const WorldState& ws)
+{
+    std::vector<std::string> tokens = split(initial_orbit);
+    if (tokens.size() < 2) {
+        LOG_S(ERROR) << "Initial orbit specification needs two components";
+        return;
+    }
+
+    size_t SSB_idx = orrery::spkid_to_orrery_index(ws.obv, 10);
+    if (SSB_idx == -1) {
+        LOG_S(ERROR) << "Can't find SSB in Orrery when trying to set initial "
+                        "state as orbiting";
+        return;
+    }
+
+    size_t B_idx = orrery::spkid_to_orrery_index(ws.obv, stoi(tokens[0]));
+    if (B_idx == -1) {
+        LOG_S(ERROR)
+            << "Can't find " << tokens[0]
+            << " in Orrery when trying to set initial state as orbiting";
+        return;
+    }
+
+    double A     = stod(tokens[1]);
+    double r     = ws.obv[B_idx].r;
+    Vector Rsun  = ws.obv[B_idx].pos - ws.obv[SSB_idx].pos;
+    Vector Vbody = ws.obv[B_idx].vel;
+    Vector U_hat = cross(Vbody, Rsun * -1).normed();
+    Vector V_hat = cross(Rsun * -1, U_hat).normed();
+    body.pos     = ws.obv[B_idx].pos + (Rsun.normed() * (A + r));
+    body.vel     = (V_hat * std::sqrt(ws.obv[B_idx].GM / (A + r))) + Vbody;
+    body.att     = V_hat; // Nice to set this too
+
+    body.flight_state = FALLING;
+}
+
 std::optional<FlightPlan> parse_flight_plan(std::string fname, int default_code)
 {
 
