@@ -8,6 +8,7 @@ them as lists of actions.
 */
 #pragma once
 
+#include <cmath>
 #include <optional>
 #include <set>
 #include <string>
@@ -27,6 +28,10 @@ struct FlightPlan {
 
     std::vector<std::shared_ptr<FlightPlanAction>> plan;
 
+    // Initialization data that requires world state and can only be done
+    // once we start running the simulator
+    std::string initial_orbit;
+
     // TODO: How to handle landed state and landed position in initial
     // conditions
 
@@ -40,6 +45,7 @@ struct FlightPlan {
             { "max-acceleration", [=](sst v) { body.max_acc = stof(v); } },
             { "max-fuel", [=](sst v) { body.max_fuel        = stof(v); } },
             { "fuel-cons-rate", [=](sst v) { body.fuel_cons = stof(v); } },
+            { "orbiting", [=](sst v) { initial_orbit        = v; } },
 
             { "flight-state", [=](sst v) { body.flight_state = FALLING; } },
             // TODO: handle landed state
@@ -59,6 +65,18 @@ struct FlightPlan {
             return false;
         }
     };
+
+    // Any initialization that requires actual world state and can only be done
+    // after we start running the simulator.
+    // This expects the Orrery to be computed with velocities
+    void init(const WorldState& ws)
+    {
+        if (initial_orbit.length() > 0) {
+            set_initial_state_as_orbiting(ws);
+        }
+    }
+
+    void set_initial_state_as_orbiting(const WorldState& ws);
 };
 
 bool        operator==(const FlightPlan& a, const FlightPlan& b);
