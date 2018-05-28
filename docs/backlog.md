@@ -5,10 +5,15 @@ Backlog
 Core
 ----
 * Display buffer data should include time so that we can scroll to or limit display by time
-* Leap-frog integration
 * FlightPlanAction - warnings about deleted desctructors
 * Rename FlightPlan to Ship
-* MagnumApp - setSamples is deprecated - find correct way to do this
+* File extensions should be .groho.txt for syntax highlighting
+
+Simulation
+----------
+* Leap-frog integration
+* Initialiser that can spawn a spaceraft in orbit round a body
+* Orrery velocity computer should be more sophisticated - do midpoints?
 
 Display
 -------
@@ -27,6 +32,10 @@ Display
 
 Interaction
 * How do we interact - keystrokes, UI widgets, separate dialogs, command line?
+* Allow selection of a long going operation (e.g. parking) and show what the distance is live
+  - more generally, for each action mark out some state variables as debug variables that
+    we can show live when asked for. There will be a performance hit for this ...
+
 
 Logging
 -------
@@ -44,6 +53,7 @@ Core
 * Introduce space craft into the simulation
 * Figure out way to combine flight plan actions with spacecraft
 * Orrery should not reload if new range is inside old range
+* MagnumApp - setSamples is deprecated - find correct way to do this
 
 
 Version planning

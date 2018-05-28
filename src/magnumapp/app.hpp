@@ -54,11 +54,10 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
                                  .setTitle("Groho orbit display")
                                  .setWindowFlags(
                                      Platform::Sdl2Application::Configuration::
-                                         WindowFlag::Resizable)
-                                 .setSampleCount(3) }
+                                         WindowFlag::Resizable),
+                             GLConfiguration{}.setSampleCount(3) }
     , simulator(simulator)
 {
-    // TODO: Figure out correct way to do anti-aliasing
     using namespace Math::Literals;
 
     _transformation
