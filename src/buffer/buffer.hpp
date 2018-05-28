@@ -16,6 +16,7 @@ should see if this is fast enough for us.
 #pragma once
 
 #include <fstream>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -33,13 +34,25 @@ struct SubBuffer {
         sampler = FractalDownsampler();
     }
 
-    bool append(const Vector& v, bool force)
+    bool append(const Vector& v)
     {
-        if (sampler(v) || force) {
+        if (sampler(v)) {
             data.push_back(v);
             return true;
         }
         return false;
+    }
+
+    // Returns true if we actually flushed
+    bool flush()
+    {
+        std::optional<Vector> v = sampler.flush();
+        if (v) {
+            data.push_back(*v);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     const Body& get_metadata() const { return body; }
@@ -67,13 +80,25 @@ public:
     void lock() const { buffer_mutex.lock(); }
     void release() const { buffer_mutex.unlock(); }
 
-    void append(size_t i, const Vector& v, bool force)
+    void append(size_t i, const Vector& v)
     {
-        if (sub_buffer[i].append(v, force))
+        if (sub_buffer[i].append(v))
             _point_count++;
     }
 
-    void finalize() { finalized = true; }
+    bool flush()
+    {
+        std::lock_guard<std::mutex> lock(buffer_mutex);
+
+        bool flushed = false;
+        for (auto& b : sub_buffer) {
+            if (b.flush()) {
+                flushed = true;
+                _point_count++;
+            }
+        }
+        return flushed;
+    }
 
     const std::vector<Vector>& get(size_t i) const
     {

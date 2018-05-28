@@ -26,7 +26,7 @@ public:
     void run();
     void stop();
 
-    std::shared_ptr<const Buffer> get_buffer() const { return buffer; }
+    std::shared_ptr<const Buffer> get_buffer() const;
 
 private:
     Scenario          scenario;

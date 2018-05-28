@@ -24,17 +24,31 @@ public:
 
         if (((cumulative_curve_dist / linear_dist) > ratio_threshold)
             | (abs(cumulative_curve_dist - linear_dist) > linear_threshold)) {
-
-            cumulative_curve_dist = 0;
-            last_sample_v         = v;
-            last_v                = v;
+            accept_sample(v);
             return true;
         }
         last_v = v;
         return false;
     }
 
+    // This is makes it look like we accepted last_v
+    std::optional<Vector> flush()
+    {
+        if (cumulative_curve_dist == 0) {
+            return {};
+        }
+        accept_sample(last_v);
+        return last_v;
+    }
+
 private:
+    void accept_sample(const Vector& v)
+    {
+        cumulative_curve_dist = 0;
+        last_sample_v         = v;
+        last_v                = v;
+    }
+
     double cumulative_curve_dist = 0;
     Vector last_sample_v         = { 0, 0, 0 };
     Vector last_v                = { 0, 0, 0 };

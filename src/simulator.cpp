@@ -129,27 +129,30 @@ void Simulator::run()
             execute_flight_plan(ship, ws, t_s);
         }
 
-        bool final_step = t_s >= end_s - step_s;
-
         buffer->lock();
 
         // First do the orrery
         for (int i = 0; i < ws.obv.size(); i++) {
-            buffer->append(i, ws.obv[i].pos, final_step);
+            buffer->append(i, ws.obv[i].pos);
         }
         // Then the spaceships
         for (int i = 0; i < scenario.ships.size(); i++) {
-            buffer->append(
-                i + ws.obv.size(), scenario.ships[i].body.pos, final_step);
+            buffer->append(i + ws.obv.size(), scenario.ships[i].body.pos);
         }
 
         buffer->release();
         t_s += step_s;
     }
+    buffer->flush();
     running = false;
-    buffer->finalize();
 
     LOG_S(INFO) << "Stopping simulation";
+}
+
+std::shared_ptr<const Buffer> Simulator::get_buffer() const
+{
+    buffer->flush();
+    return buffer;
 }
 
 } // namespace sim
