@@ -301,11 +301,55 @@ the current data point (that the writer is working on). This code is more
 involved, however.
 
 
+Fractal downsampler
+-------------------
+The exciting story behind the fractal downsampler is in this [IPython notebook][downsampler].
+
+### Long straight trajectories
+
+The downsampler works great and gives us all the benefits we hoped for, but
+there are some aesthetic and scientific issues related to straight trajectories.
+A spacecraft flying with high constant acceleration has a very straight 
+trajectory and the display will be jerky. 
+
+The solution chosen is to force a flush of the buffer when the display 
+asks to see it. Whether we have anything to flush depends on whether we've
+accumulated any miles in the downsampler (`cumulative_curve_dist`). No miles,
+no flush, which prevents us from keeping adding data unnecessarily on every 
+flush. (commit `11add0488fca`)
+
+
+How much and what data to store
+-------------------------------
+For the bare display (and also for any print (vector) version we may develop)
+the downsampled version (especially with a flush linked to display tick) is
+sufficient - looks smooth and has the necessary detail.
+
+For the debugging display I envision, where you can, in a script, mark out
+ships/objects for monitoring we'll need the whole state of the object. This
+can be grabbed on a frame by frame basis, updating when the display asks for it.
+
+What happens for time scrolling, when I allow the user to interactively scroll
+along the time axis? What happens to re-framing, when I allow the user to
+re-frame the simulation to a particular body (different bodies have samples
+taken at different times)?
+
+For these considerations, and in the spirit of don't knock it till you try it:
+
+a) I'll store the full state of each body in the buffer
+b) develop interpolation functions that interpolate state.
+
+If it looks like storing the whole state adds a lot of speed and memory burden
+we can think about alterative strategies.
+
+Simulation restarts and checkpoints
+-----------------------------------
+Storing the full state of each body in the buffer (rather than just )
+
 Simulation
 ----------
 - Choosing a time step using [energy considerations][step]
 - [Leap frog integration][leap]
-- [My notes on the fractal downsampler][downsampler]
 
 
 [step]: https://physics.stackexchange.com/questions/258456/which-timestep-should-i-use-for-a-n-body-simulation-of-the-solar-system
@@ -336,3 +380,28 @@ For our purposes I decided that it would be easiest to scale the data before
 sending it to OpenGL. It works well so far and I'll revisit it if needed.
 
 [large-environment]: https://www.gamedev.net/forums/topic/557264-confused-very-large-environments/
+
+
+Thinking aloud on user interfaces
+=================================
+
+**The first question is, who is supposed to use this program?**
+
+Realistically speaking, just me. So I can get away with making it as idiosyncratic
+as I like
+
+
+**The second question is, how much effort can we put behind this?**
+
+This is the unhappy question. I can sketch out on napkins a very nice UI but
+then who's going to build it? I do this on the train and perhaps on a few 
+evenings. It's way more fun for me to program little bits of 
+physics and vector math than to tussle with UI flow and components. I enjoy the 
+end product of a nice UI but not the day to day struggle that goes with it. 
+I enjoy and am excited by both the end product of a physics algorithm and 
+the process of translating formulae and concepts into code.
+
+Given the limited time I have, I choose to have a very keyboard and script
+driven interaction that uses a minimal of on screen gadgetry. I choose instead
+to devote time to making the spacship script (the flightplan) functionality
+more sophisticated.
