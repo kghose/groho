@@ -1,3 +1,5 @@
+Notes of things I learned/thought about during development
+
 <!-- TOC -->
 
 - [Code organization](#code-organization)
@@ -20,18 +22,18 @@
     - [Misc](#misc)
     - [Passing member function pointers to callbacks](#passing-member-function-pointers-to-callbacks)
     - [The use of "f" in code using OpenGL](#the-use-of-f-in-code-using-opengl)
-- [Computation strategies](#computation-strategies)
+- [Code and interface design considerations](#code-and-interface-design-considerations)
     - [Sharing a data buffer between writer and reader](#sharing-a-data-buffer-between-writer-and-reader)
     - [Fractal downsampler](#fractal-downsampler)
         - [Long straight trajectories](#long-straight-trajectories)
-- [How much and what data to store](#how-much-and-what-data-to-store)
-- [Simulation restarts and checkpoints](#simulation-restarts-and-checkpoints)
-- [Simulation](#simulation)
-- [Scaling data for display](#scaling-data-for-display)
-- [Thinking aloud on user interfaces](#thinking-aloud-on-user-interfaces)
-    - [The decision](#the-decision)
-- [Display specifications](#display-specifications)
-- [Annotation script](#annotation-script)
+    - [How much and what data to store](#how-much-and-what-data-to-store)
+    - [Simulation restarts and checkpoints](#simulation-restarts-and-checkpoints)
+    - [Simulation](#simulation)
+    - [Scaling data for display](#scaling-data-for-display)
+    - [Thinking aloud on user interfaces](#thinking-aloud-on-user-interfaces)
+        - [The decision](#the-decision)
+    - [Display specifications](#display-specifications)
+    - [Annotation script](#annotation-script)
 
 <!-- /TOC -->
 
@@ -160,11 +162,6 @@ This was mildly annoying to find out. https://www.codeproject.com/Articles/48575
 
 
 ## Units (user defined literals)
-
-
-
-
-
 
 ## Multi-threading
 
@@ -312,7 +309,7 @@ which explains that C++ templates are strict and since
 the underlying functions operate of floats, passing a number like 2.0 
 
 
-# Computation strategies
+# Code and interface design considerations 
 
 
 ## Sharing a data buffer between writer and reader
@@ -354,7 +351,7 @@ no flush, which prevents us from keeping adding data unnecessarily on every
 flush. (commit `11add0488fca`)
 
 
-# How much and what data to store
+## How much and what data to store
 
 For the bare display (and also for any print (vector) version we may develop)
 the downsampled version (especially with a flush linked to display tick) is
@@ -377,11 +374,11 @@ b) develop interpolation functions that interpolate state.
 If it looks like storing the whole state adds a lot of speed and memory burden
 we can think about alterative strategies.
 
-# Simulation restarts and checkpoints
+## Simulation restarts and checkpoints
 
-Storing the full state of each body in the buffer (rather than just )
+TBD
 
-# Simulation
+## Simulation
 
 - Choosing a time step using [energy considerations][step]
 - [Leap frog integration][leap]
@@ -393,7 +390,7 @@ Storing the full state of each body in the buffer (rather than just )
 
 
 
-# Scaling data for display
+## Scaling data for display
 
 If we wish for 1m resolution at solar system distances (40 AU for pluto) we need
 to use doubles assuming 1 unit represents 1m. 40 AU = 5.98391483e12 m and doubles
@@ -417,7 +414,7 @@ sending it to OpenGL. It works well so far and I'll revisit it if needed.
 [large-environment]: https://www.gamedev.net/forums/topic/557264-confused-very-large-environments/
 
 
-# Thinking aloud on user interfaces
+## Thinking aloud on user interfaces
 
 
 **The first question is, who is supposed to use this program?**
@@ -436,7 +433,7 @@ end product of a nice UI but not the day to day struggle that goes with it.
 I enjoy and am excited by both the end product of a physics algorithm and 
 the process of translating formulae and concepts into code.
 
-## The decision
+### The decision
 
 Given the limited time I have, and no other users to worry about, I chose the 
 following idiosyncratic interface:
@@ -471,12 +468,12 @@ things, you organize a display, then it's lost. Or, the program has to supply
 a session system whereby you can save your widgets in a session. More complexity.
 
 
-# Display specifications
+## Display specifications
 
 _(When implemented, this section should be transfered to the tutorial section of
 the main Readme)_
 
-# Annotation script
+## Annotation script
 
 The format for this is the same as for the flight plan:
 
