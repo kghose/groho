@@ -151,7 +151,9 @@ void Simulator::run()
 
 std::shared_ptr<const Buffer> Simulator::get_buffer() const
 {
-    buffer->flush();
+    if (buffer) {
+        buffer->flush();
+    }
     return buffer;
 }
 
