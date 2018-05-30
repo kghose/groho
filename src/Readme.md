@@ -1,5 +1,41 @@
-Code organization
-=================
+<!-- TOC -->
+
+- [Code organization](#code-organization)
+- [C++ Language features](#c-language-features)
+    - [Code formatting](#code-formatting)
+    - [Mutable](#mutable)
+    - [Optional](#optional)
+    - [Switch-board (Pythonic C++)](#switch-board-pythonic-c)
+    - [Building](#building)
+    - [Template class derived from a template class](#template-class-derived-from-a-template-class)
+    - [Template classes must be defined in the header file](#template-classes-must-be-defined-in-the-header-file)
+    - [Units (user defined literals)](#units-user-defined-literals)
+    - [Multi-threading](#multi-threading)
+        - [Threads with class method use `std:ref`](#threads-with-class-method-use-stdref)
+        - [Condition variables](#condition-variables)
+- [OpenGL specific](#opengl-specific)
+    - [FLTK and OpenGL 3 on mac](#fltk-and-opengl-3-on-mac)
+    - [Mapping: i.e. writing directly into the display buffer](#mapping-ie-writing-directly-into-the-display-buffer)
+    - [Fonts, FLTK and OpenGL3](#fonts-fltk-and-opengl3)
+    - [Misc](#misc)
+    - [Passing member function pointers to callbacks](#passing-member-function-pointers-to-callbacks)
+    - [The use of "f" in code using OpenGL](#the-use-of-f-in-code-using-opengl)
+- [Computation strategies](#computation-strategies)
+    - [Sharing a data buffer between writer and reader](#sharing-a-data-buffer-between-writer-and-reader)
+    - [Fractal downsampler](#fractal-downsampler)
+        - [Long straight trajectories](#long-straight-trajectories)
+- [How much and what data to store](#how-much-and-what-data-to-store)
+- [Simulation restarts and checkpoints](#simulation-restarts-and-checkpoints)
+- [Simulation](#simulation)
+- [Scaling data for display](#scaling-data-for-display)
+- [Thinking aloud on user interfaces](#thinking-aloud-on-user-interfaces)
+    - [The decision](#the-decision)
+- [Display specifications](#display-specifications)
+- [Annotation script](#annotation-script)
+
+<!-- /TOC -->
+
+# Code organization
 
 * buffer - code to handle data storage and sharing
 * external - external libraries, currently just loguru
@@ -8,14 +44,14 @@ Code organization
 * scenario - Scenario and flightplan loading and parsing
 
 
-C++ Language features
-=====================
+# C++ Language features
+
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
 
 
-Code formatting
----------------
+## Code formatting
+
 I was first resistant to but now am a zealous convert to `clang-format`. I just
 have it trigger on file save and don't worry about formatting any more. How
 LaTeX-like! The only thing I ocassionally fiddle with is leaving gaps between
@@ -24,8 +60,8 @@ variable declarations if I think the grouping leads to awkward formatting. My
 for when I need it.
 
 
-Mutable
--------
+## Mutable
+
 My strategy to pass data from the Simulator to the Display was to share a data
 buffer between the two. The Buffer object contains a lock. I wanted to make sure
 that a display (reader/consumer) could never alter the Buffer - it was the solely
@@ -35,8 +71,8 @@ is fixed by `mutable` which allows us to mark out particular variables as
 exceptions to the `const` requirement.
 
 
-Optional
---------
+## Optional
+
 `std::optional` is a C++17 feature that I was eager to use. It works fine in
 practice. There are some creature comforts the compiler affords: inside the
 function you don't have to operate on `std::optional<Foo>` you can just work
@@ -46,8 +82,8 @@ type. Also, when you want to return a `None` object, you can simply do
 `orrery` or `scanario`
 
 
-Switch-board (Pythonic C++)
------------- 
+## Switch-board (Pythonic C++)
+
 Python doesn't have a switch statement while C++ does. One can create quite
 an elegant switch statement by setting up a dictionary whose keys are the
 options and values are lambda functions that perform apropriate actions.
@@ -84,13 +120,13 @@ bool set_key_value(std::optional<KeyValue> kv)
 };
 ```
 
-Building
---------
+## Building
+
 - [Creating your own Cmake find module script for a library](https://cmake.org/Wiki/CMake:How_To_Find_Libraries)
 
 
-Template class derived from a template class
---------------------------------------------
+## Template class derived from a template class
+
 See `timestamps.hpp`. This derives from `std::vector`. The form of template is
 
 ```
@@ -118,20 +154,19 @@ very well [here](https://stackoverflow.com/a/4643295/2512851):
 deferred until the template parameter is known.
 
 
-Template classes must be defined in the header file
---------------------------------------------------
+## Template classes must be defined in the header file
+
 This was mildly annoying to find out. https://www.codeproject.com/Articles/48575/How-to-define-a-template-class-in-a-h-file-and-imp
 
 
-Units (user defined literals)
------------------------------
+## Units (user defined literals)
 
 
 
 
 
-Multi-threading
----------------
+
+## Multi-threading
 
 ### Threads with class method use `std:ref`
 
@@ -168,8 +203,8 @@ using std::ref
 http://en.cppreference.com/w/cpp/thread/condition_variable
 
 
-OpenGL specific
-===============
+# OpenGL specific
+
 After a lot of thrashing around and getting bits and pieces, I found Tom Dalling's
 [Modern OpenGL tutorial][dalling], which I find has the right pace and level of
 description. One issue with the code is that he hides some of the opengl code
@@ -184,16 +219,16 @@ to this also but I found the ordering of Dalling's tutorial better.
 [ogl]: http://www.opengl-tutorial.org/
 
 
-FLTK and OpenGL 3 on mac
-------------------------
+## FLTK and OpenGL 3 on mac
+
   - http://www.fltk.org/doc-1.3/opengl.html  ("Using OpenGL 3.0 (or higher versions)")
   - https://github.com/IngwiePhoenix/FLTK/blob/master/examples/OpenGL3-glut-test.cxx
   - In order for resizing to work properly (and on the retina display) I needed
     - to set `size_range`
     - to use `pixel_h()` and `pixel_w()`
 
-Mapping: i.e. writing directly into the display buffer
-------------------------------------------------------
+## Mapping: i.e. writing directly into the display buffer
+
 From the OpenGL [wiki](https://www.khronos.org/opengl/wiki/Buffer_Object#Mapping):
 
 > glBufferSubData is a nice way to present data to a buffer object. But it can be wasteful in performance, depending on your use patterns.
@@ -204,8 +239,8 @@ From the OpenGL [wiki](https://www.khronos.org/opengl/wiki/Buffer_Object#Mapping
 
 NICE!!! This is exactly what I'm looking for. The rest of the wiki tells us how to do this
 
-Fonts, FLTK and OpenGL3
------------------------
+## Fonts, FLTK and OpenGL3
+
 
 FLTK uses ftgl
 
@@ -217,8 +252,8 @@ http://devcry.heiho.net/html/2012/20120115-opengl-font-rendering.html
 https://github.com/wjakob/nanogui
 
 
-Misc
-----
+## Misc
+
 - Many GLFW functions can only run in the [main thread](http://www.glfw.org/docs/latest/intro_guide.html#thread_safety)
 - Picked FLTK because GLFW was extremely limited, though simple
   - FLTK gives us C++ windowing system
@@ -229,8 +264,8 @@ Misc
     - https://solarianprogrammer.com/2013/05/13/opengl-101-drawing-primitives/
 
 
-Passing member function pointers to callbacks
----------------------------------------------
+## Passing member function pointers to callbacks
+
 **For FLTK, use the void* pointer argument**
 Create a static member function and use the `void*` pointer to pass 
 the `this` pointer through:
@@ -269,19 +304,19 @@ accessible pointer to your object.
 
 
 
-The use of "f" in code using OpenGL
------------------------------------
+## The use of "f" in code using OpenGL
+
 This annoyed the heck out of me until I ran into a compile error and read [this](https://www.opengl.org/discussion_boards/showthread.php/175108-Scaling-a-vec3?p=1224244&viewfull=1#post1224244). It explains that 2.0 is interpreted as a double 
 
 which explains that C++ templates are strict and since
 the underlying functions operate of floats, passing a number like 2.0 
 
 
-Computation strategies
-======================
+# Computation strategies
 
-Sharing a data buffer between writer and reader
------------------------------------------------
+
+## Sharing a data buffer between writer and reader
+
 In my application I have a producer (A Simulator) that continuously generates
 data. A consumer (the Display) would, ideally, like to reflect the current
 state of the data without hindering the producer.
@@ -301,8 +336,8 @@ the current data point (that the writer is working on). This code is more
 involved, however.
 
 
-Fractal downsampler
--------------------
+## Fractal downsampler
+
 The exciting story behind the fractal downsampler is in this [IPython notebook][downsampler].
 
 ### Long straight trajectories
@@ -319,8 +354,8 @@ no flush, which prevents us from keeping adding data unnecessarily on every
 flush. (commit `11add0488fca`)
 
 
-How much and what data to store
--------------------------------
+# How much and what data to store
+
 For the bare display (and also for any print (vector) version we may develop)
 the downsampled version (especially with a flush linked to display tick) is
 sufficient - looks smooth and has the necessary detail.
@@ -342,12 +377,12 @@ b) develop interpolation functions that interpolate state.
 If it looks like storing the whole state adds a lot of speed and memory burden
 we can think about alterative strategies.
 
-Simulation restarts and checkpoints
------------------------------------
+# Simulation restarts and checkpoints
+
 Storing the full state of each body in the buffer (rather than just )
 
-Simulation
-----------
+# Simulation
+
 - Choosing a time step using [energy considerations][step]
 - [Leap frog integration][leap]
 
@@ -358,8 +393,8 @@ Simulation
 
 
 
-Scaling data for display
-------------------------
+# Scaling data for display
+
 If we wish for 1m resolution at solar system distances (40 AU for pluto) we need
 to use doubles assuming 1 unit represents 1m. 40 AU = 5.98391483e12 m and doubles
 give us integer resolution to [9007.199254740992e12 m][double-prec]. While a 
@@ -382,8 +417,8 @@ sending it to OpenGL. It works well so far and I'll revisit it if needed.
 [large-environment]: https://www.gamedev.net/forums/topic/557264-confused-very-large-environments/
 
 
-Thinking aloud on user interfaces
-=================================
+# Thinking aloud on user interfaces
+
 
 **The first question is, who is supposed to use this program?**
 
@@ -401,8 +436,7 @@ end product of a nice UI but not the day to day struggle that goes with it.
 I enjoy and am excited by both the end product of a physics algorithm and 
 the process of translating formulae and concepts into code.
 
-The decision
-------------
+## The decision
 
 Given the limited time I have, and no other users to worry about, I chose the 
 following idiosyncratic interface:
@@ -437,13 +471,13 @@ things, you organize a display, then it's lost. Or, the program has to supply
 a session system whereby you can save your widgets in a session. More complexity.
 
 
-Display specifications
-======================
+# Display specifications
+
 _(When implemented, this section should be transfered to the tutorial section of
 the main Readme)_
 
-Annotation script
------------------
+# Annotation script
+
 The format for this is the same as for the flight plan:
 
 ```
