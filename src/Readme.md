@@ -401,7 +401,80 @@ end product of a nice UI but not the day to day struggle that goes with it.
 I enjoy and am excited by both the end product of a physics algorithm and 
 the process of translating formulae and concepts into code.
 
-Given the limited time I have, I choose to have a very keyboard and script
-driven interaction that uses a minimal of on screen gadgetry. I choose instead
-to devote time to making the spacship script (the flightplan) functionality
-more sophisticated.
+The decision
+------------
+
+Given the limited time I have, and no other users to worry about, I chose the 
+following idiosyncratic interface:
+
+- The simulation is driven by the **simulation script** (scenario + flight plans)
+- The plot of the object tracks is drawn on the **orbital diagram**
+- Additional markers/information (text and graphical) can be added to the orbital diagram via one or more **annotation scripts**
+
+I'm chosing to devote most of the effort to fun flight plan actions 
+(sophisticated space craft navigation programs, interactions etc.) and, as I
+work through use cases, I'll build in as annotations whatever instrumentation 
+I need (e.g. a widget to monitor the relative distance between two objects 
+and mark the point and value of closest approach).
+
+Part of the assumption is that by having this kind of scripted display system I can
+build things as I need them and it'll be less complex and buggy than a "reactive" 
+GUI that requires callbacks and other things and perhaps a certain amount of 
+upfront design and study.
+
+But a huge part of why this script system for annotations appeals to me is that
+it is drawing on my experience making graphs and plots for papers
+and reports. What you really want is a script that you can version that you
+run on your data to (re)produce a plot. 
+
+What I want for Groho is a script system (the **simulation** and 
+**annotation** scripts) that you can run Groho on to reproduce the exact
+visuals over and over again. A reproducible semi-interactive display of the
+simulation with durable annotations. 
+
+When you have an interactive GUI a lot of it becomes ephemeral. You click on
+things, you organize a display, then it's lost. Or, the program has to supply
+a session system whereby you can save your widgets in a session. More complexity.
+
+
+Display specifications
+======================
+_(When implemented, this section should be transfered to the tutorial section of
+the main Readme)_
+
+Annotation script
+-----------------
+The format for this is the same as for the flight plan:
+
+```
+<timestamp> <action name> <argument1> <argument2> ...
+```
+
+The available annotation actions are
+
+```
+Action:        show-state
+Arguments:     int id
+Description:   Starting from the given timestamp show the state 
+               (all or some of pos, attitude, vel and fuel as relevant to the body)
+               of body with id `id`
+```
+
+```
+Action:        hide-state
+Arguments:     int id
+Description:   If showing the state, hide it
+```
+
+```
+Action:        show-delta
+Arguments:     int id1, int id2
+Description:   Starting from the given timestamp show the difference in pos and
+               vel between the two bodies.
+```
+
+```
+Action:        hide-delta
+Arguments:     int id
+Description:   If showing the state, hide it
+```
