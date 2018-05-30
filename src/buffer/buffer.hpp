@@ -110,7 +110,6 @@ private:
     std::atomic<unsigned int> _simulation_serial;
 
     std::vector<SubBuffer> sub_buffer;
-    std::atomic<bool>      finalized = false;
     mutable std::mutex     buffer_mutex;
 };
 }
