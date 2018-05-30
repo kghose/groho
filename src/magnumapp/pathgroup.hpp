@@ -12,13 +12,13 @@ Convenient container for managing a group of data to display for a simulation
 #include <Magnum/Shaders/Flat.h>
 
 #include "buffer.hpp"
-#include "displaypath.hpp"
+#include "path.hpp"
 
 namespace sim {
 
 using namespace Magnum;
 
-class DisplayGroup {
+class PathGroup {
 
 public:
     // return true if a reload ocurred
@@ -45,7 +45,7 @@ public:
                 continue;
             }
 
-            auto p = std::shared_ptr<DisplayPath>(new DisplayPath);
+            auto p = std::shared_ptr<Path>(new Path);
             p->set_color(Color3(buffer->metadata(i).color));
             p->set_data(buffer->get(i));
             paths.push_back(p);
@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    std::vector<std::shared_ptr<DisplayPath>> paths;
+    std::vector<std::shared_ptr<Path>> paths;
 
     // Metadata to figure out if we should reload a buffer
     unsigned int simulation_serial = -1;

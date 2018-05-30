@@ -14,7 +14,7 @@ Magnum App to handle windowing and display
 #include <Magnum/Platform/Sdl2Application.h>
 #include <Magnum/Shaders/Flat.h>
 
-#include "displaygroup.hpp"
+#include "pathgroup.hpp"
 #include "simulator.hpp"
 
 using namespace Magnum;
@@ -40,7 +40,7 @@ private:
     void mouseScrollEvent(MouseScrollEvent& event) override;
 
     const sim::Simulator& simulator;
-    DisplayGroup          orrery;
+    PathGroup             orrery;
 
     Shaders::Flat3D _shader;
 

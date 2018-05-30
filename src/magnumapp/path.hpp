@@ -22,7 +22,7 @@ using namespace Corrade;
 
 const float scale = 10 * 149597870.700; // 10 AU
 
-class DisplayPath {
+class Path {
 
 public:
     void set_color(Color3 color) { _color = color; }
