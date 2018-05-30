@@ -27,9 +27,9 @@ void ctrl_c_pressed(int) { keep_running = false; }
 void print_license()
 {
     std::cout <<
-        R"(  Groho 0.3.0
-  Copyright (c) 2018 Kaushik Ghose. All rights reserved.
-  Released under the MIT License)"
+        R"(  Groho 0.4.0: A simulator for inter-planetary travel and warfare
+  Copyright (c) 2017-2018 by Kaushik Ghose. 
+  Released under the MIT License. Some rights reserved)"
               << std::endl;
 }
 
