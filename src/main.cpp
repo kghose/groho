@@ -83,11 +83,13 @@ int main(int argc, char* argv[])
         simulator.stop();
     });
 
-    sim::GrohoApp app({ argc, argv }, simulator);
-
-    int ret_val = app.exec();
-
-    keep_running = false;
+    int  ret_val     = 0;
+    bool interactive = true;
+    if (interactive) {
+        sim::GrohoApp app({ argc, argv }, simulator);
+        ret_val      = app.exec();
+        keep_running = false;
+    }
 
     if (simulator_thread.joinable()) {
         simulator_thread.join();
