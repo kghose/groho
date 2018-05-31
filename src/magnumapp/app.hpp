@@ -14,7 +14,7 @@ Magnum App to handle windowing and display
 #include <Magnum/Platform/Sdl2Application.h>
 #include <Magnum/Shaders/Flat.h>
 
-#include "pathgroup.hpp"
+#include "orbitview.hpp"
 #include "simulator.hpp"
 
 using namespace Magnum;
@@ -40,7 +40,9 @@ private:
     void mouseScrollEvent(MouseScrollEvent& event) override;
 
     const sim::Simulator& simulator;
-    PathGroup             orrery;
+
+    Camera    camera;
+    OrbitView orbit_view;
 
     Shaders::Flat3D _shader;
 
@@ -60,10 +62,10 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
 {
     using namespace Math::Literals;
 
-    _transformation
+    camera.transformation
         = Matrix4::rotationX(0.0_degf) * Matrix4::rotationY(0.0_degf);
 
-    _projection
+    camera.projection
         = Matrix4::perspectiveProjection(
               35.0_degf,
               Vector2{ GL::defaultFramebuffer.viewport().size() }.aspectRatio(),
@@ -76,9 +78,9 @@ void GrohoApp::drawEvent()
 {
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
-    _shader.setTransformationProjectionMatrix(_projection * _transformation);
-
-    orrery.draw(_shader);
+    //_shader.setTransformationProjectionMatrix(_projection * _transformation);
+    // orrery.draw(_shader);
+    orbit_view.draw(camera);
 
     swapBuffers();
 }
@@ -87,8 +89,8 @@ void GrohoApp::viewportEvent(const Vector2i& size)
 {
     GL::defaultFramebuffer.setViewport(Range2Di{ { 0, 0 }, size });
 
-    _projection = Matrix4::perspectiveProjection(
-                      35.0_degf, size.aspectRatio(), 0.01f, 100.0f)
+    camera.projection = Matrix4::perspectiveProjection(
+                            35.0_degf, size.aspectRatio(), 0.01f, 100.0f)
         * Matrix4::translation(Vector3::zAxis(-10.0f));
 
     redraw();
@@ -97,7 +99,7 @@ void GrohoApp::viewportEvent(const Vector2i& size)
 void GrohoApp::tickEvent()
 {
     // TODO: make this work for multiple buffers
-    if (orrery.reload_from_buffer(simulator.get_buffer())) {
+    if (orbit_view.reload_from_buffer(simulator.get_buffer())) {
         redraw();
     }
 }
@@ -126,8 +128,8 @@ void GrohoApp::mouseMoveEvent(MouseMoveEvent& event)
         * Vector2{ event.position() - _previousMousePosition }
         / Vector2{ GL::defaultFramebuffer.viewport().size() };
 
-    _transformation = Matrix4::rotationX(Rad{ delta.y() })
-        * Matrix4::rotationY(Rad{ delta.x() }) * _transformation;
+    camera.transformation = Matrix4::rotationX(Rad{ delta.y() })
+        * Matrix4::rotationY(Rad{ delta.x() }) * camera.transformation;
 
     _previousMousePosition = event.position();
     event.setAccepted();
@@ -140,10 +142,11 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
         return;
 
     if (event.offset().y() > 0)
-        _transformation = Matrix4::scaling(Vector3(1.1f)) * _transformation;
+        camera.transformation
+            = Matrix4::scaling(Vector3(1.1f)) * camera.transformation;
     else
-        _transformation
-            = Matrix4::scaling(Vector3(1.0f / 1.1f)) * _transformation;
+        camera.transformation
+            = Matrix4::scaling(Vector3(1.0f / 1.1f)) * camera.transformation;
 
     event.setAccepted();
     redraw();

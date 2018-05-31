@@ -12,6 +12,7 @@ Convenient container for managing a group of data to display for a simulation
 #include <Magnum/Shaders/Flat.h>
 
 #include "buffer.hpp"
+#include "camera.hpp"
 #include "path.hpp"
 
 namespace sim {
@@ -21,23 +22,9 @@ using namespace Magnum;
 class PathGroup {
 
 public:
-    // return true if a reload ocurred
-    bool reload_from_buffer(std::shared_ptr<const Buffer> buffer)
+    void reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     {
-        if (buffer == nullptr) {
-            return false;
-        }
-
-        if ((buffer->simulation_serial() == simulation_serial)
-            && buffer->point_count() == point_count) {
-            return false;
-        }
-
-        // LOG_S(INFO) << "Reloading buffer";
-
         paths.clear();
-
-        buffer->lock();
 
         for (size_t i = 0; i < buffer->body_count(); i++) {
 
@@ -50,27 +37,19 @@ public:
             p->set_data(buffer->get(i));
             paths.push_back(p);
         }
-
-        simulation_serial = buffer->simulation_serial();
-        point_count       = buffer->point_count();
-
-        buffer->release();
-
-        return true;
     }
 
-    void draw(Shaders::Flat3D& shader)
+    void draw(const Camera& camera)
     {
+        _shader.setTransformationProjectionMatrix(
+            camera.projection * camera.transformation);
         for (auto& p : paths) {
-            p->draw(shader);
+            p->draw(_shader);
         }
     }
 
 private:
     std::vector<std::shared_ptr<Path>> paths;
-
-    // Metadata to figure out if we should reload a buffer
-    unsigned int simulation_serial = -1;
-    size_t       point_count       = 0;
+    Shaders::Flat3D                    _shader;
 };
 }
