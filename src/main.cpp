@@ -39,6 +39,34 @@ void print_usage()
               << "groho <scenario file> <result file>" << std::endl;
 }
 
+// Periodically monitor scenario file and restart simulator as needed
+void simulator_loop(
+    sim::Simulator& simulator, std::string scn_file, unsigned int interval_ms)
+{
+    sim::Scenario scenario(scn_file);
+    simulator.restart_with(scenario);
+
+    time_t last_mod_time = scenario.latest_modification();
+    while (keep_running) {
+        if (last_mod_time < scenario.latest_modification()) {
+
+            LOG_S(INFO) << "Reloading scenario files";
+
+            sim::Scenario new_scenario(scenario.fname);
+            // if (new_scenario != scenario) {
+            if (true) {
+                LOG_S(INFO) << "Scenario file changed";
+                scenario = new_scenario;
+                simulator.restart_with(scenario);
+                last_mod_time = scenario.latest_modification();
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms));
+    }
+    simulator.stop();
+}
+
 int main(int argc, char* argv[])
 {
     print_license();
@@ -58,30 +86,8 @@ int main(int argc, char* argv[])
 
     unsigned int interval_ms = 500;
 
-    auto simulator_thread = std::thread([&simulator, scn_file, interval_ms]() {
-        sim::Scenario scenario(scn_file);
-        simulator.restart_with(scenario);
-
-        time_t last_mod_time = scenario.latest_modification();
-        while (keep_running) {
-            if (last_mod_time < scenario.latest_modification()) {
-
-                LOG_S(INFO) << "Reloading scenario files";
-
-                sim::Scenario new_scenario(scenario.fname);
-                // if (new_scenario != scenario) {
-                if (true) {
-                    LOG_S(INFO) << "Scenario file changed";
-                    scenario = new_scenario;
-                    simulator.restart_with(scenario);
-                    last_mod_time = scenario.latest_modification();
-                }
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms));
-        }
-        simulator.stop();
-    });
+    auto simulator_thread = std::thread(
+        simulator_loop, std::ref(simulator), scn_file, interval_ms);
 
     int  ret_val     = 0;
     bool interactive = true;
