@@ -33,17 +33,62 @@ void print_license()
               << std::endl;
 }
 
-void print_usage()
-{
-    std::cout << "\nUsage:\n"
-              << "groho <scenario file> <result file>" << std::endl;
-}
+struct Options {
+    std::string scenario_file;
+    std::string annotation_file;
+    bool        interactive = true;
+    bool        ok          = false;
+
+    Options(int argc, char* argv[])
+    {
+        if (argc < 2) {
+            print_usage();
+            return;
+        }
+
+        int pos = 1;
+        for (int i = 1; i < argc; i++) {
+            std::string opt(argv[i]);
+
+            if (opt[0] == '-') {
+                // Optional arguments
+
+                if (opt == "--no-gui") {
+                    interactive = false;
+                } else {
+                    i++; // skip the option argument if we can't understand it
+                }
+
+                continue;
+
+            } else {
+                // Positional arguments
+
+                switch (pos++) {
+                case 1:
+                    scenario_file = opt;
+                    break;
+                case 2:
+                    annotation_file = opt;
+                    break;
+                }
+            }
+        }
+    }
+
+    void print_usage()
+    {
+        std::cout << "\nUsage:\n"
+                  << "groho <scenario file> [annotation file] [--no-gui]"
+                  << std::endl;
+    }
+};
 
 // Periodically monitor scenario file and restart simulator as needed
 void simulator_loop(
-    sim::Simulator& simulator, std::string scn_file, unsigned int interval_ms)
+    sim::Simulator& simulator, Options options, unsigned int interval_ms)
 {
-    sim::Scenario scenario(scn_file);
+    sim::Scenario scenario(options.scenario_file);
     simulator.restart_with(scenario);
 
     time_t last_mod_time = scenario.latest_modification();
@@ -71,27 +116,21 @@ int main(int argc, char* argv[])
 {
     print_license();
 
-    if (argc < 3) {
-        print_usage();
-        exit(0);
-    }
-
     loguru::init(argc, argv);
 
     signal(SIGINT, ctrl_c_pressed);
 
-    std::string scn_file(argv[1]), result_file(argv[2]);
+    Options options(argc, argv);
 
     sim::Simulator simulator;
 
     unsigned int interval_ms = 500;
 
     auto simulator_thread = std::thread(
-        simulator_loop, std::ref(simulator), scn_file, interval_ms);
+        simulator_loop, std::ref(simulator), options, interval_ms);
 
-    int  ret_val     = 0;
-    bool interactive = true;
-    if (interactive) {
+    int ret_val = 0;
+    if (options.interactive) {
         sim::GrohoApp app({ argc, argv }, simulator);
         ret_val      = app.exec();
         keep_running = false;
