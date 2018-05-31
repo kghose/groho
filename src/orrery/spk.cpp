@@ -209,9 +209,9 @@ std::optional<FileRecord> read_file_record(std::ifstream& nasa_spk_file)
     nasa_spk_file.seekg(0);
     nasa_spk_file.read((char*)&hdr, sizeof(hdr));
 
-    LOG_S(INFO) << "File architecture: " << hdr.file_architecture;
-    LOG_S(INFO) << "Internal name: " << hdr.internal_name;
-    LOG_S(INFO) << "Numeric format: " << hdr.numeric_format;
+    DLOG_S(INFO) << "File architecture: " << hdr.file_architecture;
+    DLOG_S(INFO) << "Internal name: " << hdr.internal_name;
+    DLOG_S(INFO) << "Numeric format: " << hdr.numeric_format;
 
     if ((hdr.n_double_precision != 2) & (hdr.n_integers != 6)) {
         LOG_S(ERROR) << "Expected ND = 2, NI = 6, but got "
@@ -224,7 +224,7 @@ std::optional<FileRecord> read_file_record(std::ifstream& nasa_spk_file)
         return {};
     }
 
-    LOG_S(INFO) << "Header looks fine";
+    DLOG_S(INFO) << "Header looks fine";
 
     return hdr;
 }
@@ -279,12 +279,12 @@ SummaryVec read_summaries(
     nasa_spk_file.read((char*)&srbh, sizeof(srbh));
 
     for (;;) {
-        LOG_S(INFO) << "Summary record block#" << ++summaries_read;
+        DLOG_S(INFO) << "Summary record block#" << ++summaries_read;
         for (size_t j = 0; j < srbh.n_summaries; j++) {
             Summary es;
             nasa_spk_file.read((char*)&es, sizeof(es));
             sv.push_back(es);
-            LOG_S(INFO) << "Summary " << j + 1 << "/" << srbh.n_summaries;
+            DLOG_S(INFO) << "Summary " << j + 1 << "/" << srbh.n_summaries;
         }
 
         if (srbh.next_summary_record_blk == 0)
@@ -332,8 +332,8 @@ Ephemeris read_ephemeris(
         eph.evec.push_back(read_elements(nasa_spk_file, n_coeff, s.data_type));
     }
 
-    LOG_S(INFO) << "Ephemeris for " << s.target_id << ": " << n_coeff - 1
-                << " order polynomial, " << eph.evec.size() << " elements, ";
+    DLOG_S(INFO) << "Ephemeris for " << s.target_id << ": " << n_coeff - 1
+                 << " order polynomial, " << eph.evec.size() << " elements, ";
 
     return eph;
 }
