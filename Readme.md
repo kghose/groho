@@ -27,7 +27,28 @@ groho examples/earth-mars.txt
 
 
 
+<!-- TOC -->
 
+- [In a bit more detail](#in-a-bit-more-detail)
+    - [Features and use cases](#features-and-use-cases)
+    - [This is not an interactive simulation](#this-is-not-an-interactive-simulation)
+    - [This is not an n-body simulation](#this-is-not-an-n-body-simulation)
+    - [Relativistic effects](#relativistic-effects)
+- [Compilation/building](#compilationbuilding)
+    - [Dependencies](#dependencies)
+    - [Compile](#compile)
+- [Manual/Tutorial](#manualtutorial)
+    - [Getting the data](#getting-the-data)
+    - [Tutorial](#tutorial)
+- [Related software](#related-software)
+    - [NASA's GMAT](#nasas-gmat)
+    - [Bussard by Phil Hagelberg](#bussard-by-phil-hagelberg)
+    - [SolarSystemOrbiter](#solarsystemorbiter)
+- [Thanks](#thanks)
+- [Meta: Why did you put everything in this one document?](#meta-why-did-you-put-everything-in-this-one-document)
+    - [Some other documents of interest](#some-other-documents-of-interest)
+
+<!-- /TOC -->
 
 
 # In a bit more detail
@@ -109,13 +130,9 @@ this is a few GB worth of data.
 I save all these kernels under the `examples` directory.
 
 
-## Tutorial I: Flying to Mars
+## Tutorial
 
-
-*There will be two parts to the tutorial, the first showing the basics and the second showing more advanced techniques*
-
-
-
+Eventually the [tutorial here](docs/tutorial.md) will be copied over into this space.
 
 
 # Related software
