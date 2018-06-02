@@ -89,8 +89,9 @@ void GrohoApp::viewportEvent(const Vector2i& size)
 {
     GL::defaultFramebuffer.setViewport(Range2Di{ { 0, 0 }, size });
 
-    camera.projection = Matrix4::perspectiveProjection(
-                            35.0_degf, size.aspectRatio(), 0.01f, 100.0f)
+    camera.projection
+        = Matrix4::perspectiveProjection(
+              35.0_degf, (double)size.x() / (double)size.y(), 0.01f, 100.0f)
         * Matrix4::translation(Vector3::zAxis(-10.0f));
 
     redraw();
