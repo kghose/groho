@@ -372,19 +372,10 @@ a state when the display asks for it.
 
 I envision letting users scroll along the time axis to see the state of the
 simulation. Positions can be interpolated but what about other aspects of state?
-
-A better solution is to add multiple tracks to the downsampler for each state 
-variable we are interested in and store the each state in it's own buffer.
-
-In this implementation we have a buffer for position (the original implementation)
-and then a buffer for vel, attitude, fuel and acceleration.
-
-The question is, do we store state only for the annotations we want, or do we
+Do we store state only for the annotations we want, or do we
 store all state in this donwsampled manner and then interpolate as needed? It's
 more convenient - especially for long simulations - to just store all the state
 so that we can add annotations and display them without having to re-simulate.
-
-If this turns out to be an issue with memory and time, we can revisit.
 
 
 ### Re-framing data
@@ -401,7 +392,7 @@ annotations.
 
 For these considerations, and in the spirit of don't knock it till you try it:
 
-The full state of all object are stored whenever any aspect of state changes 
+The full state of all objects are stored whenever any aspect of state changes 
 fast/non-linearly (fractal downsampler) or when a sufficient period of time 
 has passed since the last sample.
 
