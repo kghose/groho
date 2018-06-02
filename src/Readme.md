@@ -1,4 +1,5 @@
-Notes of things I learned/thought about during development
+Developer notes
+===============
 
 <!-- TOC -->
 
@@ -22,16 +23,21 @@ Notes of things I learned/thought about during development
     - [Misc](#misc)
     - [Passing member function pointers to callbacks](#passing-member-function-pointers-to-callbacks)
     - [The use of "f" in code using OpenGL](#the-use-of-f-in-code-using-opengl)
-- [Code and interface design considerations](#code-and-interface-design-considerations)
+- [Code design considerations](#code-design-considerations)
     - [Sharing a data buffer between writer and reader](#sharing-a-data-buffer-between-writer-and-reader)
     - [Fractal downsampler](#fractal-downsampler)
         - [Long straight trajectories](#long-straight-trajectories)
     - [How much and what data to store](#how-much-and-what-data-to-store)
+        - [Sampling rate](#sampling-rate)
+        - [Re-framing data](#re-framing-data)
+        - [The decision](#the-decision)
+        - [YAGNI](#yagni)
     - [Simulation restarts and checkpoints](#simulation-restarts-and-checkpoints)
     - [Simulation](#simulation)
+- [Interface design considerations](#interface-design-considerations)
     - [Scaling data for display](#scaling-data-for-display)
     - [Thinking aloud on user interfaces](#thinking-aloud-on-user-interfaces)
-        - [The decision](#the-decision)
+        - [The decision](#the-decision-1)
     - [Display specifications](#display-specifications)
     - [Annotation script](#annotation-script)
 
@@ -309,7 +315,7 @@ which explains that C++ templates are strict and since
 the underlying functions operate of floats, passing a number like 2.0 
 
 
-# Code and interface design considerations 
+# Code design considerations 
 
 
 ## Sharing a data buffer between writer and reader
@@ -353,26 +359,66 @@ flush. (commit `11add0488fca`)
 
 ## How much and what data to store
 
+### Sampling rate
+
 For the bare display (and also for any print (vector) version we may develop)
-the downsampled version (especially with a flush linked to display tick) is
+the downsampled position (especially with a flush linked to display tick) is
 sufficient - looks smooth and has the necessary detail.
 
 For the debugging display I envision, where you can, in a script, mark out
-ships/objects for monitoring we'll need the whole state of the object. This
-can be grabbed on a frame by frame basis, updating when the display asks for it.
+ships/objects for monitoring we'll need the whole state of the object. One
+solution would be to to grab this state on a frame-by-frame basis, storing
+a state when the display asks for it.
 
-What happens for time scrolling, when I allow the user to interactively scroll
-along the time axis? What happens to re-framing, when I allow the user to
-re-frame the simulation to a particular body (different bodies have samples
-taken at different times)?
+I envision letting users scroll along the time axis to see the state of the
+simulation. Positions can be interpolated but what about other aspects of state?
+
+A better solution is to add multiple tracks to the downsampler for each state 
+variable we are interested in and store the each state in it's own buffer.
+
+In this implementation we have a buffer for position (the original implementation)
+and then a buffer for vel, attitude, fuel and acceleration.
+
+The question is, do we store state only for the annotations we want, or do we
+store all state in this donwsampled manner and then interpolate as needed? It's
+more convenient - especially for long simulations - to just store all the state
+so that we can add annotations and display them without having to re-simulate.
+
+If this turns out to be an issue with memory and time, we can revisit.
+
+
+### Re-framing data
+
+I allow the user to re-frame the simulation to a particular body. Different 
+bodies have samples taken at different times. Linear interpolation is probably
+sufficient for this - we have to figure out if there is anything to add to the
+fractal downsampler for this use case. Re-framing will necessarily be inaccurate -
+we have to see how this looks like visually. We have to see what this means for
+annotations.
+
+
+### The decision
 
 For these considerations, and in the spirit of don't knock it till you try it:
 
-a) I'll store the full state of each body in the buffer
-b) develop interpolation functions that interpolate state.
+The full state of all object are stored whenever any aspect of state changes 
+fast/non-linearly (fractal downsampler) or when a sufficient period of time 
+has passed since the last sample.
 
 If it looks like storing the whole state adds a lot of speed and memory burden
 we can think about alterative strategies.
+
+
+### YAGNI
+
+The YAGNI principle is hard at work in this particular aspect of the code 
+because its such a core part. I'm working hard to resist adding more features
+than I currently need. My main worry is how much rewriting I'll have to do
+once I need a new feature. This is teaching me to get better at modularizing
+my code and resist the urge to prematurely optimize. However, I do spend time
+thinking ahead to the kind of things I might like to add, and use that to plan
+modularization.
+
 
 ## Simulation restarts and checkpoints
 
@@ -388,7 +434,7 @@ TBD
 [leap]: https://en.wikipedia.org/wiki/Leapfrog_integration
 [downsampler]: ../docs/dev/adaptive-display-points.ipynb
 
-
+# Interface design considerations
 
 ## Scaling data for display
 
