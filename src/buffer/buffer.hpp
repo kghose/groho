@@ -58,6 +58,8 @@ struct SubBuffer {
         }
     }
 
+    BodyState at(double t_s);
+
     const Body& get_metadata() const { return body; }
 
     Body                     body;
