@@ -31,24 +31,27 @@ struct SubBuffer {
     SubBuffer(const Body body_)
     {
         body    = body_;
-        sampler = FractalDownsampler();
+        sampler = FractalDownsampler(1.001, 1e6);
     }
 
-    bool append(const Vector& v)
+    bool append(const BodyState& state)
     {
-        if (sampler(v)) {
-            data.push_back(v);
+        if (sampler(state.pos)) {
+            data.push_back(state);
+            _last_state = {};
             return true;
+        } else {
+            _last_state = state;
+            return false;
         }
-        return false;
     }
 
     // Returns true if we actually flushed
     bool flush()
     {
-        std::optional<Vector> v = sampler.flush();
-        if (v) {
-            data.push_back(*v);
+        if (_last_state) {
+            data.push_back(*_last_state);
+            _last_state = {};
             return true;
         } else {
             return false;
@@ -57,9 +60,10 @@ struct SubBuffer {
 
     const Body& get_metadata() const { return body; }
 
-    Body                body;
-    FractalDownsampler  sampler;
-    std::vector<Vector> data;
+    Body                     body;
+    FractalDownsampler       sampler;
+    std::vector<BodyState>   data;
+    std::optional<BodyState> _last_state;
 };
 
 class Buffer {
@@ -80,9 +84,9 @@ public:
     void lock() const { buffer_mutex.lock(); }
     void release() const { buffer_mutex.unlock(); }
 
-    void append(size_t i, const Vector& v)
+    void append(size_t i, const BodyState& state)
     {
-        if (sub_buffer[i].append(v))
+        if (sub_buffer[i].append(state))
             _point_count++;
     }
 
@@ -100,7 +104,7 @@ public:
         return flushed;
     }
 
-    const std::vector<Vector>& get(size_t i) const
+    const std::vector<BodyState>& get(size_t i) const
     {
         return sub_buffer[i].data;
     }
