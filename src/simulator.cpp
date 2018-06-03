@@ -127,6 +127,7 @@ void Simulator::run()
 
         for (auto& ship : scenario.ships) {
             step_spaceship(ship.body, ws.obv, step_s);
+            ship.body.state.t = t_s;
             execute_flight_plan(ship, ws, t_s);
         }
 

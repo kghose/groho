@@ -129,6 +129,7 @@ const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
 {
     for (int i = 0; i < ephemera.size(); i++) {
         set_pos(s, *ephemera[i], bodies[i].state.pos);
+        bodies[i].state.t = s;
 
         if (ephemera[i]->center_code != 0) {
             bodies[i].state.pos += bodies[center_idx[i]].state.pos;

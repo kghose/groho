@@ -24,6 +24,8 @@ enum BodyType { ROCK, BARYCENTER, SPACESHIP };
 enum FlightState { FALLING, LANDED };
 
 struct BodyState {
+    double t;
+
     sim::Vector pos; // Position referenced to solar system barycenter
     sim::Vector vel; // Velocity
     sim::Vector att; // Attitude
