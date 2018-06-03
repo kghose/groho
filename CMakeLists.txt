@@ -23,17 +23,15 @@ set(CMAKE_CXX_FLAGS "-std=c++1z -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 # NDEBUG will suppress some loguru outputs in Release
 
-find_package( 
-    Magnum 
-    REQUIRED 
+find_package( Magnum REQUIRED 
     GL
+    MeshTools
+    Primitives
     Shaders
     Sdl2Application
 )
 
-find_package(
-    Corrade
-    REQUIRED
+find_package( Corrade REQUIRED
     Containers
 )
 
@@ -62,6 +60,8 @@ target_link_libraries(
     Magnum::Application
     Magnum::GL
     Magnum::Magnum
+    Magnum::MeshTools
+    Magnum::Primitives
     Magnum::Shaders
 #    Corrade::Corrade
 #    Corrade::Containers
