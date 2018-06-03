@@ -13,6 +13,7 @@ Convenient container for managing data to display for a given object
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/Shaders/Flat.h>
 
+#include "globals.hpp"
 #include "vector.hpp"
 
 namespace sim {
@@ -20,15 +21,15 @@ namespace sim {
 using namespace Magnum;
 using namespace Corrade;
 
-const float scale = 10 * 149597870.700; // 10 AU
+// const float scale = 10 * 149597870.700; // 10 AU
 
 class Path {
 
 public:
     void set_color(Color3 color) { _color = color; }
-    void set_data(const std::vector<Vector> pos)
+    void set_data(const std::vector<BodyState> state)
     {
-        size_t size = pos.size();
+        size_t size = state.size();
 
         // If we try to map zero points we get a runtime error ...
         if (size == 0) {
@@ -47,9 +48,9 @@ public:
         CORRADE_INTERNAL_ASSERT(data);
 
         for (size_t i = 0; i < size; i++) {
-            data[i] = { static_cast<float>(pos[i].x / scale),
-                        static_cast<float>(pos[i].y / scale),
-                        static_cast<float>(pos[i].z / scale) };
+            data[i] = { static_cast<float>(state[i].pos.x / globals::scale),
+                        static_cast<float>(state[i].pos.y / globals::scale),
+                        static_cast<float>(state[i].pos.z / globals::scale) };
         }
 
         CORRADE_INTERNAL_ASSERT_OUTPUT(_buffer.unmap());

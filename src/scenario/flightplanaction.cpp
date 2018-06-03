@@ -32,15 +32,16 @@ struct SET_ATTITUDE : public FlightPlanAction {
 
     SET_ATTITUDE(double jd, size_t line_no, Vector v)
         : FlightPlanAction(jd, line_no)
-        , att(v)
+        , att(v.normed())
     {
     }
 
     void operator()(Body& body, const WorldState& ws)
     {
-        body.att = att;
-        active   = false;
-        LOG_S(INFO) << line_no << ": " << body.name << " attitude set";
+        body.state.att = att;
+        active         = false;
+        DLOG_S(INFO) << line_no << ": " << body.name << " att -> "
+                     << body.state.att;
     }
 };
 
@@ -55,14 +56,17 @@ struct SET_ACCEL : public FlightPlanAction {
 
     void operator()(Body& body, const WorldState& ws)
     {
-        if (acc > body.max_acc) {
-            body.acc = body.max_acc;
+        double _acc = acc;
+        if (_acc > body.max_acc) {
+            _acc = body.max_acc;
             LOG_S(WARNING) << line_no << ": SET_ACCEL for " << body.name
                            << " exceeds max_acc";
-        } else {
-            body.acc = acc;
         }
-        active = false;
+
+        body.state.acc = _acc;
+        active         = false;
+        DLOG_S(INFO) << line_no << ": " << body.name << " acc -> "
+                     << body.state.acc;
     }
 };
 
@@ -91,6 +95,7 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
     const int    spkid;
     size_t       obv_idx
         = -1; // The index into the ws.obv vector for body with given spkid
+    bool parking_maneuver_started = false;
 
     PARK_IN_ORBIT(double jd, size_t line_no, int spkid, double R)
         : FlightPlanAction(jd, line_no)
@@ -102,37 +107,42 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
     void operator()(Body& body, const WorldState& ws)
     {
         if (obv_idx == -1) {
-            for (size_t i = 0; i < ws.obv.size(); i++) {
-                if (ws.obv[i].code == spkid) {
-                    obv_idx = i;
-                    break;
-                }
+            obv_idx = orrery::spkid_to_orrery_index(ws.obv, spkid);
+            if (obv_idx == -1) {
+                LOG_S(ERROR) << line_no << ": PARK_IN_ORBIT : Can't find "
+                             << spkid << " in Orrery";
+                active = false;
+                return;
             }
-            LOG_S(ERROR) << line_no << ": PARK_IN_ORBIT : Can't find " << spkid
-                         << " in Orrery";
-            active = false;
-            return;
         }
 
         auto const& ob = ws.obv[obv_idx];
 
-        Vector R = body.pos - ob.pos;
+        Vector R = body.state.pos - ob.state.pos;
+        // DLOG_S(INFO) << R.norm();
         if (R.norm() > R_capture) {
             return;
         }
 
-        Vector deltaV = parking_deltaV(ob.GM, body.pos - ob.pos, body.vel);
+        if (!parking_maneuver_started) {
+            LOG_S(INFO) << line_no << ": Starting to park " << body.name
+                        << " -> " << ob.name;
+            parking_maneuver_started = true;
+        }
 
-        body.att = deltaV.normed();
+        Vector deltaV = parking_deltaV(
+            ob.GM, body.state.pos - ob.state.pos, body.state.vel);
+
+        body.state.att = deltaV.normed();
         // deltaV = 0.5 * A * Tstep^2
         double acc = deltaV.norm() / (0.5 * ws.t_s * ws.t_s);
 
         if (acc > body.max_acc) {
-            body.acc = body.max_acc;
+            body.state.acc = body.max_acc;
             LOG_S(WARNING) << line_no << ": acceleration required for parking "
                            << body.name << " exceeds max_acc";
         } else {
-            body.acc = acc;
+            body.state.acc = acc;
         }
 
         if (deltaV.norm() < epsilon) {
@@ -172,7 +182,18 @@ std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
                   return {};
               }
               return fpaptr_t(new SET_ACCEL(jd, line_no, stod(tokens[2])));
-          } }
+          } },
+
+        { "park",
+          [](double jd, size_t line_no, strv_t tokens) -> fpaptr_t {
+              if (tokens.size() != 4) {
+                  LOG_S(ERROR) << "Can't parse park";
+                  return {};
+              }
+              return fpaptr_t(new PARK_IN_ORBIT(
+                  jd, line_no, stoi(tokens[2]), stod(tokens[3])));
+          } },
+
     };
 
 std::shared_ptr<FlightPlanAction>

@@ -90,12 +90,13 @@ void step_spaceship(
             continue;
         }
 
-        auto r = o.pos - spaceship.pos;
+        auto r = o.state.pos - spaceship.state.pos;
         auto f = o.GM / r.norm_sq();
         gravity += r.normed() * f;
     }
-    spaceship.vel += ((spaceship.acc * spaceship.att) + gravity) * step_s;
-    spaceship.pos += spaceship.vel * step_s;
+    spaceship.state.vel
+        += ((spaceship.state.acc * spaceship.state.att) + gravity) * step_s;
+    spaceship.state.pos += spaceship.state.vel * step_s;
 }
 
 void execute_flight_plan(Ship& ship, const WorldState& ws, double t_s)
@@ -133,11 +134,11 @@ void Simulator::run()
 
         // First do the orrery
         for (int i = 0; i < ws.obv.size(); i++) {
-            buffer->append(i, ws.obv[i].pos);
+            buffer->append(i, ws.obv[i].state);
         }
         // Then the spaceships
         for (int i = 0; i < scenario.ships.size(); i++) {
-            buffer->append(i + ws.obv.size(), scenario.ships[i].body.pos);
+            buffer->append(i + ws.obv.size(), scenario.ships[i].body.state);
         }
 
         buffer->release();
@@ -146,6 +147,7 @@ void Simulator::run()
     buffer->flush();
     running = false;
 
+    DLOG_S(INFO) << buffer->point_count();
     LOG_S(INFO) << "Stopping simulation";
 }
 

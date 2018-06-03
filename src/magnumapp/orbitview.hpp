@@ -11,12 +11,20 @@ the object trajectories (paths), object markers and annotations.
 #include "buffer.hpp"
 #include "camera.hpp"
 #include "pathgroup.hpp"
+#include "referenceplane.hpp"
+#include "sphere.hpp"
 
 namespace sim {
 
 class OrbitView {
 public:
-    void draw(const Camera& camera) { trajectories.draw(camera); }
+    void draw(const Camera& camera)
+    {
+        trajectories.draw(camera);
+        // ref_plane.draw(camera);
+        // sphere.draw(camera);
+    }
+
     bool reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     {
         if (buffer == nullptr) {
@@ -41,7 +49,9 @@ public:
     }
 
 private:
-    PathGroup trajectories;
+    PathGroup      trajectories;
+    Sphere         sphere;
+    ReferencePlane ref_plane;
 
     // Metadata to figure out if we should reload a buffer
     unsigned int simulation_serial = -1;

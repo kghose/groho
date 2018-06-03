@@ -45,15 +45,15 @@ struct Ship {
             { "max-fuel", [=](sst v) { body.max_fuel        = stof(v); } },
             { "fuel-cons-rate", [=](sst v) { body.fuel_cons = stof(v); } },
             { "orbiting", [=](sst v) { initial_orbit        = v; } },
-
-            { "flight-state", [=](sst v) { body.flight_state = FALLING; } },
+            { "flight-state",
+              [=](sst v) { body.state.flight_state          = FALLING; } },
             // TODO: handle landed state
-            { "position", [=](sst v) { body.pos              = stoV(v); } },
-            { "velocity", [=](sst v) { body.vel              = stoV(v); } },
-            { "attitude", [=](sst v) { body.att              = stoV(v); } },
+            { "position", [=](sst v) { body.state.pos       = stoV(v); } },
+            { "velocity", [=](sst v) { body.state.vel       = stoV(v); } },
+            { "attitude", [=](sst v) { body.state.att       = stoV(v); } },
             //
-            { "fuel", [=](sst v) { body.fuel                 = stof(v); } },
-            { "acc", [=](sst v) { body.acc                   = stof(v); } },
+            { "fuel", [=](sst v) { body.state.fuel          = stof(v); } },
+            { "acc", [=](sst v) { body.state.acc            = stof(v); } },
 
         };
 

@@ -51,17 +51,19 @@ void Ship::set_initial_state_as_orbiting(const WorldState& ws)
         return;
     }
 
-    double A     = stod(tokens[1]);
-    double r     = ws.obv[B_idx].r;
-    Vector Rsun  = ws.obv[B_idx].pos - ws.obv[SSB_idx].pos;
-    Vector Vbody = ws.obv[B_idx].vel;
-    Vector U_hat = cross(Vbody, Rsun * -1).normed();
-    Vector V_hat = cross(Rsun * -1, U_hat).normed();
-    body.pos     = ws.obv[B_idx].pos + (Rsun.normed() * (A + r));
-    body.vel     = (V_hat * std::sqrt(ws.obv[B_idx].GM / (A + r))) + Vbody;
-    body.att     = V_hat; // Nice to set this too
+    double A       = stod(tokens[1]);
+    double r       = ws.obv[B_idx].r;
+    Vector Rsun    = ws.obv[B_idx].state.pos - ws.obv[SSB_idx].state.pos;
+    Vector Vbody   = ws.obv[B_idx].state.vel;
+    Vector U_hat   = cross(Vbody, Rsun * -1).normed();
+    Vector V_hat   = cross(Rsun * -1, U_hat).normed();
+    body.state.pos = ws.obv[B_idx].state.pos + (Rsun.normed() * (A + r));
+    body.state.vel = (V_hat * std::sqrt(ws.obv[B_idx].GM / (A + r))) + Vbody;
+    body.state.att = V_hat; // Nice to set this too
 
-    body.flight_state = FALLING;
+    DLOG_S(INFO) << V_hat;
+
+    body.state.flight_state = FALLING;
 }
 
 std::optional<Ship> parse_flight_plan(std::string fname, int default_code)
@@ -80,7 +82,7 @@ std::optional<Ship> parse_flight_plan(std::string fname, int default_code)
 
     // Some miscellaneous defaults
     ship.body.body_type = SPACESHIP;
-    ship.body.color     = 0xffffff;
+    ship.body.color     = 0x0000aa;
     ship.body.code      = default_code;
 
     while (std::getline(cfile, line)) {
