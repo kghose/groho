@@ -23,6 +23,17 @@ namespace sim {
 enum BodyType { ROCK, BARYCENTER, SPACESHIP };
 enum FlightState { FALLING, LANDED };
 
+struct BodyState {
+    sim::Vector pos; // Position referenced to solar system barycenter
+    sim::Vector vel; // Velocity
+    sim::Vector att; // Attitude
+
+    float acc;  // Current acceleration km/s^2
+    float fuel; // Current fuel reserve (U)
+
+    FlightState flight_state;
+};
+
 struct Body {
     BodyType    body_type;
     int         code; // SPK code for body (made up ones for spaceships)
@@ -34,15 +45,9 @@ struct Body {
     uint32_t color; // For display purposes
 
     float max_acc;   // Maximum acceleration possible for ship m/s^2
-    float acc;       // Current acceleration m/s^2
     float max_fuel;  // Maximum fuel reserve (U)
-    float fuel;      // Current fuel reserve (U)
     float fuel_cons; // Fuel consumption rate (U/ (m/s^2))
 
-    FlightState flight_state;
-
-    sim::Vector pos; // Position referenced to solar system barycenter
-    sim::Vector vel; // Velocity
-    sim::Vector att; // Attitude
+    BodyState state;
 };
 }
