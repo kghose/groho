@@ -5,7 +5,7 @@ jobs:
       - image: kghose/liftoff:latest
     steps:
       - checkout
-      - run: cd /root/project/groho
+      - run: cd /root/project
       - run: mkdir -p build && cd build
       - run: cmake -DCMAKE_BUILD_TYPE=Release .. 
 
