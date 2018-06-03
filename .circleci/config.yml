@@ -5,10 +5,7 @@ jobs:
       - image: kghose/liftoff:latest
     steps:
       - checkout
-      - run: add-apt-repository ppa:chrome/magnum.graphics
-      - run: apt-get update
-      - run: apt-get install magnum magnum-dev
-
+      - run: cd /root/project/groho
       - run: mkdir -p build && cd build
       - run: cmake -DCMAKE_BUILD_TYPE=Release .. 
 
