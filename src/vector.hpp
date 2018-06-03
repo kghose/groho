@@ -13,7 +13,7 @@ A small class to carry a Vector data structure
 namespace sim {
 
 struct Vector {
-    double x, y, z, t;
+    double x, y, z;
 
     double norm_sq() const { return x * x + y * y + z * z; }
     double norm() const { return std::sqrt(norm_sq()); }
