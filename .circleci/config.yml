@@ -5,6 +5,11 @@ jobs:
       - image: gcc:latest
     steps:
       - checkout
+      - run: sudo apt-get install cmake
+      - run: sudo add-apt-repository ppa:chrome/magnum.graphics
+      - run: sudo apt-get update
+      - run: sudo apt-get install magnum magnum-dev
+
       - run: mkdir -p build && cd build
       - run: cmake -DCMAKE_BUILD_TYPE=Release .. 
 
