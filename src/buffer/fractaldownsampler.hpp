@@ -31,16 +31,6 @@ public:
         return false;
     }
 
-    // This is makes it look like we accepted last_v
-    std::optional<Vector> flush()
-    {
-        if (cumulative_curve_dist == 0) {
-            return {};
-        }
-        accept_sample(last_v);
-        return last_v;
-    }
-
 private:
     void accept_sample(const Vector& v)
     {
