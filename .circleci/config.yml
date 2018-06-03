@@ -6,7 +6,7 @@ jobs:
     steps:
       - checkout
       - run: cd /root/project
-      - run: mkdir -r build
+      - run: mkdir -p build
       - run: cd build
       - run: cmake -DCMAKE_BUILD_TYPE=Release ..
       - run: make
