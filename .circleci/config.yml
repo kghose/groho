@@ -6,7 +6,9 @@ jobs:
     steps:
       - checkout
       - run: cd /root/project
-      - run: cmake -DCMAKE_BUILD_TYPE=Release .
+      - run: mkdir -r build
+      - run: cd build
+      - run: cmake -DCMAKE_BUILD_TYPE=Release ..
       - run: make
 
 workflows:
