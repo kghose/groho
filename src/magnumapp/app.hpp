@@ -9,7 +9,7 @@ Magnum App to handle windowing and display
 
 #include <Corrade/Containers/ArrayView.h>
 #include <Magnum/GL/Buffer.h>
-#include <Magnum/GL/DefaultFrameBuffer.h>
+#include <Magnum/GL/DefaultFramebuffer.h>
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/Platform/Sdl2Application.h>
 #include <Magnum/Shaders/Flat.h>
@@ -49,5 +49,4 @@ private:
     Matrix4  _transformation, _projection;
     Vector2i _previousMousePosition;
 };
-
 }
