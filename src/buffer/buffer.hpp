@@ -111,6 +111,8 @@ public:
         return sub_buffer[i].data;
     }
 
+    BodyState at(size_t i, double t_s);
+
 private:
     std::atomic<size_t>       _point_count = 0;
     std::atomic<unsigned int> _simulation_serial;

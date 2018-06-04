@@ -55,4 +55,10 @@ BodyState SubBuffer::at(double t_s)
 
     return interpolate(data[idx0], data[idx0 + 1], t_s);
 }
+
+BodyState Buffer::at(size_t i, double t_s)
+{
+    std::lock_guard<std::mutex> lock(buffer_mutex);
+    return sub_buffer[i].at(t_s);
+}
 }
