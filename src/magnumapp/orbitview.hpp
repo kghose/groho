@@ -18,35 +18,8 @@ namespace sim {
 
 class OrbitView {
 public:
-    void draw(const Camera& camera)
-    {
-        trajectories.draw(camera);
-        // ref_plane.draw(camera);
-        // sphere.draw(camera);
-    }
-
-    bool reload_from_buffer(std::shared_ptr<const Buffer> buffer)
-    {
-        if (buffer == nullptr) {
-            return false;
-        }
-
-        if ((buffer->simulation_serial() == simulation_serial)
-            && buffer->point_count() == point_count) {
-            return false;
-        }
-
-        buffer->lock();
-
-        trajectories.reload_from_buffer(buffer);
-
-        simulation_serial = buffer->simulation_serial();
-        point_count       = buffer->point_count();
-
-        buffer->release();
-
-        return true;
-    }
+    void draw(const Camera& camera);
+    bool reload_from_buffer(std::shared_ptr<const Buffer> buffer);
 
 private:
     PathGroup      trajectories;
