@@ -16,16 +16,14 @@ and compose (combine together) simulations.
 *Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the word for 
 planetary system but is more of a mouthful.*
 
-![Groho 0.3.0 screenshot](docs/milestone-images/groho-0.3.0.png "Groho 0.3.0 screenshot")
-
 ```
 groho examples/earth-mars.txt 
 ```
 
+![Groho 0.3.0 screenshot](docs/milestone-images/groho-0.3.0.png "Groho 0.3.0 screenshot")
 
-
-
-
+[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<!-- [![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master) -->
 
 <!-- TOC -->
 
@@ -39,7 +37,10 @@ groho examples/earth-mars.txt
     - [Compile](#compile)
 - [Manual/Tutorial](#manualtutorial)
     - [Getting the data](#getting-the-data)
-    - [Tutorial](#tutorial)
+    - [Tutorial/manual](#tutorialmanual)
+        - [Simulation files](#simulation-files)
+            - [Why is the tutorial/manual in the form of commented examples](#why-is-the-tutorialmanual-in-the-form-of-commented-examples)
+        - [Orbit view interactions](#orbit-view-interactions)
 - [Related software](#related-software)
     - [NASA's GMAT](#nasas-gmat)
     - [Bussard by Phil Hagelberg](#bussard-by-phil-hagelberg)
@@ -127,10 +128,33 @@ this is a few GB worth of data.
 
 [nasa-kernels]: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/
 
-I save all these kernels under the `examples` directory.
+I save all these kernels under the [`examples`][ex-dir] directory.
 
 
-## Tutorial
+## Tutorial/manual
+
+### Simulation files
+
+Groho uses a **scenario file**, one or more **flight plans** and one or more 
+**annotation file** to run a simulation and organize information on screen. 
+In the [`examples`][ex-dir] directory are a series of tutorials-by-example. 
+Each directory contains a scenario file, flight plans and annotation files
+with a mixture of commentary and code to show you the syntax. 
+
+#### Why is the tutorial/manual in the form of commented examples
+
+I personally learn well by example, so I wanted to try this out. I also use
+these tutorial scripts as ways to prototype proposed simulation file syntax,
+to see how it could look and work.
+
+Lastly, for a hobby project, it's a wasteful duplication of effort to have to 
+create/update example scripts and a separate manual or tutorial 
+(where I'd have to paste in snippets of code anyway). I chose to use comments 
+in the simulation files as a reliable way to keep upto-date documentation. 
+
+[ex-dir]: examples/
+
+### Orbit view interactions
 
 Eventually the [tutorial here](docs/tutorial.md) will be copied over into this space.
 
@@ -164,7 +188,7 @@ where you write complex programs to fly your spaceship to solve puzzles.
 Included in the code are the following fine pieces of software
 
 1. [loguru](https://github.com/emilk/loguru) from Emil Ernerfeldt for the logging
-2. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash
+2. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash for unit tests
 3. [magnum/corrade][magnum] from Mosra (Vladimír Von­druš) for everything graphical
 4. [markdown-toc][mtoc] from Alan Walk. I used that to generate the table of contents, which allowed me to consolidate my documentation.
 
