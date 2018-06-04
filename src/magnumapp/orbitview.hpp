@@ -16,10 +16,17 @@ the object trajectories (paths), object markers and annotations.
 
 namespace sim {
 
+struct TimeCursor {
+    double t_s    = 0;
+    bool   pinned = false;
+};
+
 class OrbitView {
 public:
     void draw(const Camera& camera);
     bool reload_from_buffer(std::shared_ptr<const Buffer> buffer);
+
+    TimeCursor time_cursor;
 
 private:
     PathGroup      trajectories;
