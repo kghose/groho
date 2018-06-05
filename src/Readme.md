@@ -518,6 +518,8 @@ associated text rendered as a billboard.
 - Differential annotation: difference in state variables for a pair of objects.
 Rendered as line between two objects with text as billboard.
 
+
+
 ### Annotation script
 
 _(When implemented, this section should be transfered to the tutorial section of
@@ -525,11 +527,15 @@ the main Readme)_
 
 ```
 
-; When one id is given we show single object state
 show: id:-1000 at:2458348.5 p:speed p:acc p:fuel
+; 
+; valid values for p: are
+; speed, acc, fuel
 
-; When two ids are given we show differential state
-show: id:-1000 id:-1001 at:2458348.5 p:speed p:acc p:fuel
+
+show-diff: id:-1000 id:-1001 at:2458348.5 p:dist p:speed p:acc
+; valid values for p: are
+; speed, acc, fuel
 
 
 
