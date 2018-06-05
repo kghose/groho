@@ -38,8 +38,8 @@ Developer notes
     - [Scaling data for display](#scaling-data-for-display)
     - [Thinking aloud on user interfaces](#thinking-aloud-on-user-interfaces)
         - [The decision](#the-decision-1)
-    - [Display specifications](#display-specifications)
-    - [Annotation script](#annotation-script)
+    - [How would annotations work?](#how-would-annotations-work)
+        - [Annotation script](#annotation-script)
 
 <!-- /TOC -->
 
@@ -504,45 +504,72 @@ When you have an interactive GUI a lot of it becomes ephemeral. You click on
 things, you organize a display, then it's lost. Or, the program has to supply
 a session system whereby you can save your widgets in a session. More complexity.
 
+## How would annotations work?
 
-## Display specifications
+1. An annotation is meant to show a collection of state values for an object 
+(or pair of objects) and would show up as a marker with text
+
+2. An annotation should by default track the current time point, but can be
+explicitly set to appear only at one time point (and this time point can be
+based on some criterion - when it is also called an event)
+
+- Single annotation: State variable for a single object. Inverted triangle with
+associated text rendered as a billboard.
+- Differential annotation: difference in state variables for a pair of objects.
+Rendered as line between two objects with text as billboard.
+
+### Annotation script
 
 _(When implemented, this section should be transfered to the tutorial section of
 the main Readme)_
 
-## Annotation script
+```
 
-The format for this is the same as for the flight plan:
+; When one id is given we show single object state
+show: id:-1000 at:2458348.5 p:speed p:acc p:fuel
+
+; When two ids are given we show differential state
+show: id:-1000 id:-1001 at:2458348.5 p:speed p:acc p:fuel
+
+
+
+show-max: id:-1000 p:speed p:acc
+
+
+
+
+show: 
+
+-- ; Annotation ends with  --
+```
 
 ```
-<timestamp> <action name> <argument1> <argument2> ...
+```
+
+
+```
+<annotation> <argument1> <argument2> ...
 ```
 
 The available annotation actions are
 
 ```
-Action:        show-state
-Arguments:     int id
-Description:   Starting from the given timestamp show the state 
-               (all or some of pos, attitude, vel and fuel as relevant to the body)
-               of body with id `id`
+Name:          show-single
+Arguments:     id: integer id of body 
+               at: (optional) time to display this at (don't track time cursor)
+               show: (any of "speed", "acc", "fuel") (can be repeated)
+               show-max: (any of "speed", "acc") (can be repeated)
+               show-min: (any of "speed", "acc", "fuel") (can be repeated)
 ```
 
-```
-Action:        hide-state
-Arguments:     int id
-Description:   If showing the state, hide it
-```
+1. max/min/zero are local maxima and minima. For fuel, it shows when fuel went to zero
 
 ```
-Action:        show-delta
-Arguments:     int id1, int id2
-Description:   Starting from the given timestamp show the difference in pos and
-               vel between the two bodies.
-```
-
-```
-Action:        hide-delta
-Arguments:     int id
-Description:   If showing the state, hide it
+Name:          show-pair
+Arguments:     id1: integer id of body1
+               id2: integer id of body2 
+               at: (optional) time to display this at (rather than track time cursor)
+               show: (any of "dist", "speed", "acc") (can be repeated)
+               show-max: (any of "dist", "speed", "acc") (can be repeated)
+               show-min: (any of "dist", "speed", "acc") (can be repeated)
 ```
