@@ -11,6 +11,7 @@ chebyshev coefficients stored in the SPK/DAF file to compute vector positions
 #pragma once
 
 #include <fstream>
+#include <memory>
 #include <stdlib.h>
 #include <string>
 
@@ -61,8 +62,8 @@ struct Ephemeris {
 // An Emphemeris object might be pretty large and it would be nice to not be
 // making duplicates of the data during the loading phase. For this reason we
 // use pointers
-typedef std::shared_ptr<Ephemeris>   EphShrPtr;
-typedef std::vector<const EphShrPtr> EphemerisVec;
+typedef std::shared_ptr<const Ephemeris> EphShrPtr;
+typedef std::vector<EphShrPtr>           EphemerisVec;
 
 // In order to conserve RAM we only load elements for the period of time we are
 // interested in

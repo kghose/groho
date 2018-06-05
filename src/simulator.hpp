@@ -7,6 +7,7 @@ This file declares the simulator code
 
 #pragma once
 
+#include <atomic>
 #include <thread>
 
 #include "buffer.hpp"

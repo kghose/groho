@@ -63,6 +63,5 @@ target_link_libraries(
     Magnum::MeshTools
     Magnum::Primitives
     Magnum::Shaders
-#    Corrade::Corrade
-#    Corrade::Containers
+    -lpthread # gcc on linux requires this
 )

@@ -11,8 +11,8 @@ the object trajectories (paths), object markers and annotations.
 #include "buffer.hpp"
 #include "camera.hpp"
 #include "pathgroup.hpp"
-#include "referenceplane.hpp"
-#include "sphere.hpp"
+// #include "referenceplane.hpp"
+// #include "sphere.hpp"
 
 namespace sim {
 
@@ -29,9 +29,9 @@ public:
     TimeCursor time_cursor;
 
 private:
-    PathGroup      trajectories;
-    Sphere         sphere;
-    ReferencePlane ref_plane;
+    PathGroup trajectories;
+    // Sphere         sphere;
+    // ReferencePlane ref_plane;
 
     // Metadata to figure out if we should reload a buffer
     unsigned int simulation_serial = -1;

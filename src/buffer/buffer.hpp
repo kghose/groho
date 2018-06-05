@@ -15,7 +15,9 @@ should see if this is fast enough for us.
 
 #pragma once
 
+#include <atomic>
 #include <fstream>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>

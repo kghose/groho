@@ -7,8 +7,10 @@ via the flight plans.
 */
 
 #include <cmath>
+#include <functional>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -22,6 +24,9 @@ via the flight plans.
 #include "loguru.hpp"
 
 namespace sim {
+
+// TODO: refactor flight plan actions to remove duplication of code/concerns
+// between action constructor and map that constructs action from line
 
 ///////////////////////////////
 // AVAILABLE ACTIONS (VERBS) //

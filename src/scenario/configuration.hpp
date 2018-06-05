@@ -6,6 +6,7 @@ This file contains declarations for the scenario configuration data structure
 */
 #pragma once
 
+#include <functional>
 #include <optional>
 #include <set>
 #include <string>

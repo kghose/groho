@@ -7,6 +7,7 @@ Convenient container for managing a group of data to display for a simulation
 
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include <Magnum/Shaders/Flat.h>

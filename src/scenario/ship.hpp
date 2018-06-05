@@ -9,6 +9,8 @@ them as lists of actions.
 #pragma once
 
 #include <cmath>
+#include <functional>
+#include <memory>
 #include <optional>
 #include <set>
 #include <string>
