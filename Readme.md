@@ -23,7 +23,6 @@ groho examples/earth-mars.txt
 ![Groho 0.3.0 screenshot](docs/milestone-images/groho-0.3.0.png "Groho 0.3.0 screenshot")
 
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-<!-- [![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master) -->
 
 <!-- TOC -->
 
@@ -39,7 +38,7 @@ groho examples/earth-mars.txt
     - [Getting the data](#getting-the-data)
     - [Tutorial/manual](#tutorialmanual)
         - [Simulation files](#simulation-files)
-            - [Why is the tutorial/manual in the form of commented examples](#why-is-the-tutorialmanual-in-the-form-of-commented-examples)
+            - [Meta: Why is the tutorial/manual in the form of commented examples?](#meta-why-is-the-tutorialmanual-in-the-form-of-commented-examples)
         - [Orbit view interactions](#orbit-view-interactions)
 - [Related software](#related-software)
     - [NASA's GMAT](#nasas-gmat)
@@ -93,6 +92,9 @@ at one location is detected at other locations/ships.
 
 # Compilation/building
 
+[![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master)
+
+
 **This code requires a C++17 compiler.** 
 `std::optional` is one of the C++17 features used.
 
@@ -141,7 +143,12 @@ In the [`examples`][ex-dir] directory are a series of tutorials-by-example.
 Each directory contains a scenario file, flight plans and annotation files
 with a mixture of commentary and code to show you the syntax. 
 
-#### Why is the tutorial/manual in the form of commented examples
+Simulation files can be edited with your favorite editor and versioned with
+your favourite versioning system. `groho` is independent of all this. What
+`groho` does is monitor changes to the simulation files on the file system and 
+updates the simulation computations when the files change.
+
+#### Meta: Why is the tutorial/manual in the form of commented examples?
 
 I personally learn well by example, so I wanted to try this out. I also use
 these tutorial scripts as ways to prototype proposed simulation file syntax,
