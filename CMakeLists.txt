@@ -19,7 +19,7 @@ message( FATAL_ERROR "Please make an out of source build: create a build directo
 endif()
 
 set(CMAKE_CXX_COMPILER "c++")
-set(CMAKE_CXX_FLAGS "-std=c++17 -Wall")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -Wpedantic ")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 # NDEBUG will suppress some loguru outputs in Release
 
