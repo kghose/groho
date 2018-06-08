@@ -14,6 +14,7 @@ Magnum App to handle windowing and display
 #include <Magnum/Platform/Sdl2Application.h>
 #include <Magnum/Shaders/Flat.h>
 
+#include "camera.hpp"
 #include "orbitview.hpp"
 #include "simulator.hpp"
 
@@ -32,6 +33,9 @@ private:
     void viewportEvent(const Vector2i& size) override;
     void tickEvent() override;
 
+    // If a new buffer is available from the simulation, load it in
+    void refresh_buffer();
+
     void set_buffers();
 
     void mousePressEvent(MouseEvent& event) override;
@@ -39,7 +43,11 @@ private:
     void mouseMoveEvent(MouseMoveEvent& event) override;
     void mouseScrollEvent(MouseScrollEvent& event) override;
 
+private:
     const sim::Simulator& simulator;
+
+    // TODO: make this a rolling buffer for overlaying multiple sims
+    std::shared_ptr<const Buffer> buffer;
 
     Camera    camera;
     OrbitView orbit_view;

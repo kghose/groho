@@ -59,9 +59,31 @@ void GrohoApp::viewportEvent(const Vector2i& size)
 void GrohoApp::tickEvent()
 {
     // TODO: make this work for multiple buffers
-    if (orbit_view.reload_from_buffer(simulator.get_buffer())) {
+    refresh_buffer();
+    if (orbit_view.reload_from_buffer(buffer)) {
         redraw();
     }
+}
+
+// If a new buffer is available from the simulation, load it in
+void GrohoApp::refresh_buffer()
+{
+    std::shared_ptr<const Buffer> sim_buffer = simulator.get_buffer();
+
+    // We can probably achieve this whole effect by comparing pointers
+    // but this code shows our real intent explicitly
+
+    if (sim_buffer == nullptr) {
+        return;
+    }
+
+    if ((buffer != nullptr)
+        && (buffer->simulation_serial() == sim_buffer->simulation_serial())) {
+        return;
+    }
+
+    // TODO: Make this a rolling buffer for sim overlays
+    buffer = sim_buffer;
 }
 
 void GrohoApp::mousePressEvent(MouseEvent& event)
