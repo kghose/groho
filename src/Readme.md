@@ -35,11 +35,11 @@ Developer notes
     - [Simulation restarts and checkpoints](#simulation-restarts-and-checkpoints)
     - [Simulation](#simulation)
 - [Interface design considerations](#interface-design-considerations)
+    - [My code is getting tied to the graphics library I used](#my-code-is-getting-tied-to-the-graphics-library-i-used)
     - [Scaling data for display](#scaling-data-for-display)
     - [Thinking aloud on user interfaces](#thinking-aloud-on-user-interfaces)
         - [The decision](#the-decision-1)
     - [How would annotations work?](#how-would-annotations-work)
-        - [Annotation script](#annotation-script)
 
 <!-- /TOC -->
 
@@ -387,6 +387,8 @@ fractal downsampler for this use case. Re-framing will necessarily be inaccurate
 we have to see how this looks like visually. We have to see what this means for
 annotations.
 
+The way to do this will probably be to create a new buffer - a re-framed buffer
+- that we will use instead of the original (SSB centered one).
 
 ### The decision
 
@@ -426,6 +428,20 @@ TBD
 [downsampler]: ../docs/dev/adaptive-display-points.ipynb
 
 # Interface design considerations
+
+## My code is getting tied to the graphics library I used
+
+I started with FLTK. This would have done for me, except that I couldn't do
+text with it (I'd have to use older versions of OpenGL) and it was pretty 
+closely tied to OpenGL. Magnum is fun to use and it looks like it's a nice
+abstraction on top of the actual graphics API. 
+
+I considered the question: "What if I had to switch out Magnum for something 
+else?" I decided it would be awkwardly redundant to have a layer on top of 
+Mangum. In the spirit of YAGNI and trusting Magnum to it's role - an
+abstraction on top of the actual graphics backend - I'm using what I need of
+Magnum directly in the display component.
+
 
 ## Scaling data for display
 
@@ -513,69 +529,9 @@ a session system whereby you can save your widgets in a session. More complexity
 explicitly set to appear only at one time point (and this time point can be
 based on some criterion - when it is also called an event)
 
-- Single annotation: State variable for a single object. Inverted triangle with
-associated text rendered as a billboard.
+- Single annotation: State variable for a single object. Rendered as billboard 
+with text just above object with small circle (also billboard) marking object point.
+
 - Differential annotation: difference in state variables for a pair of objects.
-Rendered as line between two objects with text as billboard.
-
-
-
-### Annotation script
-
-_(When implemented, this section should be transfered to the tutorial section of
-the main Readme)_
-
-```
-
-show: id:-1000 at:2458348.5 p:speed p:acc p:fuel
-; 
-; valid values for p: are
-; speed, acc, fuel
-
-
-show-diff: id:-1000 id:-1001 at:2458348.5 p:dist p:speed p:acc
-; valid values for p: are
-; speed, acc, fuel
-
-
-
-show-max: id:-1000 p:speed p:acc
-
-
-
-
-show: 
-
--- ; Annotation ends with  --
-```
-
-```
-```
-
-
-```
-<annotation> <argument1> <argument2> ...
-```
-
-The available annotation actions are
-
-```
-Name:          show-single
-Arguments:     id: integer id of body 
-               at: (optional) time to display this at (don't track time cursor)
-               show: (any of "speed", "acc", "fuel") (can be repeated)
-               show-max: (any of "speed", "acc") (can be repeated)
-               show-min: (any of "speed", "acc", "fuel") (can be repeated)
-```
-
-1. max/min/zero are local maxima and minima. For fuel, it shows when fuel went to zero
-
-```
-Name:          show-pair
-Arguments:     id1: integer id of body1
-               id2: integer id of body2 
-               at: (optional) time to display this at (rather than track time cursor)
-               show: (any of "dist", "speed", "acc") (can be repeated)
-               show-max: (any of "dist", "speed", "acc") (can be repeated)
-               show-min: (any of "dist", "speed", "acc") (can be repeated)
-```
+Rendered as billboard just above a line ending in two small circles (also billboard)
+marking object points. 
