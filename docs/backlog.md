@@ -8,11 +8,41 @@ Core
 * FlightPlanAction - warnings about deleted desctructors
 * Rename FlightPlan to Ship
 * File extensions should be .groho.txt for syntax highlighting
+* refactor flight plan actions to remove duplication of code/concerns
+
+Input files
+-----------
+Need to improve readability:
+
+Current:
+`orbiting = 399 2000 ; Orbit 399 (Earth) at 2000 km altitude`
+
+Proposed:
+`orbiting = id:399 alt:2000 ; Orbit 399 (Earth) at 2000 km altitude`
+
+Current:
+```
+2458248.0   park         499 100000
+2458278.0   set-attitude 1.0 -0.3 -0.25
+2458278.533 set-accel    0.01
+```
+
+Proposed:
+```
+2458248.0   park         id:499 alt:100000
+2458278.0   set-attitude x:1.0 y:-0.3 z:-0.25
+2458278.533 set-accel    0.01
+```
+
+**The change:** if an operation takes multiple values then to avoid confusion
+about which argument is what each value is preceeded by `<key>:` which is used
+to map the value after the `:` to the appropriate parameter named `<key>`.
+
+
 
 Simulation
 ----------
 * Leap-frog integration
-* Initialiser that can spawn a spaceraft in orbit round a body
 * Orrery velocity computer should be more sophisticated - do midpoints?
 
 Display
@@ -20,6 +50,8 @@ Display
 * Work on UI specifications (this is possibly in an older commit)
 * Unobtrusive grid for orientation and scale
 * Chase camera that can track along the path of an object and can orbit round it
+* re-framing and re-centering
+
 * Superimpose multiple buffers
   - what to do for identical tracks? Make condition of superimposition that the
     Orrery and time range are the same - only flight plans can change (be added,
@@ -31,6 +63,7 @@ Display
   Otherwise, we get lost in the solar system when 
 
 Interaction
+-----------
 * How do we interact - keystrokes, UI widgets, separate dialogs, command line?
 * Allow selection of a long going operation (e.g. parking) and show what the distance is live
   - more generally, for each action mark out some state variables as debug variables that
@@ -49,11 +82,15 @@ Donelog
 
 Core
 ----
-* Refactor body objects to unify metadata scheme
-* Introduce space craft into the simulation
-* Figure out way to combine flight plan actions with spacecraft
-* Orrery should not reload if new range is inside old range
-* MagnumApp - setSamples is deprecated - find correct way to do this
+* [DONE] Refactor body objects to unify metadata scheme
+* [DONE] Introduce space craft into the simulation
+* [DONE] Figure out way to combine flight plan actions with spacecraft
+* [DONE] Orrery should not reload if new range is inside old range
+* [DONE] MagnumApp - setSamples is deprecated - find correct way to do this
+
+Simulation
+----------
+* [DONE] Initialiser that can spawn a spaceraft in orbit round a body
 
 
 Version planning
