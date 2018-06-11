@@ -20,12 +20,9 @@ RUN apt-get update && apt-get install -y gcc-8 g++-8 gcc-8
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 \
     && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 100
 
-# For Clang
-# RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-# RUN apt-add-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main"
-# RUN apt-get update
-# RUN apt-get -y install clang-6.0
-# RUN update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang-6.0 100
 
 # docker build -f dockerfile -t kghose/liftoff .
 # docker push kghose/liftoff
+
+# You can do local test compiles by
+# docker run -ti --mount type=bind,source=/Users/kghose/Code/groho,target=/root/groho kghose/liftoff
