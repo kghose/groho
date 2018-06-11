@@ -42,8 +42,7 @@ public:
 
     void draw(const Camera& camera)
     {
-        _shader.setTransformationProjectionMatrix(
-            camera.projection * camera.transformation);
+        _shader.setTransformationProjectionMatrix(camera.get_matrix());
         for (auto& p : paths) {
             p->draw(_shader);
         }

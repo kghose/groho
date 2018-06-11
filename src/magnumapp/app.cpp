@@ -21,16 +21,8 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
 {
     using namespace Math::Literals;
 
-    camera.transformation
-        = Matrix4::rotationX(0.0_degf) * Matrix4::rotationY(0.0_degf);
-
-    camera.projection
-        = Matrix4::perspectiveProjection(
-              35.0_degf,
-              Vector2{ GL::defaultFramebuffer.viewport().size() }.aspectRatio(),
-              0.01f,
-              100.0f)
-        * Matrix4::translation(Vector3::zAxis(-10.0f));
+    camera.aspect_ratio = (float)GL::defaultFramebuffer.viewport().sizeX()
+        / GL::defaultFramebuffer.viewport().sizeY();
 }
 
 void GrohoApp::drawEvent()
@@ -48,11 +40,7 @@ void GrohoApp::viewportEvent(const Vector2i& size)
 {
     GL::defaultFramebuffer.setViewport(Range2Di{ { 0, 0 }, size });
 
-    camera.projection
-        = Matrix4::perspectiveProjection(
-              35.0_degf, (double)size.x() / (double)size.y(), 0.01f, 100.0f)
-        * Matrix4::translation(Vector3::zAxis(-10.0f));
-
+    camera.aspect_ratio = (double)size.x() / (double)size.y();
     redraw();
 }
 
@@ -110,8 +98,8 @@ void GrohoApp::mouseMoveEvent(MouseMoveEvent& event)
         * Vector2{ event.position() - _previousMousePosition }
         / Vector2{ GL::defaultFramebuffer.viewport().size() };
 
-    camera.transformation = Matrix4::rotationX(Rad{ delta.y() })
-        * Matrix4::rotationY(Rad{ delta.x() }) * camera.transformation;
+    camera.az += Deg{ Rad{ delta.x() } };
+    camera.el += Deg{ Rad{ delta.y() } };
 
     _previousMousePosition = event.position();
     event.setAccepted();
@@ -124,11 +112,9 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
         return;
 
     if (event.offset().y() > 0)
-        camera.transformation
-            = Matrix4::scaling(Vector3(1.1f)) * camera.transformation;
+        camera.scale *= 1.1;
     else
-        camera.transformation
-            = Matrix4::scaling(Vector3(1.0f / 1.1f)) * camera.transformation;
+        camera.scale /= 1.1;
 
     event.setAccepted();
     redraw();

@@ -8,20 +8,36 @@ so that they know what camera model to use.
 
 #pragma once
 
-#include "Magnum/Math/Matrix4.h"
 #include <Magnum/Magnum.h>
-
-namespace sim {
+#include <Magnum/Math/Matrix4.h>
 
 using namespace Magnum;
 using namespace Math::Literals;
 
-struct Camera {
-    Deg   fov   = 35.0_degf;
+namespace sim {
+
+class Camera {
+public:
+    Deg   fov          = 35.0_degf;
+    float aspect_ratio = 2.0;
+    float scale        = 1.0;
+
+    Vector3 center = { 0, 0, 0 };
+    Deg     az     = 0.0_degf;
+    Deg     el     = 0.0_degf;
+
+    Matrix4 get_matrix() const
+    {
+        return Matrix4::perspectiveProjection(fov, aspect_ratio, front, back)
+            * Matrix4::translation(Vector3::zAxis(-10.0f))
+            * Matrix4::rotationX(el) * Matrix4::rotationZ(az)
+            * Matrix4::rotationX(-23.5_degf) * Matrix4::scaling(Vector3(scale))
+            * Matrix4::translation(center);
+    }
+
+private:
     float front = 0.01f;
     float back  = 100.0f;
-    float az    = 0.0f;
-    float el    = 0.0f;
 
     Matrix4 transformation;
     Matrix4 projection;
