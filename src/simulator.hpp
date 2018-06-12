@@ -29,6 +29,9 @@ public:
 
     std::shared_ptr<const Buffer> get_buffer() const;
 
+public:
+    double t_s;
+
 private:
     Scenario          scenario;
     orrery::SpkOrrery orrery;
@@ -38,7 +41,6 @@ private:
 
     std::atomic<bool> running;
 
-    double t_s;
     double step_s;
     double begin_s;
     double end_s;
