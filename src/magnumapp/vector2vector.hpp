@@ -14,7 +14,7 @@ Converts a sim::Vector into a Magnum::Vector3
 
 namespace sim {
 
-Magnum::Vector3 v2v(Vector v)
+inline Magnum::Vector3 v2v(Vector v)
 {
     return Magnum::Vector3{ static_cast<float>(v.x / globals::scale),
                             static_cast<float>(v.y / globals::scale),
