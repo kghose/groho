@@ -6,6 +6,7 @@ Magnum App to handle windowing and display
 */
 
 #include "app.hpp"
+#include "vector2vector.hpp"
 
 namespace sim {
 
@@ -49,6 +50,13 @@ void GrohoApp::tickEvent()
     // TODO: make this work for multiple buffers
     refresh_buffer();
     if (orbit_view.reload_from_buffer(buffer)) {
+
+        // JUST TESTING - TAKE THIS OUT
+        auto idx = buffer->get_index(3);
+        auto bs  = buffer->at(*idx, simulator.t_s);
+
+        camera.center = v2v(bs.pos);
+
         redraw();
     }
 }

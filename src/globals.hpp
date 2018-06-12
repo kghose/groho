@@ -4,6 +4,7 @@ Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 Convenient collecting point for some program wide constants
 */
+#pragma once
 
 namespace sim {
 namespace globals {

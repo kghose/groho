@@ -32,7 +32,7 @@ public:
             * Matrix4::translation(Vector3::zAxis(-10.0f))
             * Matrix4::rotationX(el) * Matrix4::rotationZ(az)
             * Matrix4::rotationX(-23.5_degf) * Matrix4::scaling(Vector3(scale))
-            * Matrix4::translation(center);
+            * Matrix4::translation(-center);
     }
 
 private:

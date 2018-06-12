@@ -39,11 +39,6 @@ bool OrbitView::reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     simulation_serial = buffer->simulation_serial();
     point_count       = buffer->point_count();
 
-    if (!time_cursor.pinned) {
-        const auto& sb  = buffer->get(0);
-        time_cursor.t_s = sb[sb.size() - 1].t;
-    }
-
     buffer->release();
 
     return true;
