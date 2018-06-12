@@ -38,6 +38,9 @@ BodyState SubBuffer::at(double t_s) const
     size_t idx2 = data.size() - 1;
     size_t idx1 = idx2 * ((t_s - t0) / (t1 - t0));
     for (;;) {
+        if (idx0 == idx2) {
+            break;
+        }
         if (idx2 == idx0 + 1) {
             break;
         }
@@ -53,7 +56,7 @@ BodyState SubBuffer::at(double t_s) const
         }
     }
 
-    return interpolate(data[idx0], data[idx0 + 1], t_s);
+    return interpolate(data[idx0], data[idx2], t_s);
 }
 
 BodyState Buffer::at(size_t i, double t_s) const
