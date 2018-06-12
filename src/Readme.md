@@ -25,6 +25,7 @@ Developer notes
     - [The use of "f" in code using OpenGL](#the-use-of-f-in-code-using-opengl)
 - [Code design considerations](#code-design-considerations)
     - [Sharing a data buffer between writer and reader](#sharing-a-data-buffer-between-writer-and-reader)
+- [Displaying the simulation](#displaying-the-simulation)
     - [Fractal downsampler](#fractal-downsampler)
         - [Long straight trajectories](#long-straight-trajectories)
     - [How much and what data to store](#how-much-and-what-data-to-store)
@@ -32,6 +33,11 @@ Developer notes
         - [Re-framing data](#re-framing-data)
         - [The decision](#the-decision)
         - [YAGNI](#yagni)
+    - [Multi-level detail](#multi-level-detail)
+        - [The problem](#the-problem)
+        - [Adaptive interpolation solution](#adaptive-interpolation-solution)
+            - [Spliced buffers](#spliced-buffers)
+        - [Multi-buffer solution (AKA The Bad Idea)](#multi-buffer-solution-aka-the-bad-idea)
     - [Simulation restarts and checkpoints](#simulation-restarts-and-checkpoints)
     - [Simulation](#simulation)
 - [Interface design considerations](#interface-design-considerations)
@@ -339,6 +345,8 @@ the current data point (that the writer is working on). This code is more
 involved, however.
 
 
+# Displaying the simulation
+
 ## Fractal downsampler
 
 The exciting story behind the fractal downsampler is in this [IPython notebook][downsampler].
@@ -412,6 +420,85 @@ my code and resist the urge to prematurely optimize. However, I do spend time
 thinking ahead to the kind of things I might like to add, and use that to plan
 modularization.
 
+
+## Multi-level detail
+
+### The problem
+So, just in the earlier section I was talking about how the fractal downsampler
+was good enough and a more complicated scheme YAGNI. Well looks like YGNI.
+
+Just as I feared, as soon as I implemented a chase camera that I could re-center
+on any object the big problem with the fractal downsampler cropped up - what
+is smooth at one level of detail is not smooth at a sufficiently finer level
+of detail. 
+
+I first took a look at the Earth-Moon system and things looked fine there, but
+when I looked at the Jovian system the issue became apparent: the moons were
+swirling smoothly about a very jaggy looking Jupiter orbit. The error tolerance
+of 1 million kilometers which looks fine with a whole solar system view becomes
+terrible at the scale of lunar orbits.
+
+The main issue is distance to the camera. We want more detail for objects close
+to the camera and less further away. This is a typical class of problem in 
+rendering large scenes.
+
+This chase camera on Jupiter and its moons use case is extra challenging because 
+the neighborhood - the region of higher detail - is continually changing. 
+
+On the train in, I thought up a bad solution. I knew it was a bad solution because
+it sounded like a whole lot of engineering - lots of rods and wheels and racks and
+pinions and parts that had to fit just right. It's listed below as "The Bad Idea".
+Fortunately, over lunch, I mentioned my predicament to my colleague Ivan Johnson 
+and gave him the run down on my idea. He stared at me for a few seconds, 
+blinked a bit and said "You might want to try cubic interpolation first, though."
+He lent me Pearson's "Numerical Methods" and I read the "Interpolation 
+and approximation" chapter with attention.
+
+Now, to be honest, splines or other forms of interpolation had crossed my mind,
+Perhaps it's even there in these notes in some earlier version. But I forgot
+and now I was ready to go to the most complex option, without passing through
+this intermediate complexity solution first. Sadly a lot of professional 
+software development seems to follow this pattern too.
+
+### Adaptive interpolation solution
+
+1. Use the fractal downsampler to get a base level of adaptive sampling based 
+   on the intrinsic curvature of the points
+2. Define a neighborhood around the camera where we would like denser sampling
+3. Detect segments that intersect this neighborhood and use interpolation to
+   upsample the position data between these segments
+4. Use time as the parameter so we can further derive velocity and acceleration
+   on demand.
+5. The tricky part is how to integrate these two levels of detail 
+
+#### Spliced buffers
+One solution would be to maintain a splice list for each trajectory/path that 
+indicates the indexes where we want to splice in an interpolation over an
+existing path. When we go to draw a path (or retrieve data about it) we do so
+upto a splice start. Then, we jump to the buffer pointed to by the splice and
+use data from that instead. Once the splice is over, we come back to the
+original path.
+
+### Multi-buffer solution (AKA The Bad Idea)
+
+The solution that would work here is as follows:
+1. The basic simulation time step is fixed and is a small value as currently
+   implemented. This is needed for basic physical fidelity. This is a simulation
+   consideration and is independent of any display considerations.
+2. We have a **coarse buffer** that downsamples and stores the object state at
+   relatively large fixed intervals
+3. We have **interpolation buffers** that are continually being computed by a second
+   instance of the simulation. An interpolation buffer is triggered when one
+   or more trajectory segments in the **coarse buffer** intersect the neighboor
+   hood around the camera. 
+4. The interpolation simulation is handed the start and stop times and the state
+   of the world at the start and simply runs that part of the simulation
+5. At any given time the display has a **coarse buffer** and zero or more
+   **interpolation buffers**. It should seamlessly integrate the interpolation
+   buffer data with the coarse buffer.
+
+What differs here is the mechanism by which we get the data for the up-sampled
+segments - rerunning a simulation is probably more complex than spline interpolation. 
 
 ## Simulation restarts and checkpoints
 
