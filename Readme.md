@@ -42,6 +42,7 @@ groho examples/earth-mars.txt
         - [Orbit view interactions](#orbit-view-interactions)
 - [Related software](#related-software)
     - [NASA's GMAT](#nasas-gmat)
+    - [Orbiter by Martin Schweiger](#orbiter-by-martin-schweiger)
     - [Bussard by Phil Hagelberg](#bussard-by-phil-hagelberg)
     - [SolarSystemOrbiter](#solarsystemorbiter)
 - [Thanks](#thanks)
@@ -178,6 +179,17 @@ so I stubbornly rolled my own to my own (much more limited) specifications.
 
 [GMAT]: http://gmatcentral.org/display/GW/GMAT+Wiki+Home
 [GMAT-github]: https://github.com/haisamido/GMAT
+
+## Orbiter by Martin Schweiger
+
+I've used [Orbiter](http://orbit.medphys.ucl.ac.uk/) since 2001 or so. It was
+my main instrument of thesis procrastination. It's very detailed and visually
+rich and a blast to play. It's an interactive simulation where you fly space
+craft with your keyboard and mouse. It's closed source and its internals are 
+a little opaque. For example, I do not know
+what orrery model it uses or if it does an n-body simulation, if it has
+accurate models for the axial tilt of the planets and moons or these are
+just arbitrary and so on.
 
 ## Bussard by Phil Hagelberg
 
