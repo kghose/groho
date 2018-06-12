@@ -23,7 +23,7 @@ interpolate(const BodyState& state0, const BodyState& state1, double t_s)
 }
 
 // Don't do this on an empty vector
-BodyState SubBuffer::at(double t_s)
+BodyState SubBuffer::at(double t_s) const
 {
     double t0 = data[0].t, t1 = data[data.size() - 1].t;
     if (t_s < t0) {
@@ -56,7 +56,7 @@ BodyState SubBuffer::at(double t_s)
     return interpolate(data[idx0], data[idx0 + 1], t_s);
 }
 
-BodyState Buffer::at(size_t i, double t_s)
+BodyState Buffer::at(size_t i, double t_s) const
 {
     std::lock_guard<std::mutex> lock(buffer_mutex);
     return sub_buffer[i].at(t_s);

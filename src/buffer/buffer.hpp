@@ -20,6 +20,7 @@ should see if this is fast enough for us.
 #include <mutex>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "body.hpp"
@@ -60,7 +61,7 @@ struct SubBuffer {
         }
     }
 
-    BodyState at(double t_s);
+    BodyState at(double t_s) const;
 
     const Body& get_metadata() const { return body; }
 
@@ -83,7 +84,11 @@ public:
     size_t       point_count() const { return _point_count; }
 
     // Add another body to the buffer
-    void add_body(const Body body) { sub_buffer.push_back(SubBuffer(body)); }
+    void add_body(const Body body)
+    {
+        sub_buffer.push_back(SubBuffer(body));
+        id_to_index[body.code] = sub_buffer.size() - 1;
+    }
 
     void lock() const { buffer_mutex.lock(); }
     void release() const { buffer_mutex.unlock(); }
@@ -108,16 +113,28 @@ public:
         return flushed;
     }
 
+    std::optional<size_t> get_index(int spkid) const
+    {
+        auto result = id_to_index.find(spkid);
+        if (result != id_to_index.end()) {
+            return result->second;
+        } else {
+            return {};
+        }
+    }
+
     const std::vector<BodyState>& get(size_t i) const
     {
         return sub_buffer[i].data;
     }
 
-    BodyState at(size_t i, double t_s);
+    BodyState at(size_t i, double t_s) const;
 
 private:
     std::atomic<size_t>       _point_count = 0;
     std::atomic<unsigned int> _simulation_serial;
+
+    std::unordered_map<int, size_t> id_to_index;
 
     std::vector<SubBuffer> sub_buffer;
     mutable std::mutex     buffer_mutex;
