@@ -15,6 +15,7 @@ Convenient container for managing data to display for a given object
 
 #include "globals.hpp"
 #include "vector.hpp"
+#include "vector2vector.hpp"
 
 namespace sim {
 
@@ -48,9 +49,7 @@ public:
         CORRADE_INTERNAL_ASSERT(data);
 
         for (size_t i = 0; i < size; i++) {
-            data[i] = { static_cast<float>(state[i].pos.x / globals::scale),
-                        static_cast<float>(state[i].pos.y / globals::scale),
-                        static_cast<float>(state[i].pos.z / globals::scale) };
+            data[i] = v2v(state[i].pos);
         }
 
         CORRADE_INTERNAL_ASSERT_OUTPUT(_buffer.unmap());
