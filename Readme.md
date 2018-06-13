@@ -2,6 +2,12 @@ Groho ( গ্রহ )
 =====
 Groho is a simulator for inter-planetary travel and warfare.
 
+[![License](https://img.shields.io/github/license/kghose/groho.svg)](https://github.com/kghose/groho/blob/master/LICENSE)
+
+![Release](https://img.shields.io/github/release/kghose/groho.svg)
+
+[![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master)
+
 The simulator aims to give the user intuitions of how inter-planetary travel, 
 commerce and conflict would play out in the near future within the solar system. 
 There is no faster than light travel, though there are no limits to 
@@ -21,8 +27,6 @@ groho examples/earth-mars.txt
 ```
 
 ![Groho 0.3.0 screenshot](docs/milestone-images/groho-0.3.0.png "Groho 0.3.0 screenshot")
-
-[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <!-- TOC -->
 
