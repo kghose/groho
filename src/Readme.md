@@ -35,9 +35,11 @@ Developer notes
         - [YAGNI](#yagni)
     - [Multi-level detail](#multi-level-detail)
         - [The problem](#the-problem)
+        - [Why not just use very dense sampling?](#why-not-just-use-very-dense-sampling)
         - [Adaptive interpolation solution](#adaptive-interpolation-solution)
-            - [Spliced buffers](#spliced-buffers)
         - [Multi-buffer solution (AKA The Bad Idea)](#multi-buffer-solution-aka-the-bad-idea)
+        - [Integrating interpolations](#integrating-interpolations)
+            - [Spliced buffers](#spliced-buffers)
     - [Simulation restarts and checkpoints](#simulation-restarts-and-checkpoints)
     - [Simulation](#simulation)
 - [Interface design considerations](#interface-design-considerations)
@@ -51,11 +53,18 @@ Developer notes
 
 # Code organization
 
-* buffer - code to handle data storage and sharing
-* external - external libraries, currently just loguru
-* magnumapp - Visualization window based on Magnum/Corrade
 * orrery - Orrery models (NASA/JPL SPK files) loading and computation
 * scenario - Scenario and flightplan loading and parsing
+* simulation
+    - trajectorydata
+    - annotationdata
+* display
+    - trajectoryview
+    - annotationview
+* external - external libraries, currently just loguru
+
+* buffer - code to handle data storage and sharing
+* magnumapp - Visualization window based on Magnum/Corrade
 
 
 # C++ Language features
@@ -460,6 +469,21 @@ and now I was ready to go to the most complex option, without passing through
 this intermediate complexity solution first. Sadly a lot of professional 
 software development seems to follow this pattern too.
 
+### Why not just use very dense sampling?
+Say we want to have 1km resolution. One orbit of the Earth is 2 * pi * 1 AU
+= 939,951,143 km or points. If we just store position with floats, thats 
+3 x 940 million 4 byte values = 11,279,413,716 bytes ~ 11 GB for just the Earth.
+If we are happy with 1000 km resolution we get to 11 MB/year which is getting to
+the realm of possibility on my laptop. A complete solar system (no spaceships)
+has about 180 objects so we are at ~1.9GB/year. I'm hoping I can do simulations 
+for journeys or epics at least decades long,
+say 20 years, which with a 1000km resolution comes to ~40GB.
+
+There is a [quick experiment](docs/dev/sampling-density.ipynb) on the 
+Mars/Phobos system here showing that 5000km sampling intervals still look good.
+However, in order to reduce the memory footprint of a simulation it's the 
+fractal downsampler that is the only option that gives a resonable footprint.
+
 ### Adaptive interpolation solution
 
 1. Use the fractal downsampler to get a base level of adaptive sampling based 
@@ -469,15 +493,6 @@ software development seems to follow this pattern too.
    upsample the position data between these segments
 4. Use time as the parameter so we can further derive velocity and acceleration
    on demand.
-5. The tricky part is how to integrate these two levels of detail 
-
-#### Spliced buffers
-One solution would be to maintain a splice list for each trajectory/path that 
-indicates the indexes where we want to splice in an interpolation over an
-existing path. When we go to draw a path (or retrieve data about it) we do so
-upto a splice start. Then, we jump to the buffer pointed to by the splice and
-use data from that instead. Once the splice is over, we come back to the
-original path.
 
 ### Multi-buffer solution (AKA The Bad Idea)
 
@@ -499,6 +514,17 @@ The solution that would work here is as follows:
 
 What differs here is the mechanism by which we get the data for the up-sampled
 segments - rerunning a simulation is probably more complex than spline interpolation. 
+
+### Integrating interpolations
+The tricky part is how to integrate these two levels of detail.
+
+#### Spliced buffers
+One solution would be to maintain a splice list for each trajectory/path that 
+indicates the indexes where we want to splice in an interpolation over an
+existing path. When we go to draw a path (or retrieve data about it) we do so
+upto a splice start. Then, we jump to the buffer pointed to by the splice and
+use data from that instead. Once the splice is over, we come back to the
+original path.
 
 ## Simulation restarts and checkpoints
 
