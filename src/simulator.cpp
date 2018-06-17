@@ -148,7 +148,7 @@ void Simulator::run()
     buffer->flush();
     running = false;
 
-    DLOG_S(INFO) << buffer->point_count();
+    LOG_S(INFO) << "Saved " << buffer->point_count() << " state vectors";
     LOG_S(INFO) << "Stopping simulation";
 }
 
