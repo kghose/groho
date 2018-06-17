@@ -52,10 +52,11 @@ void GrohoApp::tickEvent()
     if (orbit_view.reload_from_buffer(buffer)) {
 
         // JUST TESTING - TAKE THIS OUT
-        auto idx = buffer->get_index(3);
-        auto bs  = buffer->at(*idx, simulator.t_s);
-
-        camera.center = v2v(bs.pos);
+        auto idx = buffer->get_index(499);
+        if (buffer->get(*idx).size() > 2) {
+            auto bs       = buffer->at(*idx, simulator.t_s);
+            camera.center = v2v(bs.pos);
+        }
 
         redraw();
     }
