@@ -52,7 +52,11 @@ public:
     bool load_orrery_model(std::string fname, double begin_s, double end_s);
 
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
-    // vector containing this information.
+    // vector containing this information. Fill out vel and acc too based on
+    // the last sample. The accuracy of these values depends on the time stamp
+    // and needs a warm up period of 3 steps. Calling the function in a non
+    // monotonic way will cause this to break. If you want to be absolutely
+    // certain of vel use the next call.
     const OrreryBodyVec& get_orrery_at(double t_s);
 
     // Sometimes we'll need the velocities of the bodies too.
