@@ -9,7 +9,7 @@ Converts a sim::Vector into a Magnum::Vector3
 
 #include <Magnum/Math/Matrix4.h>
 
-#include "globals.hpp"
+#include "groho.hpp"
 #include "vector.hpp"
 
 namespace sim {
