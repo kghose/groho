@@ -128,21 +128,11 @@ bool SpkOrrery::load_orrery_model(
 const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
 {
     for (int i = 0; i < ephemera.size(); i++) {
-
-        Vector old_pos   = bodies[i].state.pos;
-        Vector old_vel   = bodies[i].state.vel;
-        double delta_t_s = s - bodies[i].state.t;
-
         set_pos(s, *ephemera[i], bodies[i].state.pos);
         bodies[i].state.t = s;
 
         if (ephemera[i]->center_code != 0) {
             bodies[i].state.pos += bodies[center_idx[i]].state.pos;
-        }
-
-        if (delta_t_s != 0.0) {
-            bodies[i].state.vel = (bodies[i].state.pos - old_pos) / delta_t_s;
-            bodies[i].state.acc = (bodies[i].state.vel - old_vel) / delta_t_s;
         }
     }
     return bodies;
