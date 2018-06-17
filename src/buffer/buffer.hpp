@@ -25,6 +25,7 @@ should see if this is fast enough for us.
 
 #include "body.hpp"
 #include "fractaldownsampler.hpp"
+#include "groho.hpp"
 #include "vector.hpp"
 
 namespace sim {
