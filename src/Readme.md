@@ -25,6 +25,7 @@ Developer notes
     - [The use of "f" in code using OpenGL](#the-use-of-f-in-code-using-opengl)
 - [Code design considerations](#code-design-considerations)
     - [Sharing a data buffer between writer and reader](#sharing-a-data-buffer-between-writer-and-reader)
+    - [Who does what?](#who-does-what)
 - [Displaying the simulation](#displaying-the-simulation)
     - [Fractal downsampler](#fractal-downsampler)
         - [Long straight trajectories](#long-straight-trajectories)
@@ -353,6 +354,46 @@ use a vector and preallocate the block, we can then let the reader read upto
 the current data point (that the writer is working on). This code is more 
 involved, however.
 
+
+## Who does what?
+
+In the initial design (say upto 0.4.0 - 6ef02d21f6368) - which grew a little 
+organically - the spacecraft logic (`FlightPlanAction`) was attached to the `Ship`
+which was part of the `Scenario`. In order to make things work I invented a 
+`WorldState` on the fly which held the orrery because I needed that for some
+of the things a `FlightPlanAction` could do, as well as `Ship` initialization
+like placing it in orbit.
+
+Basically, without making a conscious decision, I had started to create spaghetti
+code, where part of the state was held by `Scenario` and part by `WorldState`
+and the first indication of conceptual trouble was my note for `WorldState`, which
+was placed, *ad hoc* in `FlightPlanAction`, saying "Need to find a proper home for this".
+
+In the refactor I started after 0.4.0 I explicitly made `Scenario` be the state
+of the simulation and it was at that point that I realized that I had created
+`WorldState` out of a sub-consious desire to avoid a circular dependency: I now
+had:
+
+`Scenario -> Ship -> FlightPlanAction -> Scenario`
+
+since a `FlightPlanAction` altered the state of a ship while depending on world
+state.
+
+It then became apparent that, if we considered the `Simulator` to be the thing
+that operated on the state (`Scenario`) then both the initialization of
+the state (`Ship.init`) at the start and the application of `FlightPlanAction`
+during the simulation were `Simulator` actions. This then led to the idea that
+everything parsed in the scenario files related to the Ships, from static 
+initial conditions, like the fuel capacity of a ship to spacecraft actions 
+should be represented in the abstract as functions to be executed
+by the `Simulator` - which in fact they already were - anonymous functions
+except that currently they were not executed by the `Simulator` but 
+during `Ship` instantiation instead.
+
+This became very satisfying because the `orbiting` property of a ship - which
+was an initial condition but which required world state had to be awkwardly
+executed at the start of simulation run as an exception. This would now 
+smoothly fit in with the over all philosophy.
 
 # Displaying the simulation
 
