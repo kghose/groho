@@ -79,6 +79,7 @@ struct ScenarioFile {
         std::string line;
         continued_line = "";
         while (std::getline(cfile, line)) {
+            line_no++;
             line = trim_whitespace(trim_comments(line));
             if (line.size() == 0)
                 continue;
@@ -133,6 +134,12 @@ inline Vector stoV(std::string v)
     }
     Vector out{ stof(tokens[0]), stof(tokens[1]), stof(tokens[2]) };
     return out;
+}
+
+inline bool could_be_a_number(std::string token)
+{
+    return !token.empty()
+        && (token.find_first_not_of("-.0123456789") == std::string::npos);
 }
 
 inline time_t file_modification_time(std::string fname)
