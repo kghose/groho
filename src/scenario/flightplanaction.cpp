@@ -28,6 +28,7 @@ via the flight plans.
 namespace sim {
 
 double do_this_first(std::numeric_limits<double>::lowest());
+
 /*
 bool set_key_value(std::optional<KeyValue> kv)
 {
@@ -247,7 +248,7 @@ typedef std::shared_ptr<FlightPlanAction> fpaptr_t;
 std::unordered_map<
     str_t,
     std::function<fpa_uptr_t(size_t, str_t, size_t, double, strv_t)>>
-    actions;
+    available_actions;
 
 /*
 std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
@@ -291,21 +292,22 @@ std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
 // For the plan proper
 //   <timestamp> <action name> <argument1> <argument2> ...
 fpa_uptr_t parse_line_into_action(
-    size_t ship_idx, std::string fname, size_t line_no, std::string line)
+    size_t                   ship_idx,
+    std::string              fname,
+    size_t                   line_no,
+    std::vector<std::string> tokens)
 {
-    std::vector<std::string> tokens = split(line);
-
     double jd = do_this_first;
-    if (could_be_a_number(tokens[0])) {
-        jd     = stod(tokens[0]);
-        tokens = std::vector<std::string>(tokens.begin() + 1, tokens.end());
+    if (tokens[0] != "-") {
+        jd = stod(tokens[0]);
     }
 
-    if (actions.count(tokens[0])) {
-        return actions[tokens[0]](ship_idx, fname, line_no, jd, tokens);
+    if (available_actions.count(tokens[1])) {
+        return available_actions[tokens[1]](
+            ship_idx, fname, line_no, jd, tokens);
     } else {
         LOG_S(ERROR) << fname << ": " << line_no
-                     << ": No such flight plan action: " << tokens[0];
+                     << ": Unknown action: " << tokens[1];
         return {};
     }
 }

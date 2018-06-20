@@ -7,7 +7,7 @@ available to control spacecraft via the flight plans.
 */
 #pragma once
 
-#include <forward_list>
+#include <list>
 #include <memory>
 #include <optional>
 #include <string>
@@ -30,7 +30,7 @@ struct FlightPlanAction {
 };
 
 typedef std::unique_ptr<FlightPlanAction> fpa_uptr_t;
-typedef std::forward_list<fpa_uptr_t>     fpa_uptr_l_t;
+typedef std::list<fpa_uptr_t>             fpa_uptr_l_t;
 
 inline bool fpa_order(const fpa_uptr_t& a, const fpa_uptr_t& b)
 {
@@ -38,5 +38,8 @@ inline bool fpa_order(const fpa_uptr_t& a, const fpa_uptr_t& b)
 }
 
 fpa_uptr_t parse_line_into_action(
-    size_t ship_idx, std::string fname, size_t line_no, std::string line);
+    size_t                   ship_idx,
+    std::string              fname,
+    size_t                   line_no,
+    std::vector<std::string> tokens);
 }
