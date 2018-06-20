@@ -102,7 +102,11 @@ OrreryBodyVec create_bodies(const EphemerisVec& ephemera)
     return bodies;
 }
 
-// TODO: Handle files of both endian-ness
+bool SpkOrrery::load_orrery_model(std::string fname)
+{
+    return load_orrery_model(fname, begin_s, end_s);
+}
+
 bool SpkOrrery::load_orrery_model(
     std::string fname, double begin_s, double end_s)
 {
