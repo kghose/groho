@@ -63,7 +63,7 @@ public:
 inline size_t spkid_to_orrery_index(const OrreryBodyVec& obv, int spkid)
 {
     for (size_t i = 0; i < obv.size(); i++) {
-        if (obv[i].code == spkid) {
+        if (obv[i].property.code == spkid) {
             return i;
         }
     }

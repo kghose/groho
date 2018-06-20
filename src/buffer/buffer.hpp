@@ -88,7 +88,7 @@ public:
     void add_body(const Body body)
     {
         sub_buffer.push_back(SubBuffer(body));
-        id_to_index[body.code] = sub_buffer.size() - 1;
+        id_to_index[body.property.code] = sub_buffer.size() - 1;
     }
 
     void lock() const { buffer_mutex.lock(); }

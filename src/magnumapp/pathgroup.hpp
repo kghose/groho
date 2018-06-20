@@ -29,12 +29,12 @@ public:
 
         for (size_t i = 0; i < buffer->body_count(); i++) {
 
-            if (buffer->metadata(i).body_type == BARYCENTER) {
+            if (buffer->metadata(i).property.body_type == BARYCENTER) {
                 continue;
             }
 
             auto p = std::shared_ptr<Path>(new Path);
-            p->set_color(Color3(buffer->metadata(i).color));
+            p->set_color(Color3(buffer->metadata(i).property.color));
             p->set_data(buffer->get(i));
             paths.push_back(p);
         }
