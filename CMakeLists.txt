@@ -40,6 +40,7 @@ file(GLOB SOURCES
     "src/buffer/*.cpp" 
     "src/orrery/*.cpp"
     "src/scenario/*.cpp"
+    "src/simulator/*.cpp"
     "src/magnumapp/*.cpp"
 )
 
@@ -51,6 +52,7 @@ include_directories(
     "src/buffer" 
     "src/orrery"
     "src/scenario"
+    "src/simulator"
     "src/magnumapp"
     "src/external" 
 )
