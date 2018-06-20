@@ -6,31 +6,32 @@ This declares the simulation scenario data structure
 */
 #pragma once
 
+#include <forward_list>
 #include <optional>
 #include <string>
 #include <vector>
 
+#include "body.hpp"
 #include "configuration.hpp"
-#include "ship.hpp"
+#include "flightplanaction.hpp"
+#include "spkorrery.hpp"
 
 namespace sim {
 
 struct Scenario {
 
-    Scenario() { ; }
-    Scenario(std::string fname_);
+    // We want to construct a scenario and then have the simulator iterate on it
+    // While it is cheap to load configurations and flightplans, orreries can
+    // be expensive to both load and keep around, so we have
+    void from(const Configuration&);
 
-    time_t latest_modification();
+    Configuration     config;
+    orrery::SpkOrrery orrery; // the BodyState is set internally
+    std::vector<Body> ships;  // the BodyState has to be set explicitly
 
-    std::string fname;
+    // std::forward_list<FlightPlanAction> actions;
 
-    std::optional<Configuration> configuration;
-    std::vector<Ship>            ships;
+    // TODO: more fine grained errors?
+    bool valid;
 };
-
-bool        operator==(const Scenario& a, const Scenario& b);
-inline bool operator!=(const Scenario& a, const Scenario& b)
-{
-    return !(a == b);
-}
 }

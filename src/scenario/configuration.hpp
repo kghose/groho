@@ -18,13 +18,16 @@ namespace sim {
 
 struct Configuration {
 
-    std::string name     = "No name";
-    double      begin_jd = 2458248.5;
-    double      end_jd   = 2458249.5;
-    double      step     = 60;
+    std::string name    = "No name";
+    double      begin_s = 2458248.5;
+    double      end_s   = 2458249.5;
+    double      step_s  = 60;
 
+    std::string           fname;
     std::set<std::string> orrery_fnames;
     std::set<std::string> flightplan_fnames;
+
+    time_t latest_modification();
 
     typedef std::string sst;
 
@@ -32,10 +35,10 @@ struct Configuration {
     {
         std::unordered_map<sst, std::function<void(sst)>> keyword_map{
 
-            { "name", [=](sst v) { name      = v; } },
-            { "begin", [=](sst v) { begin_jd = stof(v); } },
-            { "end", [=](sst v) { end_jd     = stof(v); } },
-            { "step", [=](sst v) { step      = stof(v); } },
+            { "name", [=](sst v) { name     = v; } },
+            { "begin", [=](sst v) { begin_s = jd2s(stof(v)); } },
+            { "end", [=](sst v) { end_s     = jd2s(stof(v)); } },
+            { "step", [=](sst v) { step_s   = stof(v); } },
             { "orrery", [=](sst v) { orrery_fnames.insert(v); } },
             { "flightplan", [=](sst v) { flightplan_fnames.insert(v); } }
 
@@ -56,5 +59,5 @@ inline bool operator!=(const Configuration& a, const Configuration& b)
     return !(a == b);
 }
 
-std::optional<Configuration> parse_configuration(std::string fname);
+Configuration parse_configuration(std::string fname);
 }

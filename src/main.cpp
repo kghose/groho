@@ -27,8 +27,8 @@ void ctrl_c_pressed(int) { keep_running = false; }
 void print_license()
 {
     std::cout <<
-        R"(  Groho 0.4.0: A simulator for inter-planetary travel and warfare
-  Copyright (c) 2017-2018 by Kaushik Ghose. 
+        R"(  Groho 18.06: A simulator for inter-planetary travel and warfare
+  Copyright (c) 2017, 2018 by Kaushik Ghose. 
   Released under the MIT License. Some rights reserved)"
               << std::endl;
 }
@@ -88,22 +88,22 @@ struct Options {
 void simulator_loop(
     sim::Simulator& simulator, Options options, unsigned int interval_ms)
 {
-    sim::Scenario scenario(options.scenario_file);
-    simulator.restart_with(scenario);
+    sim::Configuration config = sim::parse_configuration(options.scenario_file);
+    simulator.restart_with(config);
 
-    time_t last_mod_time = scenario.latest_modification();
+    time_t last_mod_time = config.latest_modification();
     while (keep_running) {
-        if (last_mod_time < scenario.latest_modification()) {
+        if (last_mod_time < config.latest_modification()) {
 
             LOG_S(INFO) << "Reloading scenario files";
 
-            sim::Scenario new_scenario(scenario.fname);
+            config = sim::parse_configuration(options.scenario_file);
+
             // if (new_scenario != scenario) {
             if (true) {
                 LOG_S(INFO) << "Scenario file changed";
-                scenario = new_scenario;
-                simulator.restart_with(scenario);
-                last_mod_time = scenario.latest_modification();
+                simulator.restart_with(config);
+                last_mod_time = config.latest_modification();
             }
         }
 

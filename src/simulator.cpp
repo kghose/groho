@@ -12,17 +12,6 @@ This file defines the simulator code
 
 namespace sim {
 
-bool time_range_extended(const Scenario& a, const Scenario& b)
-{
-    return (b.configuration->begin_jd < a.configuration->begin_jd)
-        || (a.configuration->end_jd < b.configuration->end_jd);
-}
-
-bool orrery_changed(const Scenario& a, const Scenario& b)
-{
-    return (a.configuration->orrery_fnames != b.configuration->orrery_fnames);
-}
-
 void Simulator::stop()
 {
     running = false;
@@ -31,32 +20,12 @@ void Simulator::stop()
     }
 }
 
-void Simulator::restart_with(const Scenario scenario_)
+void Simulator::restart_with(const Configuration& config)
 {
-    // TODO: Move the details of the check into scenario
-    if (!scenario_.configuration)
-        return;
-
     stop();
-
-    // trying to figure out if we should reload the Orrery
-    bool reload_orrery = !scenario.configuration
-        || time_range_extended(scenario, scenario_)
-        || orrery_changed(scenario, scenario_);
-
-    scenario = scenario_;
-
-    begin_s = jd2s(scenario.configuration->begin_jd);
-    end_s   = jd2s(scenario.configuration->end_jd);
-    t_s     = begin_s;
-    step_s  = scenario.configuration->step;
-
-    if (reload_orrery) {
-        orrery = orrery::SpkOrrery();
-        for (auto orrery_name : scenario.configuration->orrery_fnames) {
-            orrery.load_orrery_model(orrery_name, begin_s, end_s);
-        }
-    }
+    scenario.from(config);
+    if (!scenario.valid)
+        return;
 
     LOG_S(INFO) << scenario.ships.size() << " spaceships in simulation.";
 
@@ -65,11 +34,11 @@ void Simulator::restart_with(const Scenario scenario_)
 
     buffer->lock();
     // buffer contains orrery bodies followed by spaceships
-    for (auto& o : orrery.get_orrery()) {
+    for (auto& o : scenario.orrery.get_orrery()) {
         buffer->add_body(o);
     }
     for (auto& ship : scenario.ships) {
-        buffer->add_body(ship.body);
+        buffer->add_body(ship);
     }
     buffer->release();
 
@@ -80,25 +49,34 @@ void Simulator::restart_with(const Scenario scenario_)
 }
 
 // TODO: Use leap frog integration
-void step_spaceship(
-    Body& spaceship, const orrery::OrreryBodyVec& obv, double step_s)
+void update_ship(Body& ship, const std::vector<Body>& orrery, double step_s)
 {
     Vector gravity{ 0, 0, 0 };
-    for (auto& o : obv) {
 
-        if (o.body_type == BARYCENTER) {
+    for (auto& o : orrery) {
+
+        if (o.property.body_type == BARYCENTER) {
             continue;
         }
 
-        auto r = o.state.pos - spaceship.state.pos;
-        auto f = o.GM / r.norm_sq();
+        auto r = o.state.pos - ship.state.pos;
+        auto f = o.property.GM / r.norm_sq();
         gravity += r.normed() * f;
     }
-    spaceship.state.vel
-        += ((spaceship.state.acc * spaceship.state.att) + gravity) * step_s;
-    spaceship.state.pos += spaceship.state.vel * step_s;
+
+    ship.state.vel += ((ship.state.acc * ship.state.att) + gravity) * step_s;
+    ship.state.pos += ship.state.vel * step_s;
 }
 
+void update_ships(State& state, double step_s)
+{
+    for (auto& ship : state.ships) {
+        update_ship(ship, state.orrery, step_s);
+        ship.state.t = step_s;
+    }
+}
+
+/*
 void execute_flight_plan(Ship& ship, const WorldState& ws, double t_s)
 {
     for (auto& action : ship.plan) {
@@ -107,6 +85,7 @@ void execute_flight_plan(Ship& ship, const WorldState& ws, double t_s)
         }
     }
 }
+*/
 
 void Simulator::run()
 {
@@ -115,35 +94,35 @@ void Simulator::run()
 
     LOG_S(INFO) << "Starting simulation";
 
-    // Do any spaceship initializations that requires world state
-    WorldState ws(t_s, orrery.get_orrery_with_vel_at(t_s));
-    for (auto& ship : scenario.ships) {
-        ship.init(ws);
-    }
+    t_s = scenario.config.begin_s;
 
-    while (running && (t_s < end_s)) {
+    // The first run may involve actions that require the Orrery vel vectors
+    // to be filled out
+    State state(
+        t_s, scenario.orrery.get_orrery_with_vel_at(t_s), scenario.ships);
 
-        WorldState ws(t_s, orrery.get_orrery_at(t_s));
+    while (running && (t_s < scenario.config.end_s)) {
 
-        for (auto& ship : scenario.ships) {
-            step_spaceship(ship.body, ws.obv, step_s);
-            ship.body.state.t = t_s;
-            execute_flight_plan(ship, ws, t_s);
-        }
+        update_ships(state, scenario.config.step_s);
 
         buffer->lock();
 
         // First do the orrery
-        for (int i = 0; i < ws.obv.size(); i++) {
-            buffer->append(i, ws.obv[i].state);
+        for (int i = 0; i < state.orrery.size(); i++) {
+            buffer->append(i, state.orrery[i].state);
         }
         // Then the spaceships
-        for (int i = 0; i < scenario.ships.size(); i++) {
-            buffer->append(i + ws.obv.size(), scenario.ships[i].body.state);
+        for (int i = 0; i < state.ships.size(); i++) {
+            buffer->append(i + state.orrery.size(), state.ships[i].state);
         }
 
         buffer->release();
-        t_s += step_s;
+
+        // scenario.actions.remove_if([](Action& a) { a.done; });
+
+        t_s += scenario.config.step_s;
+
+        scenario.orrery.get_orrery_at(t_s);
     }
     buffer->flush();
     running = false;

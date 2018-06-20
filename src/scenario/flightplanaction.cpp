@@ -6,6 +6,7 @@ This file descibes the verb/noun combinations available to control spacecraft
 via the flight plans.
 */
 
+#include <cctype>
 #include <cmath>
 #include <functional>
 #include <iterator>
@@ -18,12 +19,102 @@ via the flight plans.
 #include "body.hpp"
 #include "flightplanaction.hpp"
 #include "scenariolib.hpp"
+#include "state.hpp"
 #include "vector.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
 
 namespace sim {
+
+double do_this_first(std::numeric_limits<double>::lowest());
+/*
+bool set_key_value(std::optional<KeyValue> kv)
+{
+    std::unordered_map<sst, std::function<void(sst)>> keyword_map{
+
+        { "name", [=](sst v) { body.name                       = v; } },
+        { "max-acceleration", [=](sst v) { body.max_acc        = stof(v); } },
+        { "max-fuel", [=](sst v) { body.max_fuel               = stof(v); } },
+        { "fuel-cons-rate", [=](sst v) { body.fuel_cons        = stof(v); } },
+        { "orbiting", [=](sst v) { initial_orbit               = v; } },
+        { "flight-state", [=](sst v) { body.state.flight_state = FALLING; } },
+        // TODO: handle landed state
+        { "position", [=](sst v) { body.state.pos              = stoV(v); } },
+        { "velocity", [=](sst v) { body.state.vel              = stoV(v); } },
+        { "attitude", [=](sst v) { body.state.att              = stoV(v); } },
+        //
+        { "fuel", [=](sst v) { body.state.fuel                 = stof(v); } },
+        { "acc", [=](sst v) { body.state.acc                   = stof(v); } },
+
+    };
+
+    if (keyword_map.count(kv->key)) {
+        keyword_map[kv->key](kv->value);
+        return true;
+    } else {
+        return false;
+    }
+};*/
+
+std::optional<Body> parse_ship_properties(std::string fname)
+{
+    BodyProperty p;
+    BodyState    s;
+
+    typedef std::string sst;
+
+    std::unordered_map<sst, std::function<void(sst)>> keyword_map{
+
+        { "name", [&](sst v) { p.name                 = v; } },
+        { "max-acceleration", [&](sst v) { p.max_acc  = stof(v); } },
+        { "max-fuel", [&](sst v) { p.max_fuel         = stof(v); } },
+        { "burn-rate", [&](sst v) { p.burn_rate       = stof(v); } },
+        { "flight-state", [&](sst v) { s.flight_state = FALLING; } },
+
+        // TODO: handle landed state
+        { "position", [&](sst v) { s.pos = stoV(v); } },
+        { "velocity", [&](sst v) { s.vel = stoV(v); } },
+        { "attitude", [&](sst v) { s.att = stoV(v); } },
+        //
+        { "fuel", [&](sst v) { s.fuel    = stof(v); } },
+        { "acc", [&](sst v) { s.acc      = stof(v); } },
+
+    };
+
+    // if (keyword_map.count(kv->key)) {
+    //     keyword_map[kv->key](kv->value);
+    //     return true;
+    // } else {
+    //     return false;
+    // }
+
+    auto flt_plan_file = ScenarioFile::open(fname);
+    if (!flt_plan_file) {
+        LOG_S(ERROR) << fname << ": flight plan not found";
+        return {};
+    }
+
+    LOG_S(INFO) << "Loading flight plan: " << fname;
+
+    auto line = flt_plan_file->next();
+    while (line) {
+        std::cout << *line << std::endl;
+        line = flt_plan_file->next();
+    }
+
+    return {};
+}
+
+/*FlightPlanAction::FlightPlanAction(
+    size_t ship_idx, std::string fname, size_t line_no, double jd)
+    : ship_idx(ship_idx)
+    , fname(fname)
+    , line_no(line_no)
+    , t_s(jd2s(jd))
+{
+    done = false;
+}*/
 
 // TODO: refactor flight plan actions to remove duplication of code/concerns
 // between action constructor and map that constructs action from line
@@ -32,6 +123,43 @@ namespace sim {
 // AVAILABLE ACTIONS (VERBS) //
 ///////////////////////////////
 
+/*
+struct SET_NAME : public FlightPlanAction {
+    std::string name;
+
+    fpa_uptr_t construct(
+        size_t                   ship_idx,
+        std::string              fname,
+        size_t                   line_no,
+        double                   jd,
+        std::vector<std::string> tokens){
+
+        FlightPlanAction action = { ship_idx, fname, line_no, jd2s(jd), tokens }
+
+        fpa_uptr_t action(new SET_NAME(ship_idx, fname, line_no, ))
+    }
+
+    SET_ATTITUDE(double jd, size_t line_no, Vector v)
+        : FlightPlanAction(jd, line_no)
+        , att(v.normed())
+    {
+    }
+
+    void operator()(State& state)
+    {
+        state.ships[ship_idx]
+            .property
+            .
+
+            body.state.att
+            = att;
+        active = false;
+        DLOG_S(INFO) << line_no << ": " << body.name << " att -> "
+                     << body.state.att;
+    }
+};*/
+
+/*
 struct SET_ATTITUDE : public FlightPlanAction {
     const Vector att;
 
@@ -156,7 +284,7 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
                         << " successfully parked around " << ob.name;
         }
     }
-};
+};*/
 
 ///////////////////////////////
 
@@ -165,6 +293,12 @@ typedef std::vector<std::string>          strv_t;
 typedef FlightPlanAction                  fpa_t;
 typedef std::shared_ptr<FlightPlanAction> fpaptr_t;
 
+std::unordered_map<
+    str_t,
+    std::function<fpa_uptr_t(size_t, str_t, size_t, double, strv_t)>>
+    actions;
+
+/*
 std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
     actions{
 
@@ -199,18 +333,34 @@ std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
                   jd, line_no, stoi(tokens[2]), stod(tokens[3])));
           } },
 
-    };
+    };*/
 
-std::shared_ptr<FlightPlanAction>
-parse_line_into_action(std::string line, size_t line_no)
+bool could_be_a_number(std::string token)
 {
+    return !token.empty()
+        && (token.find_first_not_of("-.0123456789") == std::string::npos);
+}
 
+// For the preamble
+//   <action name> <argument1>
+// For the plan proper
+//   <timestamp> <action name> <argument1> <argument2> ...
+fpa_uptr_t parse_line_into_action(
+    size_t ship_idx, std::string fname, size_t line_no, std::string line)
+{
     std::vector<std::string> tokens = split(line);
 
-    if (actions.count(tokens[1])) {
-        return actions[tokens[1]](stod(tokens[0]), line_no, tokens);
+    double jd = do_this_first;
+    if (could_be_a_number(tokens[0])) {
+        jd     = stod(tokens[0]);
+        tokens = std::vector<std::string>(tokens.begin() + 1, tokens.end());
+    }
+
+    if (actions.count(tokens[0])) {
+        return actions[tokens[0]](ship_idx, fname, line_no, jd, tokens);
     } else {
-        LOG_S(ERROR) << "No such flight plan action: " << tokens[1];
+        LOG_S(ERROR) << fname << ": " << line_no
+                     << ": No such flight plan action: " << tokens[0];
         return {};
     }
 }

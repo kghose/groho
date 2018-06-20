@@ -8,11 +8,15 @@ This file declares the simulator code
 #pragma once
 
 #include <atomic>
+#include <forward_list>
+#include <memory>
 #include <thread>
 
+//#include "action.hpp"
 #include "buffer.hpp"
 #include "scenario.hpp"
 #include "spkorrery.hpp"
+#include "state.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -23,7 +27,7 @@ namespace sim {
 class Simulator {
 public:
     Simulator() { running = false; }
-    void restart_with(const Scenario scenario_);
+    void restart_with(const Configuration&);
     void run();
     void stop();
 
@@ -33,17 +37,16 @@ public:
     double t_s;
 
 private:
-    Scenario          scenario;
-    orrery::SpkOrrery orrery;
+    Scenario scenario;
 
     std::shared_ptr<Buffer>   buffer;
     std::atomic<unsigned int> _simulation_serial = 0;
 
     std::atomic<bool> running;
 
-    double step_s;
-    double begin_s;
-    double end_s;
+    // double step_s;
+    // double begin_s;
+    // double end_s;
 
     std::thread compute_thread;
     // The simulation loop runs in this thread

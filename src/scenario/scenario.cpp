@@ -14,41 +14,40 @@ This defines some functions for the simulation scenario data structure
 
 namespace sim {
 
-Scenario::Scenario(std::string fname_)
+bool time_range_extended(
+    const orrery::SpkOrrery& orrery, const Configuration& config)
 {
-    fname = fname_;
+    return (config.begin_s < orrery.begin_s) || (orrery.end_s < config.end_s);
+}
 
-    configuration = parse_configuration(fname);
-    if (configuration) {
-        int default_ship_code = -1000;
-        for (auto& fp_name : configuration->flightplan_fnames) {
-            auto ship = parse_flight_plan(fp_name, --default_ship_code);
-            if (ship)
-                ships.push_back(*ship);
+bool orrery_changed(const Configuration& a, const Configuration& b)
+{
+    return (a.orrery_fnames != b.orrery_fnames);
+}
+
+void Scenario::from(const Configuration& new_config)
+{
+    bool reload_orrery = (config.orrery_fnames != new_config.orrery_fnames)
+        || ((new_config.begin_s < orrery.begin_s)
+            || (orrery.end_s < new_config.end_s));
+
+    if (reload_orrery) {
+        orrery = orrery::SpkOrrery(new_config.begin_s, new_config.end_s);
+        for (auto orrery_name : new_config.orrery_fnames) {
+            orrery.load_orrery_model(orrery_name);
         }
     }
-}
 
-time_t Scenario::latest_modification()
-{
-    std::vector<std::string> fnames;
-    fnames.push_back(fname);
-    fnames.insert(
-        fnames.end(),
-        configuration->orrery_fnames.begin(),
-        configuration->orrery_fnames.end());
-    fnames.insert(
-        fnames.end(),
-        configuration->flightplan_fnames.begin(),
-        configuration->flightplan_fnames.end());
-    return file_modification_time(fnames);
-}
+    ships.clear();
+    int default_ship_code = -1000;
+    for (auto& fp_name : new_config.flightplan_fnames) {
+        auto ship = parse_ship_properties(fp_name /*, --default_ship_code*/);
+        if (ship)
+            ships.push_back(*ship);
+    }
 
-bool operator==(const Scenario& a, const Scenario& b)
-{
-    if (*a.configuration != *b.configuration)
-        return false;
-    return true;
+    config = new_config;
+    valid  = true;
 }
 
 } // namespace sim

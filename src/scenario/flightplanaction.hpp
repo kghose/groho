@@ -7,43 +7,38 @@ available to control spacecraft via the flight plans.
 */
 #pragma once
 
+#include <forward_list>
+#include <memory>
 #include <optional>
+#include <string>
 
-#include "orrery.hpp"
-#include "scenariolib.hpp"
-#include "vector.hpp"
+#include "body.hpp"
+#include "state.hpp"
 
 namespace sim {
 
-struct WorldState {
-    WorldState(double t_s, const orrery::OrreryBodyVec& obv)
-        : t_s(t_s)
-        , obv(obv)
-    {
-    }
-
-    double                       t_s;
-    const orrery::OrreryBodyVec& obv;
-};
+std::optional<Body> parse_ship_properties(std::string fname);
 
 // These are actions spacecraft can be scripted to do
 struct FlightPlanAction {
 
-    FlightPlanAction(double jd, size_t line_no)
-        : t_s(jd2s(jd))
-        , line_no(line_no)
-    {
-        active = true;
-    }
+    virtual void operator()(State&) = 0;
 
-    virtual void operator()(Body&, const WorldState&) = 0;
-
-    const double t_s;
-    const size_t line_no;
-
-    bool active = false;
+    size_t      ship_idx;
+    std::string fname;
+    size_t      line_no;
+    double      t_s;
+    bool        done = false;
 };
 
-std::shared_ptr<FlightPlanAction>
-parse_line_into_action(std::string line, size_t line_no);
+typedef std::unique_ptr<FlightPlanAction> fpa_uptr_t;
+typedef std::forward_list<fpa_uptr_t>     fpa_uptr_l_t;
+
+inline bool fpa_order(const fpa_uptr_t& a, const fpa_uptr_t& b)
+{
+    return a->t_s < b->t_s;
+}
+
+fpa_uptr_t parse_line_into_action(
+    size_t ship_idx, std::string fname, size_t line_no, std::string line);
 }

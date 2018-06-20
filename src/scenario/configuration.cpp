@@ -7,6 +7,7 @@ file into the configuration data structure
 */
 
 #include <fstream>
+#include <vector>
 
 #include "configuration.hpp"
 
@@ -15,13 +16,25 @@ file into the configuration data structure
 
 namespace sim {
 
-std::optional<Configuration> parse_configuration(std::string fname)
+time_t Configuration::latest_modification()
+{
+    std::vector<std::string> fnames;
+    fnames.push_back(fname);
+    fnames.insert(fnames.end(), orrery_fnames.begin(), orrery_fnames.end());
+    fnames.insert(
+        fnames.end(), flightplan_fnames.begin(), flightplan_fnames.end());
+    return file_modification_time(fnames);
+}
+
+Configuration parse_configuration(std::string fname)
 {
 
     std::ifstream cfile(fname);
     int           line_no = 0;
     std::string   line;
     Configuration cfg;
+
+    cfg.fname = fname;
 
     // LOG_S(INFO) << "Parsing scenario file " << fname;
 
@@ -49,11 +62,11 @@ std::optional<Configuration> parse_configuration(std::string fname)
 
 bool operator==(const Configuration& a, const Configuration& b)
 {
-    if (a.begin_jd != b.begin_jd)
+    if (a.begin_s != b.begin_s)
         return false;
-    if (a.end_jd != b.end_jd)
+    if (a.end_s != b.end_s)
         return false;
-    if (a.step != b.step)
+    if (a.step_s != b.step_s)
         return false;
     if (a.orrery_fnames != b.orrery_fnames)
         return false;
