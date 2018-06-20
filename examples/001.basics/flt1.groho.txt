@@ -1,0 +1,47 @@
+; Spaceship commands are placed in a separate script file (called a "flight plan") 
+; and a reference is put in the scenario file. 
+; A line can contain a key = value pair (like the configuration file)
+; and this indicates some property that will be set for the ship
+
+; like metadata ...
+
+name   = Durga
+color  = 0x0000ff
+
+; or characteristics ... 
+
+max-acceleration  = 0.1   ; km/s^2 (a)
+max-fuel          = 100   ; arbitrary units (u)
+fuel-cons-rate    = 0.1   ; u / s / a 
+
+; Or a line can take the form
+
+; <time> <action> <key>:<value> <key>:<value> ...
+
+; This is an action line. 
+; It indicates the time an action is active from, the action and parameters
+; Action lines form the bulk of a flight plan
+
+- initial-orbit id:499 alt:3000 ; Orbit 499 (Mars) at 3000 km altitude
+; An action with "-" is an initialization action that sets some initial state
+; at the very start of the simulation.
+; Some actions (like this one) are only available as initialization actions
+
+
+; You can break a command across multiple lines for readability
+- initial-orbit \ ; and add comments
+    id:499 \ ; This is Mars
+    alt:3000 ; This is km from the surface
+
+; You'll notice that in order to show off my fancy multi-line command I 
+; repeated the command. In this case the second one over-writes the first one
+
+2458248.5 hi-there
+; An un-recognized action is marked out in the log and ignored
+
+2458548.5 set-attitude x:1 y:1 z:1
+;2458548.8 set-accel    0.01
+;2458548.86 set-accel    0.0
+;2458300.5 set-attitude 0 0 -1
+;2458300.5 set-accel    0.01
+;2458300.52 set-accel    0.0
