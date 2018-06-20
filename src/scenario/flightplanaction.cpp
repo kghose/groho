@@ -82,28 +82,33 @@ std::optional<Body> parse_ship_properties(std::string fname)
 
     };
 
-    // if (keyword_map.count(kv->key)) {
-    //     keyword_map[kv->key](kv->value);
-    //     return true;
-    // } else {
-    //     return false;
-    // }
-
     auto flt_plan_file = ScenarioFile::open(fname);
     if (!flt_plan_file) {
         LOG_S(ERROR) << fname << ": flight plan not found";
         return {};
     }
 
-    LOG_S(INFO) << "Loading flight plan: " << fname;
+    LOG_S(INFO) << "Loading ship: " << fname;
 
-    auto line = flt_plan_file->next();
-    while (line) {
-        std::cout << *line << std::endl;
-        line = flt_plan_file->next();
+    for (auto line = flt_plan_file->next(); line;
+         line      = flt_plan_file->next()) {
+
+        auto tokens = split(*line);
+        if (could_be_a_number(tokens[0])) {
+            continue;
+        }
+
+        auto kv = get_key_value(*line);
+        DLOG_S(INFO) << *line << " -> " << kv->key << ", " << kv->value;
+        if (keyword_map.count(kv->key)) {
+            keyword_map[kv->key](kv->value);
+        } else {
+            LOG_S(ERROR) << fname << ": line " << flt_plan_file->line_no
+                         << ": unknown key: " << kv->key;
+        }
     }
 
-    return {};
+    return Body{ p, s };
 }
 
 /*FlightPlanAction::FlightPlanAction(
@@ -334,12 +339,6 @@ std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
           } },
 
     };*/
-
-bool could_be_a_number(std::string token)
-{
-    return !token.empty()
-        && (token.find_first_not_of("-.0123456789") == std::string::npos);
-}
 
 // For the preamble
 //   <action name> <argument1>
