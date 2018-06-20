@@ -54,7 +54,20 @@ Developer notes
 
 # Code organization
 
-* orrery - Orrery models (NASA/JPL SPK files) loading and computation
+* Orrery - Orrery models (NASA/JPL SPK files) loading and computation
+* Configuraton - collection of scenario information and files 
+* Scenario - Instantiation (loading) of scenario information in a Configuration
+    - Orrery
+    - Bodies (ships)
+    - Actions  (State) -> (State)
+* State
+    - Bodies (orrery)
+    - Bodies (ships)
+
+* Simulation
+    - Scenario -> State
+
+
 * scenario - Scenario and flightplan loading and parsing
 * simulation
     - trajectorydata
