@@ -6,6 +6,7 @@ This file contains some common functions used in parsing scenario files
 */
 #pragma once
 
+#include <fstream>
 #include <iterator>
 #include <optional>
 #include <sstream>
@@ -52,6 +53,54 @@ inline std::string trim_comments(std::string line)
 {
     return line.erase(std::min(line.find_first_of(';'), line.size()));
 }
+
+inline bool line_continued(std::string line) { return line.back() == '\\'; }
+
+// An iterator in disguise
+// Trims leading/trailing whitespace and joins continued lines
+struct ScenarioFile {
+
+    static std::optional<ScenarioFile> open(std::string fname)
+    {
+        ScenarioFile sf;
+        sf.cfile = std::ifstream(fname);
+
+        if (!sf.cfile) {
+            return {};
+        }
+
+        sf.line_no        = 0;
+        sf.continued_line = "";
+        return sf;
+    }
+
+    std::optional<std::string> next()
+    {
+        std::string line;
+        continued_line = "";
+        while (std::getline(cfile, line)) {
+            line = trim_whitespace(trim_comments(line));
+            if (line.size() == 0)
+                continue;
+            if (line_continued(line)) {
+                line.pop_back();
+                continued_line += line;
+                continue;
+            } else {
+                return continued_line + line;
+            }
+        }
+        if (continued_line.size()) {
+            return continued_line;
+        } else {
+            return {};
+        }
+    }
+
+    std::ifstream cfile;
+    int           line_no = 0;
+    std::string   continued_line;
+};
 
 inline std::optional<KeyValue> get_key_value(std::string line)
 {
