@@ -1,5 +1,7 @@
 Groho ( গ্রহ )
 =====
+[![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master)
+
 Groho is a simulator for inter-planetary travel and warfare.
 
 The simulator aims to give the user intuitions of how inter-planetary travel, 
