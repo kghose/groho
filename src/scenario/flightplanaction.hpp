@@ -17,8 +17,6 @@ available to control spacecraft via the flight plans.
 
 namespace sim {
 
-std::optional<Body> parse_ship_properties(std::string fname);
-
 // These are actions spacecraft can be scripted to do
 struct FlightPlanAction {
 
