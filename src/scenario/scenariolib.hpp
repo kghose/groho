@@ -103,18 +103,31 @@ struct ScenarioFile {
     std::string   continued_line;
 };
 
-inline std::optional<KeyValue> get_key_value(std::string line)
+inline std::optional<KeyValue>
+parse_key_value_pair(std::string line, std::string sep)
 {
     KeyValue kv;
-    size_t   n0 = line.find_first_of('=');
+    size_t   n0 = line.find_first_of(sep);
 
     if (n0 > line.size()) {
         return {};
     }
 
-    kv.key   = trim_whitespace(line.substr(0, n0 - 1));
+    kv.key   = trim_whitespace(line.substr(0, n0));
     kv.value = trim_whitespace(line.substr(n0 + 1));
     return kv;
+}
+
+// parse name = boo!
+inline std::optional<KeyValue> get_key_value(std::string line)
+{
+    return parse_key_value_pair(line, "=");
+}
+
+// parse id:-23
+inline std::optional<KeyValue> get_named_parameter(std::string token)
+{
+    return parse_key_value_pair(token, ":");
 }
 
 inline std::vector<std::string> split(std::string line)
