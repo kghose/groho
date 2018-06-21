@@ -240,15 +240,50 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
 
 ///////////////////////////////
 
-typedef std::string                       str_t;
-typedef std::vector<std::string>          strv_t;
-typedef FlightPlanAction                  fpa_t;
-typedef std::shared_ptr<FlightPlanAction> fpaptr_t;
+typedef std::string                      str_t;
+typedef std::vector<std::string>         strv_t;
+typedef std::unordered_map<str_t, str_t> params_t;
+typedef FlightPlanAction                 fpa_t;
+// typedef std::shared_ptr<FlightPlanAction> fpaptr_t;
+template <class T> using uptr_t = std::unique_ptr<T>;
+// typedef std::unique_ptr uptr_t;
+// use of class template 'unique_ptr' requires template arguments; argument
+// deduction not allowed in typedef
 
-std::unordered_map<
-    str_t,
-    std::function<fpa_uptr_t(size_t, str_t, size_t, double, strv_t)>>
-    available_actions;
+struct SET_ATTITUDE : public FlightPlanAction {
+
+    SET_ATTITUDE(const FPAD& _fpad)
+        : FlightPlanAction(_fpad)
+    {
+    }
+
+    static fpa_uptr_t construct(const FPAD _fpad, params_t params)
+    {
+        if (params.size() != 3) {
+            LOG_S(ERROR) << _fpad.fname << ": Line: " << _fpad.line_no
+                         << "Need three elements for vector";
+            return {};
+        }
+
+        auto action = uptr_t<SET_ATTITUDE>(new SET_ATTITUDE(_fpad));
+        action->att
+            = Vector{ stof(params["x"]), stof(params["y"]), stof(params["z"]) };
+
+        return action;
+    }
+
+    void operator()(State& state)
+    {
+        state.ships[p.ship_idx].state.att = att;
+
+        p.done = true;
+    }
+
+    Vector att;
+};
+
+std::unordered_map<str_t, std::function<fpa_uptr_t(const FPAD&, params_t&)>>
+    available_actions{ { "set-attitude", SET_ATTITUDE::construct } };
 
 /*
 std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
@@ -303,8 +338,20 @@ fpa_uptr_t parse_line_into_action(
     }
 
     if (available_actions.count(tokens[1])) {
+        params_t params;
+
+        for (size_t i = 2; i < tokens.size(); i++) {
+            auto kv = get_named_parameter(tokens[i]);
+            if (kv) {
+                params[kv->key] = kv->value;
+                DLOG_S(INFO)
+                    << tokens[i] << " " << kv->key << ", " << kv->value;
+            }
+        }
+
         return available_actions[tokens[1]](
-            ship_idx, fname, line_no, jd, tokens);
+            FPAD{ ship_idx, fname, line_no, jd, false }, params);
+
     } else {
         LOG_S(ERROR) << fname << ": " << line_no
                      << ": Unknown action: " << tokens[1];

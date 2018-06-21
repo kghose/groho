@@ -17,11 +17,7 @@ available to control spacecraft via the flight plans.
 
 namespace sim {
 
-// These are actions spacecraft can be scripted to do
-struct FlightPlanAction {
-
-    virtual void operator()(State&) = 0;
-
+struct FPAD {
     size_t      ship_idx;
     std::string fname;
     size_t      line_no;
@@ -29,12 +25,19 @@ struct FlightPlanAction {
     bool        done = false;
 };
 
+// These are actions spacecraft can be scripted to do
+struct FlightPlanAction {
+    FlightPlanAction(const FPAD& _p) { p = _p; }
+    virtual void operator()(State&) = 0;
+    FPAD         p;
+};
+
 typedef std::unique_ptr<FlightPlanAction> fpa_uptr_t;
 typedef std::list<fpa_uptr_t>             fpa_uptr_l_t;
 
 inline bool fpa_order(const fpa_uptr_t& a, const fpa_uptr_t& b)
 {
-    return a->t_s < b->t_s;
+    return a->p.t_s < b->p.t_s;
 }
 
 fpa_uptr_t parse_line_into_action(
