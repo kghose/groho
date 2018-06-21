@@ -10,3 +10,4 @@ sandbox
 release_build
 debug_build
 .ipynb_checkpoints
+*.bsp
