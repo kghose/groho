@@ -36,3 +36,4 @@ orrery = ../mar097.bsp  ; Mars + moons
 ; You can have multiple flightplans like this:
 flightplan = flt1.groho.txt
 flightplan = flt2.groho.txt
+flightplan = flt1.groho.txt ; a repeated flight plan is ignored
