@@ -68,11 +68,11 @@ void update_ship(Body& ship, const std::vector<Body>& orrery, double step_s)
     ship.state.pos += ship.state.vel * step_s;
 }
 
-void update_ships(State& state, double step_s)
+void update_ships(State& state, double step_s, double t_s)
 {
     for (auto& ship : state.ships) {
         update_ship(ship, state.orrery, step_s);
-        ship.state.t = step_s;
+        ship.state.t = t_s;
     }
 }
 
@@ -103,7 +103,7 @@ void Simulator::run()
 
     while (running && (t_s < scenario.config.end_s)) {
 
-        update_ships(state, scenario.config.step_s);
+        update_ships(state, scenario.config.step_s, t_s);
 
         buffer->lock();
 
