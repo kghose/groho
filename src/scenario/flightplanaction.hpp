@@ -32,15 +32,15 @@ struct FlightPlanAction {
     FPAD         p;
 };
 
-typedef std::unique_ptr<FlightPlanAction> fpa_uptr_t;
-typedef std::list<fpa_uptr_t>             fpa_uptr_l_t;
+typedef std::shared_ptr<FlightPlanAction> fpap_t;
+typedef std::list<fpap_t>                 fpapl_t;
 
-inline bool fpa_order(const fpa_uptr_t& a, const fpa_uptr_t& b)
+inline bool fpa_order(const fpap_t& a, const fpap_t& b)
 {
     return a->p.t_s < b->p.t_s;
 }
 
-fpa_uptr_t parse_line_into_action(
+fpap_t parse_line_into_action(
     size_t                   ship_idx,
     std::string              fname,
     size_t                   line_no,

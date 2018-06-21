@@ -244,8 +244,8 @@ typedef std::string                      str_t;
 typedef std::vector<std::string>         strv_t;
 typedef std::unordered_map<str_t, str_t> params_t;
 typedef FlightPlanAction                 fpa_t;
-// typedef std::shared_ptr<FlightPlanAction> fpaptr_t;
-template <class T> using uptr_t = std::unique_ptr<T>;
+
+template <class T> using ptr_t = std::shared_ptr<T>;
 // typedef std::unique_ptr uptr_t;
 // use of class template 'unique_ptr' requires template arguments; argument
 // deduction not allowed in typedef
@@ -257,7 +257,7 @@ struct SET_ATTITUDE : public FlightPlanAction {
     {
     }
 
-    static fpa_uptr_t construct(const FPAD _fpad, params_t params)
+    static ptr_t<SET_ATTITUDE> construct(const FPAD& _fpad, params_t params)
     {
         if (params.size() != 3) {
             LOG_S(ERROR) << _fpad.fname << ": Line: " << _fpad.line_no
@@ -265,7 +265,7 @@ struct SET_ATTITUDE : public FlightPlanAction {
             return {};
         }
 
-        auto action = uptr_t<SET_ATTITUDE>(new SET_ATTITUDE(_fpad));
+        auto action = ptr_t<SET_ATTITUDE>(new SET_ATTITUDE(_fpad));
         action->att
             = Vector{ stof(params["x"]), stof(params["y"]), stof(params["z"]) };
 
@@ -282,7 +282,7 @@ struct SET_ATTITUDE : public FlightPlanAction {
     Vector att;
 };
 
-std::unordered_map<str_t, std::function<fpa_uptr_t(const FPAD&, params_t&)>>
+std::unordered_map<str_t, std::function<fpap_t(const FPAD&, params_t&)>>
     available_actions{ { "set-attitude", SET_ATTITUDE::construct } };
 
 /*
@@ -326,7 +326,7 @@ std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
 //   <action name> <argument1>
 // For the plan proper
 //   <timestamp> <action name> <argument1> <argument2> ...
-fpa_uptr_t parse_line_into_action(
+fpap_t parse_line_into_action(
     size_t                   ship_idx,
     std::string              fname,
     size_t                   line_no,
@@ -344,8 +344,6 @@ fpa_uptr_t parse_line_into_action(
             auto kv = get_named_parameter(tokens[i]);
             if (kv) {
                 params[kv->key] = kv->value;
-                DLOG_S(INFO)
-                    << tokens[i] << " " << kv->key << ", " << kv->value;
             }
         }
 

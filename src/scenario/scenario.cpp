@@ -67,7 +67,6 @@ std::optional<Body> parse_ship_properties(std::string fname)
         }
 
         auto kv = get_key_value(*line);
-        DLOG_S(INFO) << *line << " -> " << kv->key << ", " << kv->value;
         if (keyword_map.count(kv->key)) {
             keyword_map[kv->key](kv->value);
         } else {
@@ -79,7 +78,7 @@ std::optional<Body> parse_ship_properties(std::string fname)
     return Body{ p, s };
 }
 
-fpa_uptr_l_t parse_ship_actions(std::string fname, size_t ship_idx)
+fpapl_t parse_ship_actions(std::string fname, size_t ship_idx)
 {
     auto flt_plan_file = ScenarioFile::open(fname);
     if (!flt_plan_file) {
@@ -88,7 +87,7 @@ fpa_uptr_l_t parse_ship_actions(std::string fname, size_t ship_idx)
     }
 
     LOG_S(INFO) << "Loading actions: " << fname;
-    fpa_uptr_l_t actions;
+    fpapl_t actions;
 
     for (auto line = flt_plan_file->next(); line;
          line      = flt_plan_file->next()) {
@@ -102,7 +101,7 @@ fpa_uptr_l_t parse_ship_actions(std::string fname, size_t ship_idx)
             ship_idx, fname, flt_plan_file->line_no, tokens));
     }
 
-    actions.remove_if([](fpa_uptr_t& p) { return p == nullptr; });
+    actions.remove_if([](fpap_t& p) { return p == nullptr; });
 
     LOG_S(INFO) << "Loaded " << actions.size() << " actions";
 
@@ -134,6 +133,7 @@ void Scenario::from(const Configuration& new_config)
         }
     }
     actions.sort(fpa_order);
+    LOG_S(INFO) << "Loaded " << actions.size() << " actions";
 
     config = new_config;
     valid  = true;

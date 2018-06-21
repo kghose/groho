@@ -28,7 +28,7 @@ struct Scenario {
     Configuration     config;
     orrery::SpkOrrery orrery; // the BodyState is set internally
     std::vector<Body> ships;  // the BodyState has to be set explicitly
-    fpa_uptr_l_t      actions;
+    fpapl_t           actions;
 
     // TODO: more fine grained errors?
     bool valid;
