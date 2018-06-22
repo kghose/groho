@@ -29,131 +29,12 @@ namespace sim {
 
 double do_this_first(std::numeric_limits<double>::lowest());
 
-/*
-bool set_key_value(std::optional<KeyValue> kv)
-{
-    std::unordered_map<sst, std::function<void(sst)>> keyword_map{
-
-        { "name", [=](sst v) { body.name                       = v; } },
-        { "max-acceleration", [=](sst v) { body.max_acc        = stof(v); } },
-        { "max-fuel", [=](sst v) { body.max_fuel               = stof(v); } },
-        { "fuel-cons-rate", [=](sst v) { body.fuel_cons        = stof(v); } },
-        { "orbiting", [=](sst v) { initial_orbit               = v; } },
-        { "flight-state", [=](sst v) { body.state.flight_state = FALLING; } },
-        // TODO: handle landed state
-        { "position", [=](sst v) { body.state.pos              = stoV(v); } },
-        { "velocity", [=](sst v) { body.state.vel              = stoV(v); } },
-        { "attitude", [=](sst v) { body.state.att              = stoV(v); } },
-        //
-        { "fuel", [=](sst v) { body.state.fuel                 = stof(v); } },
-        { "acc", [=](sst v) { body.state.acc                   = stof(v); } },
-
-    };
-
-    if (keyword_map.count(kv->key)) {
-        keyword_map[kv->key](kv->value);
-        return true;
-    } else {
-        return false;
-    }
-};*/
-
-/*FlightPlanAction::FlightPlanAction(
-    size_t ship_idx, std::string fname, size_t line_no, double jd)
-    : ship_idx(ship_idx)
-    , fname(fname)
-    , line_no(line_no)
-    , t_s(jd2s(jd))
-{
-    done = false;
-}*/
-
-// TODO: refactor flight plan actions to remove duplication of code/concerns
-// between action constructor and map that constructs action from line
-
 ///////////////////////////////
 // AVAILABLE ACTIONS (VERBS) //
 ///////////////////////////////
 
 /*
-struct SET_NAME : public FlightPlanAction {
-    std::string name;
 
-    fpa_uptr_t construct(
-        size_t                   ship_idx,
-        std::string              fname,
-        size_t                   line_no,
-        double                   jd,
-        std::vector<std::string> tokens){
-
-        FlightPlanAction action = { ship_idx, fname, line_no, jd2s(jd), tokens }
-
-        fpa_uptr_t action(new SET_NAME(ship_idx, fname, line_no, ))
-    }
-
-    SET_ATTITUDE(double jd, size_t line_no, Vector v)
-        : FlightPlanAction(jd, line_no)
-        , att(v.normed())
-    {
-    }
-
-    void operator()(State& state)
-    {
-        state.ships[ship_idx]
-            .property
-            .
-
-            body.state.att
-            = att;
-        active = false;
-        DLOG_S(INFO) << line_no << ": " << body.name << " att -> "
-                     << body.state.att;
-    }
-};*/
-
-/*
-struct SET_ATTITUDE : public FlightPlanAction {
-    const Vector att;
-
-    SET_ATTITUDE(double jd, size_t line_no, Vector v)
-        : FlightPlanAction(jd, line_no)
-        , att(v.normed())
-    {
-    }
-
-    void operator()(Body& body, const WorldState& ws)
-    {
-        body.state.att = att;
-        active         = false;
-        DLOG_S(INFO) << line_no << ": " << body.name << " att -> "
-                     << body.state.att;
-    }
-};
-
-struct SET_ACCEL : public FlightPlanAction {
-    const double acc;
-
-    SET_ACCEL(double jd, size_t line_no, double a)
-        : FlightPlanAction(jd, line_no)
-        , acc(a)
-    {
-    }
-
-    void operator()(Body& body, const WorldState& ws)
-    {
-        double _acc = acc;
-        if (_acc > body.max_acc) {
-            _acc = body.max_acc;
-            LOG_S(WARNING) << line_no << ": SET_ACCEL for " << body.name
-                           << " exceeds max_acc";
-        }
-
-        body.state.acc = _acc;
-        active         = false;
-        DLOG_S(INFO) << line_no << ": " << body.name << " acc -> "
-                     << body.state.acc;
-    }
-};
 
 // Utility to compute deltaV given GM, R and V
 Vector parking_deltaV(double GM, Vector R, Vector Vs)
@@ -245,9 +126,7 @@ typedef std::vector<std::string>         strv_t;
 typedef std::unordered_map<str_t, str_t> params_t;
 typedef FlightPlanAction                 fpa_t;
 
-// typedef std::unique_ptr uptr_t;
-// use of class template 'unique_ptr' requires template arguments; argument
-// deduction not allowed in typedef
+// Basic Actions ///////////////////////////////////////////////////////////
 
 struct SET_ATTITUDE : public FlightPlanAction {
 
@@ -260,7 +139,8 @@ struct SET_ATTITUDE : public FlightPlanAction {
     {
         if (params.size() != 3) {
             LOG_S(ERROR) << _fpad.fname << ": Line: " << _fpad.line_no
-                         << "Need three elements for vector";
+                         << ": Need three elements for attitude vector: eg: "
+                            "x:1.1 y:0.4 z:0.2";
             return {};
         }
 
@@ -282,8 +162,49 @@ struct SET_ATTITUDE : public FlightPlanAction {
     Vector att;
 };
 
+struct SET_ACCEL : public FlightPlanAction {
+
+    SET_ACCEL(const FPAD& _fpad)
+        : FlightPlanAction(_fpad)
+    {
+    }
+
+    static ptr_t<SET_ACCEL> construct(const FPAD& _fpad, params_t params)
+    {
+        if (params.size() != 1) {
+            LOG_S(ERROR) << _fpad.fname << ": Line: " << _fpad.line_no
+                         << ": Need one element for accel eg: acc:23.45";
+            return {};
+        }
+
+        auto action = ptr_t<SET_ACCEL>(new SET_ACCEL(_fpad));
+        action->acc = stof(params["acc"]);
+
+        return action;
+    }
+
+    void operator()(State& state)
+    {
+        double _acc = acc;
+        if (_acc > state.ships[p.ship_idx].property.max_acc) {
+            _acc = state.ships[p.ship_idx].property.max_acc;
+            LOG_S(WARNING) << p.line_no << ": SET_ACCEL for "
+                           << state.ships[p.ship_idx].property.name
+                           << " exceeds max_acc";
+        }
+
+        state.ships[p.ship_idx].state.acc = _acc;
+        DLOG_S(INFO) << state.ships[p.ship_idx].property.name
+                     << " acceleration set";
+        p.done = true;
+    }
+
+    double acc;
+};
+
 std::unordered_map<str_t, std::function<fpap_t(const FPAD&, params_t&)>>
-    available_actions{ { "set-attitude", SET_ATTITUDE::construct } };
+    available_actions{ { "set-attitude", SET_ATTITUDE::construct },
+                       { "set-accel", SET_ACCEL::construct } };
 
 /*
 std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
