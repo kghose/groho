@@ -76,6 +76,13 @@ void update_ships(State& state, double step_s, double t_s)
     }
 }
 
+void execute_actions(fpapl_t& actions, State& state)
+{
+    for (auto& action : actions) {
+        (*action)(state);
+    }
+    actions.remove_if([](fpap_t& a) { return a->p.done; });
+}
 /*
 void execute_flight_plan(Ship& ship, const WorldState& ws, double t_s)
 {
@@ -104,6 +111,7 @@ void Simulator::run()
     while (running && (t_s < scenario.config.end_s)) {
 
         update_ships(state, scenario.config.step_s, t_s);
+        execute_actions(scenario.actions, state);
 
         buffer->lock();
 
@@ -117,8 +125,6 @@ void Simulator::run()
         }
 
         buffer->release();
-
-        scenario.actions.remove_if([](fpap_t& a) { return a->p.done; });
 
         t_s += scenario.config.step_s;
 
