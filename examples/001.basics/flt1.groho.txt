@@ -42,8 +42,6 @@ burn-rate         = 0.2   ; This is a duplicate key. This value is used
 ; An un-recognized action is marked out in the log and ignored
 
 2458548.5 set-attitude x:1 y:1 z:1
-;2458548.8 set-accel    0.01
-;2458548.86 set-accel    0.0
-;2458300.5 set-attitude 0 0 -1
-;2458300.5 set-accel    0.01
-;2458300.52 set-accel    0.0
+2458548.8 set-accel    0.01 
+; This should give an informative error in the logs and carry on ...
+2458548.8 set-accel    acc:0.01
