@@ -137,18 +137,20 @@ struct SET_ATTITUDE : public FlightPlanAction {
 
     static ptr_t<SET_ATTITUDE> construct(const FPAD& _fpad, params_t params)
     {
-        if (params.size() != 3) {
+
+        try {
+            auto action = ptr_t<SET_ATTITUDE>(new SET_ATTITUDE(_fpad));
+            action->att = Vector{ stof(params["x"]),
+                                  stof(params["y"]),
+                                  stof(params["z"]) };
+
+            return action;
+        } catch (std::exception) {
             LOG_S(ERROR) << _fpad.fname << ": Line: " << _fpad.line_no
-                         << ": Need three elements for attitude vector: eg: "
+                         << ": Need three floats for attitude vector: eg: "
                             "x:1.1 y:0.4 z:0.2";
             return {};
         }
-
-        auto action = ptr_t<SET_ATTITUDE>(new SET_ATTITUDE(_fpad));
-        action->att
-            = Vector{ stof(params["x"]), stof(params["y"]), stof(params["z"]) };
-
-        return action;
     }
 
     void operator()(State& state)
@@ -171,16 +173,16 @@ struct SET_ACCEL : public FlightPlanAction {
 
     static ptr_t<SET_ACCEL> construct(const FPAD& _fpad, params_t params)
     {
-        if (params.size() != 1) {
+        try {
+            auto action = ptr_t<SET_ACCEL>(new SET_ACCEL(_fpad));
+            action->acc = stof(params["acc"]);
+
+            return action;
+        } catch (std::exception) {
             LOG_S(ERROR) << _fpad.fname << ": Line: " << _fpad.line_no
                          << ": Need one element for accel eg: acc:23.45";
             return {};
         }
-
-        auto action = ptr_t<SET_ACCEL>(new SET_ACCEL(_fpad));
-        action->acc = stof(params["acc"]);
-
-        return action;
     }
 
     void operator()(State& state)
