@@ -81,18 +81,9 @@ void execute_actions(fpapl_t& actions, State& state)
     for (auto& action : actions) {
         (*action)(state);
     }
-    actions.remove_if([](fpap_t& a) { return a->p.done; });
+
+    actions.remove_if([](fpap_t& a) { return a->done; });
 }
-/*
-void execute_flight_plan(Ship& ship, const WorldState& ws, double t_s)
-{
-    for (auto& action : ship.plan) {
-        if (action->active && (t_s >= action->t_s)) {
-            (*action)(ship.body, ws);
-        }
-    }
-}
-*/
 
 void Simulator::run()
 {

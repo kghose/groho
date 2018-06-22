@@ -22,15 +22,18 @@ struct FPAD {
     std::string fname;
     size_t      line_no;
     double      t_s;
-    bool        done = false;
 };
 
 // These are actions spacecraft can be scripted to do
 struct FlightPlanAction {
-    FlightPlanAction(const FPAD& _p) { p = _p; }
+    FlightPlanAction(const FPAD& _p)
+        : p(_p)
+    {
+    }
     virtual ~FlightPlanAction()     = default;
     virtual void operator()(State&) = 0;
-    FPAD         p;
+    const FPAD   p;
+    bool         done = false;
 };
 
 typedef std::unique_ptr<FlightPlanAction> fpap_t;

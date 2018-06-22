@@ -156,7 +156,7 @@ struct SET_ATTITUDE : public FlightPlanAction {
         state.ships[p.ship_idx].state.att = att;
         DLOG_S(INFO) << state.ships[p.ship_idx].property.name
                      << " attitude set";
-        p.done = true;
+        done = true;
     }
 
     Vector att;
@@ -196,7 +196,7 @@ struct SET_ACCEL : public FlightPlanAction {
         state.ships[p.ship_idx].state.acc = _acc;
         DLOG_S(INFO) << state.ships[p.ship_idx].property.name
                      << " acceleration set";
-        p.done = true;
+        done = true;
     }
 
     double acc;
@@ -269,7 +269,7 @@ fpap_t parse_line_into_action(
         }
 
         return available_actions[tokens[1]](
-            FPAD{ ship_idx, fname, line_no, jd, false }, params);
+            FPAD{ ship_idx, fname, line_no, jd }, params);
 
     } else {
         LOG_S(ERROR) << fname << ": " << line_no
