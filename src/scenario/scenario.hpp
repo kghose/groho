@@ -22,7 +22,7 @@ struct Scenario {
 
     // We want to construct a scenario and then have the simulator iterate on it
     // While it is cheap to load configurations and flightplans, orreries can
-    // be expensive to both load and keep around, so we have
+    // be expensive to both load and keep around, so we do a form of caching
     void from(const Configuration&);
 
     Configuration     config;
