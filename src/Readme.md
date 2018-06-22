@@ -86,6 +86,30 @@ Developer notes
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
 
+## Abstract class with non-virtual destructor
+
+On commit 1b0c8a41e8f1ffc480697583213fd4eef034640e I kept getting an `Illegal instruction: 4`
+error whenever my list of flight plan actions was cleared. I first thought it
+was something to do with me using `unique_ptr` and the fact that changing this
+to `shared_ptr` "fixed" the problem distracted me. I thought I was incorrectly
+using `unique_ptr` and there was some hidden move that I was missing.
+
+I failed to replicate the problem using a reduced case and got pretty puzzled.
+I changed things back to `unique_ptr` and a warning message caught my eye:
+
+`delete called on 'sim::FlightPlanAction' that is abstract but has non-virtual destructor`
+
+This led me on an internet search that revealed that, since I was using pointers
+to the base class, `delete` was trying to call the (implicit) default destructor
+of the base class, rather than the derived class. In some [writeups][abc-dtor]
+it says this leads to a memory leak, and in others it is mentioned as undefined
+behavior.
+
+Anyhow, defining a virtual base destructor got rid of the warning and the bad
+behavior.
+
+[abc-dtor]: https://www.quantstart.com/articles/C-Virtual-Destructors-How-to-Avoid-Memory-Leaks
+
 
 ## Code formatting
 

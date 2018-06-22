@@ -118,7 +118,7 @@ void Simulator::run()
 
         buffer->release();
 
-        // scenario.actions.remove_if([](Action& a) { a.done; });
+        scenario.actions.remove_if([](fpap_t& a) { return a->p.done; });
 
         t_s += scenario.config.step_s;
 

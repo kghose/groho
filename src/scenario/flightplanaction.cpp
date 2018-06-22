@@ -245,7 +245,6 @@ typedef std::vector<std::string>         strv_t;
 typedef std::unordered_map<str_t, str_t> params_t;
 typedef FlightPlanAction                 fpa_t;
 
-template <class T> using ptr_t = std::shared_ptr<T>;
 // typedef std::unique_ptr uptr_t;
 // use of class template 'unique_ptr' requires template arguments; argument
 // deduction not allowed in typedef
@@ -275,7 +274,8 @@ struct SET_ATTITUDE : public FlightPlanAction {
     void operator()(State& state)
     {
         state.ships[p.ship_idx].state.att = att;
-
+        DLOG_S(INFO) << state.ships[p.ship_idx].property.name
+                     << " attitude set";
         p.done = true;
     }
 

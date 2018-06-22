@@ -28,12 +28,14 @@ struct FPAD {
 // These are actions spacecraft can be scripted to do
 struct FlightPlanAction {
     FlightPlanAction(const FPAD& _p) { p = _p; }
+    virtual ~FlightPlanAction()     = default;
     virtual void operator()(State&) = 0;
     FPAD         p;
 };
 
-typedef std::shared_ptr<FlightPlanAction> fpap_t;
+typedef std::unique_ptr<FlightPlanAction> fpap_t;
 typedef std::list<fpap_t>                 fpapl_t;
+template <class T> using ptr_t = std::unique_ptr<T>;
 
 inline bool fpa_order(const fpap_t& a, const fpap_t& b)
 {
