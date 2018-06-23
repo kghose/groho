@@ -33,7 +33,7 @@ burn-rate         = 0.2   ; This is a duplicate key. This value is used
 ; You can break a command across multiple lines for readability
 - initial-orbit \ ; and add comments
     id:499 \ ; This is Mars
-    alt:3000 ; This is km from the surface
+    alt:8000 ; This is km from the surface
 
 ; You'll notice that in order to show off my fancy multi-line command I 
 ; repeated the command. In this case the second one over-writes the first one
@@ -41,7 +41,17 @@ burn-rate         = 0.2   ; This is a duplicate key. This value is used
 2458248.5 hi-there
 ; An un-recognized action is marked out in the log and ignored
 
-2458548.5 set-attitude x:1 y:1 z:1
-2458548.8 set-accel    0.01 
+0 initial-orbit id:499 alt:3000 ; Orbit 499 (Mars) at 3000 km altitude
+; It's illegal to try to place this action anywhere other than the start
+; of the simulation (marked by "-") and we will get scolded.
+
+
+; After a while in orbit, we get bored and blast off into the unknown
+
+2458648.5 set-attitude x:0 y:0 z:0.3 ; point somewhere, out there
+
+2458648.8 set-accel    0.01  
 ; This should give an informative error in the logs and carry on ...
-2458548.8 set-accel    acc:0.01
+
+2458340.8 set-accel    acc:0.01 ; Primary burn km/s^2
+2458342.8 set-accel    acc:0.00 ; MECO

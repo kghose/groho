@@ -1,0 +1,27 @@
+; Spaceship commands are placed in a separate script file (called a "flight plan") 
+; and a reference is put in the scenario file. 
+; A line can contain a key = value pair (like the configuration file)
+; and this indicates some property that will be set for the ship
+
+; like metadata ...
+
+name   = Ma Kali
+color  = 0x0000ff
+
+; or characteristics ... 
+
+max-acceleration  = 0.1   ; km/s^2 (a)
+max-fuel          = 100   ; arbitrary units (u)
+fuel-cons-rate    = 0.1   ; There is no such key. groho will warn and move on 
+burn-rate         = 0.1   ; u/s/a
+burn-rate         = 0.2   ; This is a duplicate key. This value is used
+
+; Or a line can take the form
+
+; <time> <action> <key>:<value> <key>:<value> ...
+
+; This is an action line. 
+; It indicates the time an action is active from, the action and parameters
+; Action lines form the bulk of a flight plan
+
+- initial-orbit id:499 alt:50000 ; Orbit 499 (Mars) at 5000 km altitude

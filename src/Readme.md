@@ -5,6 +5,7 @@ Developer notes
 
 - [Code organization](#code-organization)
 - [C++ Language features](#c-language-features)
+    - [Abstract class with non-virtual destructor](#abstract-class-with-non-virtual-destructor)
     - [Code formatting](#code-formatting)
     - [Mutable](#mutable)
     - [Optional](#optional)

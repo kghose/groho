@@ -18,6 +18,7 @@ via the flight plans.
 
 #include "body.hpp"
 #include "flightplanaction.hpp"
+#include "orrery.hpp"
 #include "scenariolib.hpp"
 #include "state.hpp"
 #include "vector.hpp"
@@ -126,6 +127,78 @@ typedef std::vector<std::string>         strv_t;
 typedef std::unordered_map<str_t, str_t> params_t;
 typedef FlightPlanAction                 fpa_t;
 
+// Initializer actions, should only be allowed at start of simulation ////////
+
+struct INITIAL_ORBIT : public FlightPlanAction {
+
+    INITIAL_ORBIT(const FPAD& _fpad)
+        : FlightPlanAction(_fpad)
+    {
+    }
+
+    static ptr_t<INITIAL_ORBIT> construct(const FPAD& _fpad, params_t params)
+    {
+        if (_fpad.t_s > do_this_first) {
+            LOG_S(ERROR) << _fpad.fname << ": Line: " << _fpad.line_no
+                         << ": initial orbit action can only be defined to "
+                            "occur at start of simulation. Time must be '-'";
+        }
+
+        try {
+            auto action    = ptr_t<INITIAL_ORBIT>(new INITIAL_ORBIT(_fpad));
+            action->spk_id = stoi(params["id"]);
+            action->alt    = stod(params["alt"]);
+            return action;
+        } catch (std::exception) {
+            LOG_S(ERROR)
+                << _fpad.fname << ": Line: " << _fpad.line_no
+                << ": Need two elements for initial orbit: id:399 alt:3000";
+            return {};
+        }
+    }
+
+    void operator()(State& state)
+    {
+        size_t SSB_idx = orrery::spkid_to_orrery_index(state.orrery, 10);
+        if (SSB_idx == -1UL) {
+            LOG_S(ERROR)
+                << "Can't find SSB in Orrery when trying to set initial "
+                   "state as orbiting";
+            done = true;
+            return;
+        }
+
+        size_t B_idx = orrery::spkid_to_orrery_index(state.orrery, spk_id);
+        if (B_idx == -1UL) {
+            LOG_S(ERROR)
+                << "Can't find " << spk_id
+                << " in Orrery when trying to set initial state as orbiting";
+            return;
+        }
+
+        double A = alt;
+        double r = state.orrery[B_idx].property.r;
+        Vector Rsun
+            = state.orrery[B_idx].state.pos - state.orrery[SSB_idx].state.pos;
+        Vector Vbody = state.orrery[B_idx].state.vel;
+        Vector U_hat = cross(Vbody, Rsun * -1).normed();
+        Vector V_hat = cross(Rsun * -1, U_hat).normed();
+        state.ships[p.ship_idx].state.pos
+            = state.orrery[B_idx].state.pos + (Rsun.normed() * (A + r));
+        state.ships[p.ship_idx].state.vel
+            = (V_hat * std::sqrt(state.orrery[B_idx].property.GM / (A + r)))
+            + Vbody;
+        state.ships[p.ship_idx].state.att = V_hat; // Nice to set this too
+
+        state.ships[p.ship_idx].state.flight_state = FALLING;
+
+        done = true;
+    }
+
+    int    spk_id;
+    double alt;
+};
+
 // Basic Actions ///////////////////////////////////////////////////////////
 
 struct SET_ATTITUDE : public FlightPlanAction {
@@ -176,7 +249,6 @@ struct SET_ACCEL : public FlightPlanAction {
         try {
             auto action = ptr_t<SET_ACCEL>(new SET_ACCEL(_fpad));
             action->acc = stof(params["acc"]);
-
             return action;
         } catch (std::exception) {
             LOG_S(ERROR) << _fpad.fname << ": Line: " << _fpad.line_no
@@ -206,49 +278,9 @@ struct SET_ACCEL : public FlightPlanAction {
 
 std::unordered_map<str_t, std::function<fpap_t(const FPAD&, params_t&)>>
     available_actions{ { "set-attitude", SET_ATTITUDE::construct },
-                       { "set-accel", SET_ACCEL::construct } };
+                       { "set-accel", SET_ACCEL::construct },
+                       { "initial-orbit", INITIAL_ORBIT::construct } };
 
-/*
-std::unordered_map<str_t, std::function<fpaptr_t(double, size_t, strv_t)>>
-    actions{
-
-        { "set-attitude",
-          [](double jd, size_t line_no, strv_t tokens) -> fpaptr_t {
-              if (tokens.size() != 5) {
-                  LOG_S(ERROR) << "Can't parse attitude vector";
-                  return {};
-              }
-              return fpaptr_t(new SET_ATTITUDE(
-                  jd,
-                  line_no,
-                  { stod(tokens[2]), stod(tokens[3]), stod(tokens[4]) }));
-          } },
-
-        { "set-accel",
-          [](double jd, size_t line_no, strv_t tokens) -> fpaptr_t {
-              if (tokens.size() != 3) {
-                  LOG_S(ERROR) << "Can't parse accelaration fraction";
-                  return {};
-              }
-              return fpaptr_t(new SET_ACCEL(jd, line_no, stod(tokens[2])));
-          } },
-
-        { "park",
-          [](double jd, size_t line_no, strv_t tokens) -> fpaptr_t {
-              if (tokens.size() != 4) {
-                  LOG_S(ERROR) << "Can't parse park";
-                  return {};
-              }
-              return fpaptr_t(new PARK_IN_ORBIT(
-                  jd, line_no, stoi(tokens[2]), stod(tokens[3])));
-          } },
-
-    };*/
-
-// For the preamble
-//   <action name> <argument1>
-// For the plan proper
-//   <timestamp> <action name> <argument1> <argument2> ...
 fpap_t parse_line_into_action(
     size_t                   ship_idx,
     std::string              fname,
