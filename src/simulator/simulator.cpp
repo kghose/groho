@@ -68,11 +68,11 @@ void update_ship(Body& ship, const std::vector<Body>& orrery, double step_s)
     ship.state.pos += ship.state.vel * step_s;
 }
 
-void update_ships(State& state, double step_s, double t_s)
+void update_ships(State& state, double step_s)
 {
     for (auto& ship : state.ships) {
         update_ship(ship, state.orrery, step_s);
-        ship.state.t = t_s;
+        ship.state.t = state.t_s;
     }
 }
 
@@ -92,16 +92,18 @@ void Simulator::run()
 
     LOG_S(INFO) << "Starting simulation";
 
+    // TODO: deprectae this with a new mechnism for giving display a time cursor
     t_s = scenario.config.begin_s;
-
     // The first run may involve actions that require the Orrery vel vectors
     // to be filled out
     State state(
-        t_s, scenario.orrery.get_orrery_with_vel_at(t_s), scenario.ships);
+        scenario.config.begin_s,
+        scenario.orrery.get_orrery_with_vel_at(scenario.config.begin_s),
+        scenario.ships);
 
-    while (running && (t_s < scenario.config.end_s)) {
+    while (running && (state.t_s < scenario.config.end_s)) {
 
-        update_ships(state, scenario.config.step_s, t_s);
+        update_ships(state, scenario.config.step_s);
         execute_actions(scenario.actions, state);
 
         buffer->lock();
@@ -117,9 +119,10 @@ void Simulator::run()
 
         buffer->release();
 
-        t_s += scenario.config.step_s;
+        state.t_s += scenario.config.step_s;
+        t_s = state.t_s; // TODO: better mech for giving display a time cursor
 
-        scenario.orrery.get_orrery_at(t_s);
+        scenario.orrery.get_orrery_at(state.t_s);
     }
     buffer->flush();
     running = false;

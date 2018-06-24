@@ -34,6 +34,8 @@ public:
     std::shared_ptr<const Buffer> get_buffer() const;
 
 public:
+    // TODO: this is used by display to find latest time cursor
+    // this is in-elegant. Let's change this to a better mechanism
     double t_s;
 
 private:
