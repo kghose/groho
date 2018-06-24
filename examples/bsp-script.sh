@@ -11,3 +11,7 @@ for f in ${files[@]}
 do
     curl -o ${f} ${satellite_path}${f}
 done
+
+asteroid_path="ftp://ssd.jpl.nasa.gov/pub/eph/small_bodies/asteroids_de430/"
+file="ast343de430.bsp"
+curl -o ${file} ${asteroid_path}${file}
