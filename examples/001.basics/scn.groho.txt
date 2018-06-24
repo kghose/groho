@@ -18,7 +18,7 @@
 
 name  = Earth to Mars
 begin = 2458248.5 ; This is in Julian Date
-end   = 2458448.5 ; A 700 day simulation
+end   = 2458348.5 ; A 700 day simulation
 step  = 60 ; This is in seconds
            ; The finer the step the more accurate the simulation
            ; but the longer it takes to run
@@ -31,7 +31,7 @@ step  = 60 ; This is in seconds
 ; You can have multiple orrery files like this:
 orrery = ../de430.bsp   ; Sun, Earth + Moon, Barycenters for all planets
 orrery = ../mar097.bsp  ; Mars + moons
-
+;orrery = ../ast343de430.bsp
 
 ; You can have multiple flightplans like this:
 flightplan = flt1.groho.txt

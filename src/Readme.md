@@ -102,14 +102,11 @@ I changed things back to `unique_ptr` and a warning message caught my eye:
 
 This led me on an internet search that revealed that, since I was using pointers
 to the base class, `delete` was trying to call the (implicit) default destructor
-of the base class, rather than the derived class. In some [writeups][abc-dtor]
-it says this leads to a memory leak, and in others it is mentioned as undefined
-behavior.
+of the base class, rather than the derived class. There is a good write up
+[here][abc-dtor]. Anyhow, defining a virtual base destructor got rid of the 
+warning and the bad behavior.
 
-Anyhow, defining a virtual base destructor got rid of the warning and the bad
-behavior.
-
-[abc-dtor]: https://www.quantstart.com/articles/C-Virtual-Destructors-How-to-Avoid-Memory-Leaks
+[abc-dtor]: https://stackoverflow.com/a/461224/2512851
 
 
 ## Code formatting

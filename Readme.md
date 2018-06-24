@@ -40,11 +40,13 @@ groho examples/earth-mars.txt
         - [Simulation files](#simulation-files)
             - [Meta: Why is the tutorial/manual in the form of commented examples?](#meta-why-is-the-tutorialmanual-in-the-form-of-commented-examples)
         - [Orbit view interactions](#orbit-view-interactions)
+- [Physics](#physics)
 - [Related software](#related-software)
     - [NASA's GMAT](#nasas-gmat)
     - [Orbiter by Martin Schweiger](#orbiter-by-martin-schweiger)
     - [Bussard by Phil Hagelberg](#bussard-by-phil-hagelberg)
     - [SolarSystemOrbiter](#solarsystemorbiter)
+    - [Celestia](#celestia)
 - [Thanks](#thanks)
 - [Meta: Why did you put everything in this one document?](#meta-why-did-you-put-everything-in-this-one-document)
     - [Some other documents of interest](#some-other-documents-of-interest)
@@ -166,6 +168,17 @@ in the simulation files as a reliable way to keep upto-date documentation.
 
 Eventually the [tutorial here](docs/tutorial.md) will be copied over into this space.
 
+# Physics
+
+There is a bunch of interesting physics and math behind orbital maneuvers.
+From Robert A. Braeunig's [page][bob] we have the following named maneuvers:
+
+- Hohmann transfer orbit
+- One-Tangent Burn
+- Spiral transfer
+- Simple plane change
+
+[bob]: http://www.braeunig.us/space/orbmech.htm#maneuver
 
 # Related software
 
@@ -201,6 +214,10 @@ where you write complex programs to fly your spaceship to solve puzzles.
 [SolarSystemOrbiter](https://github.com/madoee/SolarSystemOrbiter) -
 "Plot the orbits of the planets in our Solar System and calculate the Hohmann Transfer Orbits to transfer your rocket ship from one planet to the other and back." 
 
+## Celestia
+
+[Celestia](https://github.com/CelestiaProject/Celestia) - 
+"A real-time space simulation that lets you experience our universe in three dimensions."
 
 # Thanks
 
