@@ -9,6 +9,9 @@ at given times.
 
 #include <unordered_set>
 
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
 #include "solar_system.hpp"
 #include "spkorrery.hpp"
 
@@ -51,13 +54,20 @@ EphemerisVec sort_ephemerides(const EphemerisVec& un_srt)
     std::unordered_set<int> centers = { 0 };
 
     while (srt.size() < un_srt.size()) {
+        size_t centers_resolved_this_time = 0;
         for (int i = 0; i < un_srt.size(); i++) {
             if (centers.count(un_srt[i]->target_code))
                 continue;
             if (centers.count(un_srt[i]->center_code)) {
                 srt.push_back(un_srt[i]);
                 centers.insert(un_srt[i]->target_code);
+                centers_resolved_this_time++;
             }
+        }
+        if (centers_resolved_this_time == 0) {
+            LOG_S(ERROR) << "Orrery has " << un_srt.size() - srt.size()
+                         << " bodies with center(s) that do(es) not exist";
+            break;
         }
     }
 
@@ -118,13 +128,18 @@ bool SpkOrrery::load_orrery_model(
         return false;
     }
 
-    ephemera = sort_ephemerides(
-        combine_ephemerides(ephemera, load_spk(nasa_spk_file, begin_s, end_s)));
+    ephemera = combine_ephemerides(
+        ephemera, load_spk(nasa_spk_file, begin_s, end_s));
     center_idx = create_center_indexes(ephemera);
     bodies     = create_bodies(ephemera);
 
     ok = true;
     return ok;
+}
+
+void SpkOrrery::sort_by_compute_order()
+{
+    ephemera = sort_ephemerides(ephemera);
 }
 
 // Fill out the (x, y, z) of each Orrery body and return us an immutable

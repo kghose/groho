@@ -118,7 +118,10 @@ void Scenario::from(const Configuration& new_config)
         orrery = orrery::SpkOrrery(new_config.begin_s, new_config.end_s);
         for (auto orrery_name : new_config.orrery_fnames) {
             orrery.load_orrery_model(orrery_name);
+            LOG_S(INFO) << "Orrery has " << orrery.get_orrery().size()
+                        << " bodies";
         }
+        orrery.sort_by_compute_order();
     }
 
     ships.clear();

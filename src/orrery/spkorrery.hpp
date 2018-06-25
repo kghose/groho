@@ -17,9 +17,6 @@ at given times.
 #include "spk.hpp"
 #include "vector.hpp"
 
-#define LOGURU_WITH_STREAMS 1
-#include "loguru.hpp"
-
 namespace orrery {
 
 using namespace daffile;
@@ -53,6 +50,10 @@ public:
     // Calling this repeatedly will load multiple SPK files.
     // If a body appears more than once, the later entries are disregarded
     bool load_orrery_model(std::string fname);
+
+    // This explicitly reorders ephemera such that bodies that are used as
+    // centers by other bodies are computed first
+    void sort_by_compute_order();
 
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
     // vector containing this information.
