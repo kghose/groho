@@ -10,6 +10,7 @@ at given times.
 #pragma once
 
 #include <cmath>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -39,21 +40,10 @@ class SpkOrrery : public Orrery {
     // for i. Undefined for bodies with center 0
 
 public:
-    SpkOrrery(double begin_s = 0, double end_s = 0)
-        : begin_s(begin_s)
-        , end_s(end_s)
-        , Orrery()
-    {
-    }
+    SpkOrrery() { ok = false; }
 
-    // Load SPK file "fname" and make the bodies in it available to us
-    // Calling this repeatedly will load multiple SPK files.
-    // If a body appears more than once, the later entries are disregarded
-    bool load_orrery_model(std::string fname);
-
-    // This explicitly reorders ephemera such that bodies that are used as
-    // centers by other bodies are computed first
-    void sort_by_compute_order();
+    SpkOrrery(
+        std::set<std::string> fnames, double begin_s = 0, double end_s = 0);
 
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
     // vector containing this information.

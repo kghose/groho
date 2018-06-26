@@ -112,9 +112,22 @@ OrreryBodyVec create_bodies(const EphemerisVec& ephemera)
     return bodies;
 }
 
-bool SpkOrrery::load_orrery_model(std::string fname)
+SpkOrrery::SpkOrrery(std::set<std::string> fnames, double begin_s, double end_s)
+    : begin_s(begin_s)
+    , end_s(end_s)
+    , Orrery()
 {
-    return load_orrery_model(fname, begin_s, end_s);
+    for (auto& orrery_name : fnames) {
+        size_t body_count = ephemera.size();
+        load_orrery_model(orrery_name, begin_s, end_s);
+        LOG_S(INFO) << ephemera.size() - body_count << " bodies from "
+                    << orrery_name;
+    }
+    LOG_S(INFO) << ephemera.size() << " bodies in Orrery";
+
+    ephemera   = sort_ephemerides(ephemera);
+    center_idx = create_center_indexes(ephemera);
+    bodies     = create_bodies(ephemera);
 }
 
 bool SpkOrrery::load_orrery_model(
@@ -130,16 +143,9 @@ bool SpkOrrery::load_orrery_model(
 
     ephemera = combine_ephemerides(
         ephemera, load_spk(nasa_spk_file, begin_s, end_s));
-    center_idx = create_center_indexes(ephemera);
-    bodies     = create_bodies(ephemera);
 
     ok = true;
     return ok;
-}
-
-void SpkOrrery::sort_by_compute_order()
-{
-    ephemera = sort_ephemerides(ephemera);
 }
 
 // Fill out the (x, y, z) of each Orrery body and return us an immutable
