@@ -4,7 +4,9 @@ Developer notes
 <!-- TOC -->
 
 - [Code organization](#code-organization)
+    - [Flightplans](#flightplans)
 - [C++ Language features](#c-language-features)
+    - [std::unique_ptr with forward declared type](#stdunique_ptr-with-forward-declared-type)
     - [Abstract class with non-virtual destructor](#abstract-class-with-non-virtual-destructor)
     - [Code formatting](#code-formatting)
     - [Mutable](#mutable)
@@ -81,11 +83,28 @@ Developer notes
 * buffer - code to handle data storage and sharing
 * magnumapp - Visualization window based on Magnum/Corrade
 
+## Flightplans
+
+I wanted to be able to add new flight plans actions without having to recompile
+all the code. The structure is as follows
+
+- flightplanaction.hpp
+  - contains the base class definiton
+- flightplanaction.cpp
+  - script parser
+  - this is recompiled for each new action, we just add a forward delcaration
+    for each new action
+
+
 
 # C++ Language features
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## std::unique_ptr with forward declared type
+
+
 
 ## Abstract class with non-virtual destructor
 

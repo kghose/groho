@@ -2,47 +2,84 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-This file contains forward declarations for the verb/noun combinations
-available to control spacecraft via the flight plans.
+Base action class and base parser for flight plan actions
 */
+
 #pragma once
 
 #include <list>
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 
 #include "body.hpp"
+#include "groho.hpp"
 #include "state.hpp"
+
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
 
 namespace sim {
 
-struct FPAD {
-    size_t      ship_idx;
-    std::string fname;
-    size_t      line_no;
-    double      t_s;
+const double do_this_first = std::numeric_limits<double>::lowest();
+
+struct FlightPlanAction;
+
+// These are pleasant to alias
+typedef std::string                      str_t;
+typedef std::vector<std::string>         strv_t;
+typedef std::unordered_map<str_t, str_t> params_t;
+
+typedef FlightPlanAction fpa_t;
+template <class T> using ptr_t = std::unique_ptr<T>;
+typedef ptr_t<FlightPlanAction> fpap_t;
+typedef std::list<fpap_t>       fpapl_t;
+
+// (Meta)data all FPAs have in common
+struct FPAmeta {
+    size_t ship_idx;
+    str_t  fname;
+    size_t line_no;
+    str_t  command_string;
+    double t_s; // This is data. You say tomato, I say tomato
 };
 
-// These are actions spacecraft can be scripted to do
+// All actions are derived from this base class
 struct FlightPlanAction {
-    FlightPlanAction(const FPAD& _p)
-        : p(_p)
+    FlightPlanAction(const FPAmeta& _meta)
+        : meta(_meta)
     {
     }
-    virtual ~FlightPlanAction()     = default;
+
+    // http://www.gotw.ca/publications/mill18.htm Guideline #4
+    virtual ~FlightPlanAction() = default;
+
+    // Any setup that has to be done at start of simulation. This typically
+    // involves resolving indexes into the orrery and ship list that can only
+    // be known after the whole scenario has been loaded
+    virtual void setup(State&) = 0;
+
+    // This is the action function we run each time step until the action is
+    // done
     virtual void operator()(State&) = 0;
-    const FPAD   p;
-    bool         done = false;
+
+    // We have to convert an id to an index into a list of bodies very often
+    // If we fail, we have to disable the action and warn the user. It is
+    // pleasant to put this into a member function
+    bool set_body_idx(const std::vector<Body>&, spkid_t, size_t&);
+
+    const FPAmeta meta;
+    bool          done = false;
 };
 
-typedef std::unique_ptr<FlightPlanAction> fpap_t;
-typedef std::list<fpap_t>                 fpapl_t;
-template <class T> using ptr_t = std::unique_ptr<T>;
+// Each FPA we add specializes this function template
+template <class T> fpap_t construct(const FPAmeta& _meta, params_t& params);
 
+// Allows us to sort actions by time of activation
 inline bool fpa_order(const fpap_t& a, const fpap_t& b)
 {
-    return a->p.t_s < b->p.t_s;
+    return a->meta.t_s < b->meta.t_s;
 }
 
 fpap_t parse_line_into_action(

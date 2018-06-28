@@ -37,6 +37,7 @@ find_package( Corrade REQUIRED
 
 file(GLOB SOURCES 
     "src/*.cpp" 
+    "src/actions/*.cpp" 
     "src/buffer/*.cpp" 
     "src/orrery/*.cpp"
     "src/scenario/*.cpp"
@@ -49,6 +50,7 @@ add_executable( groho ${SOURCE_FILES} )
 
 include_directories(
     "src/"
+    "src/actions" 
     "src/buffer" 
     "src/orrery"
     "src/scenario"

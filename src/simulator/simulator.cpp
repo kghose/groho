@@ -76,13 +76,27 @@ void update_ships(State& state, double step_s)
     }
 }
 
+void setup_actions(fpapl_t& actions, State& state)
+{
+    for (auto& action : actions) {
+        action->setup(state);
+    }
+}
+
 void execute_actions(fpapl_t& actions, State& state)
 {
     for (auto& action : actions) {
         (*action)(state);
     }
+}
 
-    actions.remove_if([](fpap_t& a) { return a->done; });
+void cleanup_actions(fpapl_t& actions)
+{
+    actions.remove_if([](fpap_t& a) {
+        DLOG_IF_S(INFO, a->done) << a->meta.fname << ":" << a->meta.line_no
+                                 << " : " << a->meta.command_string << " done";
+        return a->done;
+    });
 }
 
 void Simulator::run()
@@ -100,11 +114,14 @@ void Simulator::run()
         scenario.config.begin_s,
         scenario.orrery.get_orrery_with_vel_at(scenario.config.begin_s),
         scenario.ships);
+    setup_actions(scenario.actions, state);
+    cleanup_actions(scenario.actions);
 
     while (running && (state.t_s < scenario.config.end_s)) {
 
         update_ships(state, scenario.config.step_s);
         execute_actions(scenario.actions, state);
+        cleanup_actions(scenario.actions);
 
         buffer->lock();
 

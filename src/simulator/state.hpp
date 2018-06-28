@@ -7,6 +7,8 @@ This class collects Orrery, Spaceships and other object state at a given instant
 
 #pragma once
 
+#include <vector>
+
 #include "body.hpp"
 
 namespace sim {

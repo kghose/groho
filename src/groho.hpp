@@ -12,7 +12,7 @@ namespace sim {
 // and functions that actually take a spk_id.
 struct spkid_t {
     int id;
-    spkid_t(int a) { id = a; }
+    spkid_t(int a = 0) { id = a; }
 };
 
 namespace globals {
