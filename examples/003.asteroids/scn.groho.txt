@@ -1,0 +1,18 @@
+; This scenario file sets up an orrery containing all 9 planets and
+; their moons
+
+name  = Earth to Mars
+begin = 2420000.5 ; This is in Julian Date
+end   = 2421000.5 ; A 10 year simulation
+step  = 10000 ; This is in seconds
+           ; The finer the step the more accurate the simulation
+           ; but the longer it takes to run
+
+orrery = ../de430.bsp
+orrery = ../mar097.bsp
+orrery = ../jup310.bsp
+orrery = ../sat375.bsp
+orrery = ../nep081.bsp
+orrery = ../ura111.bsp
+orrery = ../plu055.bsp
+orrery = ../ast343de430.bsp
