@@ -1,6 +1,6 @@
 /*
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
-Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+Copyright (c) 2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 The following code handles loading of NASA/JPL SPK/DAF files that carry
 information for planetary ephemerides. The functions defined here use the
@@ -36,7 +36,7 @@ inline double cheby_eval(double t_mid, double t_half, const dblvec& A, double t)
     double x2 = 2 * x;
     double Tn, Tn_1 = x, Tn_2 = 1.0;
     double b = A[0] * Tn_2 + A[1] * Tn_1;
-    for (int i = 2; i < A.size(); i++) {
+    for (size_t i = 2; i < A.size(); i++) {
         Tn = x2 * Tn_1 - Tn_2;
         b += Tn * A[i];
         Tn_2 = Tn_1;

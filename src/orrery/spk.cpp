@@ -245,15 +245,15 @@ read_comment_blocks(std::ifstream& nasa_spk_file, std::optional<FileRecord> hdr)
 
     std::string comment;
     nasa_spk_file.seekg(block_size);
-    for (int i = 2; i < hdr->first_summary_block; i++) {
+    for (size_t i = 2; i < hdr->first_summary_block; i++) {
         char buf[block_size];
         nasa_spk_file.read(buf, block_size);
-        for (int i = 0; i < 1000; i++) {
-            if (buf[i] == '\0') {
-                buf[i] = '\n';
+        for (size_t j = 0; j < 1000; j++) {
+            if (buf[j] == '\0') {
+                buf[j] = '\n';
             } else {
-                if (buf[i] == '\4') {
-                    buf[i] = '\0';
+                if (buf[j] == '\4') {
+                    buf[j] = '\0';
                     break;
                 }
             }
@@ -363,7 +363,7 @@ void read_coefficients(
     std::ifstream& nasa_spk_file, size_t n_coeff, std::vector<double>& V)
 {
     V.reserve(n_coeff);
-    for (int j = 0; j < n_coeff; j++) {
+    for (size_t j = 0; j < n_coeff; j++) {
         double c;
         nasa_spk_file.read((char*)&c, sizeof(double));
         V.push_back(c);

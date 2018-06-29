@@ -126,11 +126,11 @@ void Simulator::run()
         buffer->lock();
 
         // First do the orrery
-        for (int i = 0; i < state.orrery.size(); i++) {
+        for (size_t i = 0; i < state.orrery.size(); i++) {
             buffer->append(i, state.orrery[i].state);
         }
         // Then the spaceships
-        for (int i = 0; i < state.ships.size(); i++) {
+        for (size_t i = 0; i < state.ships.size(); i++) {
             buffer->append(i + state.orrery.size(), state.ships[i].state);
         }
 

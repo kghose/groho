@@ -55,7 +55,7 @@ EphemerisVec sort_ephemerides(const EphemerisVec& un_srt)
 
     while (srt.size() < un_srt.size()) {
         size_t centers_resolved_this_time = 0;
-        for (int i = 0; i < un_srt.size(); i++) {
+        for (size_t i = 0; i < un_srt.size(); i++) {
             if (centers.count(un_srt[i]->target_code))
                 continue;
             if (centers.count(un_srt[i]->center_code)) {
@@ -82,11 +82,11 @@ std::vector<size_t> create_center_indexes(const EphemerisVec& srt)
 
     std::vector<size_t> ci(srt.size());
 
-    for (int i = 0; i < srt.size(); i++) {
+    for (size_t i = 0; i < srt.size(); i++) {
         code2index[srt[i]->target_code] = i;
     }
 
-    for (int i = 0; i < srt.size(); i++) {
+    for (size_t i = 0; i < srt.size(); i++) {
         if (srt[i]->center_code != 0) {
             ci[i] = code2index[srt[i]->center_code];
         }
@@ -152,7 +152,7 @@ bool SpkOrrery::load_orrery_model(
 // vector containing this information.
 const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
 {
-    for (int i = 0; i < ephemera.size(); i++) {
+    for (size_t i = 0; i < ephemera.size(); i++) {
         set_pos(s, *ephemera[i], bodies[i].state.pos);
         bodies[i].state.t = s;
 
