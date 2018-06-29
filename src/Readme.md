@@ -104,6 +104,15 @@ notes are here.
 
 ## std::unique_ptr with forward declared type
 
+I was eager to avoid recompiling as much as possible when a new flight plan 
+was added or an existing one modified. I used the classic "container of
+base type pointers" pattern. It was in this context that I ran into the peculiar
+issue where smart pointers are actually not *exactly* the same as regular
+pointers in what will and will not compile. Specifically I ran into the issue
+that I couldn't use `std::unique_ptr` with a forward declared type, but I could
+use a `shared_ptr`. Howard Hinnanat has a good explanation [here][uptrfwddecl]. 
+
+[uptrfwddecl]: http://howardhinnant.github.io/incomplete.html
 
 
 ## Abstract class with non-virtual destructor
