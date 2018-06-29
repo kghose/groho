@@ -86,8 +86,8 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
         *last_t_s    = state.t_s;
         double acc   = deltaV.norm() / (0.5 * Tstep * Tstep);
 
-        if (acc > ship.property.max_acc) {
-            ship.state.acc = ship.property.max_acc;
+        if (acc > ship.param.max_acc) {
+            ship.state.acc = ship.param.max_acc;
             LOG_S(WARNING)
                 << meta.fname << ": Line " << meta.line_no
                 << ": acceleration required for parking exceeds max_acc";

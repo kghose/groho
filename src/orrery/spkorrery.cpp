@@ -105,7 +105,7 @@ OrreryBodyVec create_bodies(const EphemerisVec& ephemera)
     for (auto e : ephemera) {
         OrreryBody ob;
         if (body_library.count(e->target_code)) {
-            ob = body_library[e->target_code];
+            ob.property = body_library[e->target_code];
         }
         bodies.push_back(ob);
     }

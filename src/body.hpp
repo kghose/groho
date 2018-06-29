@@ -23,7 +23,7 @@ namespace sim {
 enum BodyType { ROCK, BARYCENTER, SPACESHIP };
 enum FlightState { FALLING, LANDED };
 
-struct BodyProperty {
+struct BodyConstant {
     BodyType    body_type;
     int         code; // SPK code for body (made up ones for spaceships)
     std::string name; // Human readable name for body
@@ -32,7 +32,9 @@ struct BodyProperty {
     float r;  // Radius of body (for collision tests)
 
     uint32_t color; // For display purposes
+};
 
+struct ShipCharacteristic {
     float max_acc;   // Maximum acceleration possible for ship m/s^2
     float max_fuel;  // Maximum fuel reserve (U)
     float burn_rate; // Fuel consumption rate (U/ (m/s^2))
@@ -52,7 +54,8 @@ struct BodyState {
 };
 
 struct Body {
-    BodyProperty property;
-    BodyState    state;
+    BodyConstant       property;
+    ShipCharacteristic param;
+    BodyState          state;
 };
 }

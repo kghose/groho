@@ -66,7 +66,7 @@ struct Body {
 using namespace sim;
 
 // clang-format off
-std::unordered_map<int, OrreryBody> body_library = {
+std::unordered_map<int, BodyConstant> body_library = {
 
     //                                                      km^3 s^−2             km 
     {       1, { BARYCENTER,       1, "Mercury BC",  2.2031780000000021E+04,            0, 0x000000 } },

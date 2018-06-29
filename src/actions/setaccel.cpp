@@ -24,8 +24,8 @@ struct SET_ACCEL : public FlightPlanAction {
             return;
 
         double _acc = acc;
-        if (_acc > state.ships[meta.ship_idx].property.max_acc) {
-            _acc = state.ships[meta.ship_idx].property.max_acc;
+        if (_acc > state.ships[meta.ship_idx].param.max_acc) {
+            _acc = state.ships[meta.ship_idx].param.max_acc;
             LOG_S(WARNING) << meta.line_no << ": SET_ACCEL for "
                            << state.ships[meta.ship_idx].property.name
                            << " exceeds max_acc";

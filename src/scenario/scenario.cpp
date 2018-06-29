@@ -27,17 +27,18 @@ bool orrery_changed(const Configuration& a, const Configuration& b)
 
 std::optional<Body> parse_ship_properties(std::string fname)
 {
-    BodyProperty p;
-    BodyState    s;
+    BodyConstant       p;
+    ShipCharacteristic ch;
+    BodyState          s;
 
     typedef std::string sst;
 
     std::unordered_map<sst, std::function<void(sst)>> keyword_map{
 
         { "name", [&](sst v) { p.name                 = v; } },
-        { "max-acceleration", [&](sst v) { p.max_acc  = stof(v); } },
-        { "max-fuel", [&](sst v) { p.max_fuel         = stof(v); } },
-        { "burn-rate", [&](sst v) { p.burn_rate       = stof(v); } },
+        { "max-acceleration", [&](sst v) { ch.max_acc = stof(v); } },
+        { "max-fuel", [&](sst v) { ch.max_fuel        = stof(v); } },
+        { "burn-rate", [&](sst v) { ch.burn_rate      = stof(v); } },
         { "flight-state", [&](sst v) { s.flight_state = FALLING; } },
 
         // TODO: handle landed state
@@ -75,7 +76,7 @@ std::optional<Body> parse_ship_properties(std::string fname)
         }
     }
 
-    return Body{ p, s };
+    return Body{ p, ch, s };
 }
 
 fpapl_t parse_ship_actions(std::string fname, size_t ship_idx)
