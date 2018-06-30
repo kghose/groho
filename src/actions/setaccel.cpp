@@ -46,7 +46,7 @@ template <> fpap_t construct<SET_ACCEL>(const FPAmeta& _meta, params_t& params)
         auto action = ptr_t<SET_ACCEL>(new SET_ACCEL(_meta));
         action->acc = stof(params["acc"]);
         return action;
-    } catch (std::exception) {
+    } catch (std::exception& e) {
         LOG_S(ERROR) << _meta.fname << ": Line: " << _meta.line_no
                      << ": Need one element for accel eg: acc:23.45";
         return {};

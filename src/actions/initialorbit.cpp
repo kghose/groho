@@ -65,7 +65,7 @@ fpap_t construct<INITIAL_ORBIT>(const FPAmeta& _meta, params_t& params)
         action->origin = stoi(params["id"]);
         action->alt    = stod(params["alt"]);
         return action;
-    } catch (std::exception) {
+    } catch (std::exception& e) {
         LOG_S(ERROR)
             << _meta.fname << ": Line: " << _meta.line_no
             << ": Need two elements for initial orbit: id:399 alt:3000";

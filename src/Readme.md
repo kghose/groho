@@ -112,6 +112,12 @@ warning: unused parameter 'X' [-Wunused-parameter]
 Turns out you can put `[[maybe_unused]]` in front of the variable and this
 reassures the compiler that you know what you are doing ...
 
+```
+warning: catching polymorphic type 'class std::exception' by value [-Wcatch-value=]
+```
+From https://stackoverflow.com/a/6756040/2512851
+"The reason for using & with exceptions is not so much polymorphism as avoiding slicing. If you were to not use &, C++ would attempt to copy the thrown exception into a newly created  std::exception, potentially losing information in the process."
+
 ### Everything
 In a moment of distraction I put in the `-Weverything` flag into Clang. WOW.
 So here are some of the fun ones

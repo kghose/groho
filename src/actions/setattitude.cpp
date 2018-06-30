@@ -41,7 +41,7 @@ fpap_t construct<SET_ATTITUDE>(const FPAmeta& _meta, params_t& params)
             = Vector{ stof(params["x"]), stof(params["y"]), stof(params["z"]) };
 
         return action;
-    } catch (std::exception) {
+    } catch (std::exception& e) {
         LOG_S(ERROR) << _meta.fname << ": Line: " << _meta.line_no
                      << ": Need three floats for attitude vector: eg: "
                         "x:1.1 y:0.4 z:0.2";

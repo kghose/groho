@@ -113,7 +113,7 @@ fpap_t construct<PARK_IN_ORBIT>(const FPAmeta& _meta, params_t& params)
         action->target    = stof(params["id"]);
         action->R_capture = stof(params["r"]);
         return action;
-    } catch (std::exception) {
+    } catch (std::exception& e) {
         LOG_S(ERROR) << _meta.fname << ": Line: " << _meta.line_no
                      << ": Park in orbit needs two elements eg: id:399 r:200";
         return {};
