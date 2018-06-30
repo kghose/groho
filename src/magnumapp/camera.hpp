@@ -11,10 +11,10 @@ so that they know what camera model to use.
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Matrix4.h>
 
+namespace sim {
+
 using namespace Magnum;
 using namespace Math::Literals;
-
-namespace sim {
 
 class Camera {
 public:

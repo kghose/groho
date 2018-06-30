@@ -18,10 +18,10 @@ Magnum App to handle windowing and display
 #include "orbitview.hpp"
 #include "simulator.hpp"
 
+namespace sim {
+
 using namespace Magnum;
 using namespace Corrade;
-
-namespace sim {
 
 class GrohoApp : public Platform::Application {
 public:

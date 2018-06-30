@@ -44,7 +44,7 @@ struct INITIAL_ORBIT : public FlightPlanAction {
         done = true;
     }
 
-    void operator()(State& state) {}
+    void operator()([[maybe_unused]] State& state) {}
 
     spkid_t origin;
     double  alt;

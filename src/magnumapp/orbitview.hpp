@@ -34,6 +34,7 @@ private:
     // ReferencePlane ref_plane;
 
     // Metadata to figure out if we should reload a buffer
+    // TODO: use optional
     unsigned int simulation_serial = -1;
     size_t       point_count       = 0;
 };

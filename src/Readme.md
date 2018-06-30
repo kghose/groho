@@ -6,6 +6,8 @@ Developer notes
 - [Code organization](#code-organization)
     - [Flightplans](#flightplans)
 - [C++ Language features](#c-language-features)
+    - [Warnings, Warnings](#warnings-warnings)
+        - [Everything](#everything)
     - [std::unique_ptr with forward declared type](#stdunique_ptr-with-forward-declared-type)
     - [Abstract class with non-virtual destructor](#abstract-class-with-non-virtual-destructor)
     - [Code formatting](#code-formatting)
@@ -101,6 +103,57 @@ all the code. The structure is as follows
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## Warnings, Warnings
+
+```
+warning: unused parameter 'X' [-Wunused-parameter]
+```
+Turns out you can put `[[maybe_unused]]` in front of the variable and this
+reassures the compiler that you know what you are doing ...
+
+### Everything
+In a moment of distraction I put in the `-Weverything` flag into Clang. WOW.
+So here are some of the fun ones
+
+```
+warning: use of old-style cast [-Wold-style-cast]
+```
+The old style `(float)` is more convenient than the new style `static_cast<float>`
+but I guess we have to be correct ...
+
+```
+warning: constructor parameter 'ships' shadows the field 'ships' of 'State' [-Wshadow-field-in-constructor]
+```
+I just thought ships of State was a funny construct. Things still work fine, I
+guess they want to make sure you really meant to do that.
+
+```
+warning: using namespace directive in global context in header [-Wheader-hygiene]
+```
+This is a good warning because you may unknowingly pass on this directive.
+
+```
+X has no out-of-line virtual method definitions; its vtable will be emitted in every translation unit [-Wweak-vtables]
+```
+I guess this increases the size of the executable.
+
+```
+warning: padding size of 'X' with 4 bytes to alignment boundary [-Wpadded]
+```
+This is strictly informational. It's interesting to see this and if you are using this
+as a struct/class that ingests data from disk it concievably comes in useful
+in case there are some issues related to how data is laid out on disk vs in memory.
+In general, it's just clutter
+
+```
+Blah, blah [-Wc++98-compat]
+```
+This is a menagerie of things that c++98 doesn't like. I don't care about that
+in this project because I'm using c++17. Interesting amongst these are
+    - `warning: consecutive right angle brackets are incompatible with C++98 (use '> >')`
+    - `warning: C++98 requires newline at end of file [-Wc++98-compat-pedantic]`
+
 
 ## std::unique_ptr with forward declared type
 

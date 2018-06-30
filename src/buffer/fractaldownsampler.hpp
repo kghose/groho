@@ -20,7 +20,7 @@ public:
     bool operator()(const Vector& v)
     {
         cumulative_curve_dist += (v - last_v).norm();
-        float linear_dist = (v - last_sample_v).norm();
+        double linear_dist = (v - last_sample_v).norm();
 
         if (((cumulative_curve_dist / linear_dist) > ratio_threshold)
             | (abs(cumulative_curve_dist - linear_dist) > linear_threshold)) {

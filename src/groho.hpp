@@ -16,6 +16,6 @@ struct spkid_t {
 };
 
 namespace globals {
-const float scale = 10 * 149'597'870.700; // 10 AU
+const double scale = 10 * 149'597'870.700; // 10 AU
 }
 }

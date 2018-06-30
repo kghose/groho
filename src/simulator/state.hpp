@@ -15,10 +15,13 @@ namespace sim {
 
 struct State {
 
-    State(double t_s, const std::vector<Body>& orrery, std::vector<Body>& ships)
-        : t_s(t_s)
-        , orrery(orrery)
-        , ships(ships)
+    State(
+        double                   _t_s,
+        const std::vector<Body>& _orrery,
+        std::vector<Body>&       _ships)
+        : t_s(_t_s)
+        , orrery(_orrery)
+        , ships(_ships)
     {
     }
 

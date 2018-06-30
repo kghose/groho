@@ -16,7 +16,7 @@ struct SET_ACCEL : public FlightPlanAction {
     {
     }
 
-    void setup(State& state) {}
+    void setup([[maybe_unused]] State& state) {}
 
     void operator()(State& state)
     {
