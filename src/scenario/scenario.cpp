@@ -25,21 +25,24 @@ bool orrery_changed(const Configuration& a, const Configuration& b)
     return (a.orrery_fnames != b.orrery_fnames);
 }
 
-std::optional<Body> parse_ship_properties(std::string fname)
+std::optional<Body> parse_ship_properties(std::string fname, int ship_idx)
 {
     BodyConstant       p;
     ShipCharacteristic ch;
     BodyState          s;
 
+    p.code = ship_idx;
+
     typedef std::string sst;
 
     std::unordered_map<sst, std::function<void(sst)>> keyword_map{
 
-        { "name", [&](sst v) { p.name                 = v; } },
-        { "max-acceleration", [&](sst v) { ch.max_acc = stof(v); } },
-        { "max-fuel", [&](sst v) { ch.max_fuel        = stof(v); } },
-        { "burn-rate", [&](sst v) { ch.burn_rate      = stof(v); } },
-        { "flight-state", [&](sst v) { s.flight_state = FALLING; } },
+        { "name", [&](sst v) { p.name                  = v; } },
+        { "max-acceleration", [&](sst v) { ch.max_acc  = stof(v); } },
+        { "max-fuel", [&](sst v) { ch.max_fuel         = stof(v); } },
+        { "burn-rate", [&](sst v) { ch.burn_rate       = stof(v); } },
+        { "flight-state",
+          [&]([[maybe_unused]] sst v) { s.flight_state = FALLING; } },
 
         // TODO: handle landed state
         { "position", [&](sst v) { s.pos = stoV(v); } },
@@ -123,8 +126,9 @@ void Scenario::from(const Configuration& new_config)
     ships.clear();
     actions.clear();
     int default_ship_code = -1000;
+    // https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#Spacecraft
     for (auto& fp_name : new_config.flightplan_fnames) {
-        auto ship = parse_ship_properties(fp_name /*, --default_ship_code*/);
+        auto ship = parse_ship_properties(fp_name, --default_ship_code);
         if (ship) {
             ships.push_back(*ship);
             actions.splice(
