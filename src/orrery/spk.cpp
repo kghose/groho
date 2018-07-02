@@ -149,7 +149,7 @@ struct ElementRecordMetadata {
 ElementRecordMetadata
 read_element_record_metadata(std::ifstream& nasa_spk_file, const Summary& s);
 
-Ephemeris read_ephemeris(
+EphShrPtr read_ephemeris(
     std::ifstream& nasa_spk_file,
     const Summary& s,
     double         begin_jd,
@@ -194,8 +194,10 @@ load_spk(std::ifstream& nasa_spk_file, double begin_s, double end_s)
             continue;
         }
 
-        eph_vec.push_back(EphShrPtr(new Ephemeris(
-            read_ephemeris(nasa_spk_file, summary, begin_s, end_s))));
+        const auto eph = read_ephemeris(nasa_spk_file, summary, begin_s, end_s);
+        if (eph) {
+            eph_vec.push_back(eph);
+        }
     }
 
     return eph_vec;
@@ -297,7 +299,7 @@ SummaryVec read_summaries(
     return sv;
 }
 
-Ephemeris read_ephemeris(
+EphShrPtr read_ephemeris(
     std::ifstream& nasa_spk_file,
     const Summary& s,
     double         begin_s,
@@ -309,31 +311,37 @@ Ephemeris read_ephemeris(
     size_t end_element   = std::floor((end_s - erm.init) / erm.intlen);
 
     size_t n_coeff;
-    if (s.data_type == 2) {
+    switch (s.data_type) {
+    case 2:
         n_coeff = (int(erm.rsize) - 2) / 3; // Type II - has one sets of coeffs
-    }
-    if (s.data_type == 3) {
+        break;
+    case 3:
         n_coeff = (int(erm.rsize) - 2) / 6; // Type III - has two sets of coeffs
+        break;
+    default:
+        LOG_S(WARNING) << "Body " << s.target_id
+                       << ": Data is neither Type II or Type III: Skipping";
+        return {};
     }
 
     size_t internal_offset_byte
         = (begin_element * erm.rsize + s.start_i - 1) * size_of_double;
     nasa_spk_file.seekg(internal_offset_byte);
 
-    Ephemeris eph;
+    auto eph = std::shared_ptr<Ephemeris>(new Ephemeris());
 
-    eph.target_code = s.target_id;
-    eph.center_code = s.center_id;
-    eph.begin_s     = erm.init + begin_element * erm.intlen;
-    eph.interval_s  = erm.intlen;
+    eph->target_code = s.target_id;
+    eph->center_code = s.center_id;
+    eph->begin_s     = erm.init + begin_element * erm.intlen;
+    eph->interval_s  = erm.intlen;
 
-    eph.evec.reserve(end_element - begin_element + 1);
+    eph->evec.reserve(end_element - begin_element + 1);
     for (size_t i = begin_element; i <= end_element; i++) {
-        eph.evec.push_back(read_elements(nasa_spk_file, n_coeff, s.data_type));
+        eph->evec.push_back(read_elements(nasa_spk_file, n_coeff, s.data_type));
     }
 
     DLOG_S(INFO) << "Ephemeris for " << s.target_id << ": " << n_coeff - 1
-                 << " order polynomial, " << eph.evec.size() << " elements, ";
+                 << " order polynomial, " << eph->evec.size() << " elements, ";
 
     return eph;
 }
