@@ -27,7 +27,7 @@ void ctrl_c_pressed(int) { keep_running = false; }
 void print_license()
 {
     std::cout <<
-        R"(  Groho 18.06: A simulator for inter-planetary travel and warfare
+        R"(  Groho 18.07: A simulator for inter-planetary travel and warfare
   Copyright (c) 2017, 2018 by Kaushik Ghose. 
   Released under the MIT License. Some rights reserved)"
               << std::endl;

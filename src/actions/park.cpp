@@ -5,21 +5,10 @@ Copyright (c) 2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 Park a spacecraft around a given body
 */
 
+#include "actionlib.hpp"
 #include "flightplanaction.hpp"
 
 namespace sim {
-
-// Utility to compute deltaV given GM, R and V
-Vector parking_deltaV(double GM, Vector R, Vector Vs)
-{
-    double r_mod       = R.norm();
-    Vector minus_R_hat = R.normed() * -1;
-    Vector Vs_hat      = Vs.normed();
-    Vector Uo_hat      = cross(minus_R_hat, Vs_hat);
-    Vector Vo_hat      = cross(Uo_hat, minus_R_hat);
-    Vector Vo          = Vo_hat * std::sqrt(GM / r_mod);
-    return Vo - Vs;
-}
 
 // V0.0
 // Once we come within R km of a planet, maneuver to set V to match orbital VO
