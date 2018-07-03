@@ -1,17 +1,29 @@
 #!/bin/bash
 # Script to pull .bsp files from NASA
-set -ex
+set -e
 
-planet_path="https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/"
+download() {
+    local path=$1
+    shift
+    local files=($@)
+    for f in ${files[@]} 
+    do
+        if [ ! -f ${f} ]; then
+            curl -o ${f} ${path}${f}
+        else
+            echo "${f} present"
+        fi
+    done
+}
 
-satellite_path="https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/"
+path="https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/"
+files=(de430.bsp)
+download ${path} ${files[@]}
+
+path="https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/"
 files=(mar097.bsp jup310.bsp sat375.bsp nep081.bsp ura111.bsp plu055.bsp)
+download ${path} ${files[@]}
 
-for f in ${files[@]} 
-do
-    curl -o ${f} ${satellite_path}${f}
-done
-
-asteroid_path="ftp://ssd.jpl.nasa.gov/pub/eph/small_bodies/asteroids_de430/"
-file="ast343de430.bsp"
-curl -o ${file} ${asteroid_path}${file}
+path="ftp://ssd.jpl.nasa.gov/pub/eph/small_bodies/asteroids_de430/"
+files=(ast343de430.bsp)
+download ${path} ${files[@]}
