@@ -37,7 +37,8 @@ std::optional<Body> parse_ship_properties(std::string fname, int ship_idx)
 
     std::unordered_map<sst, std::function<void(sst)>> keyword_map{
 
-        { "name", [&](sst v) { p.name                  = v; } },
+        { "name", [&](sst v) { p.name   = v; } },
+        { "color", [&](sst v) { p.color = stoul(v, nullptr, 16); } },
         { "max-acceleration", [&](sst v) { ch.max_acc  = stof(v); } },
         { "max-fuel", [&](sst v) { ch.max_fuel         = stof(v); } },
         { "burn-rate", [&](sst v) { ch.burn_rate       = stof(v); } },
