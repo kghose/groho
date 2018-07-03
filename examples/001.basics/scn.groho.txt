@@ -18,7 +18,7 @@
 
 name  = Earth to Mars
 begin = 2458248.5 ; This is in Julian Date
-end   = 2458348.5 ; A 700 day simulation
+end   = 2458948.5 ; A 700 day simulation
 step  = 60 ; This is in seconds
            ; The finer the step the more accurate the simulation
            ; but the longer it takes to run

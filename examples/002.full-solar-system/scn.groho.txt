@@ -1,9 +1,9 @@
 ; This scenario file sets up an orrery containing all 9 planets and
 ; their moons
 
-name  = Earth to Mars
+name  = Just the solar system
 begin = 2420000.5 ; This is in Julian Date
-end   = 2423650.5 ; A 10 year simulation
+end   = 2456500.5 ; A 100 year simulation
 step  = 10000 ; This is in seconds
            ; The finer the step the more accurate the simulation
            ; but the longer it takes to run
