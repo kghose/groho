@@ -1,7 +1,5 @@
 Groho ( গ্রহ )
 =====
-[![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master)
-
 Groho is a simulator for inter-planetary travel and warfare.
 
 The simulator aims to give the user intuitions of how inter-planetary travel, 
@@ -19,10 +17,19 @@ and compose (combine together) simulations.
 planetary system but is more of a mouthful.*
 
 ```
-groho examples/earth-mars.txt 
+cd examples/001.basics
+../../release_build/groho scn.groho.txt 
 ```
+![Groho 18.07 screenshot](docs/milestone-images/groho-18.07.png "Groho 18.07 screenshot")
 
-![Groho 0.3.0 screenshot](docs/milestone-images/groho-0.3.0.png "Groho 0.3.0 screenshot")
+
+```
+cd examples/002.full-solar-system
+../../release_build/groho scn.groho.txt 
+```
+![Groho 18.07 screenshot](docs/milestone-images/groho-18.07-ss.png "Groho 18.07 screenshot")
+
+[![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master)
 
 <!-- TOC -->
 
