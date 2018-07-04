@@ -150,7 +150,7 @@ bool SpkOrrery::load_orrery_model(
 
 void set_pos(double s, const Ephemeris& eph, sim::Vector& pos)
 {
-    Elements e = eph.evec[std::floor((s - eph.begin_s) / eph.interval_s)];
+    const auto& e = eph.evec[std::floor((s - eph.begin_s) / eph.interval_s)];
 
     pos.x = cheby_eval(e.t_mid, e.t_half, e.X, s);
     pos.y = cheby_eval(e.t_mid, e.t_half, e.Y, s);
