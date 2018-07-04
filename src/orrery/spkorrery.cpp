@@ -148,6 +148,15 @@ bool SpkOrrery::load_orrery_model(
     return ok;
 }
 
+void set_pos(double s, const Ephemeris& eph, sim::Vector& pos)
+{
+    Elements e = eph.evec[std::floor((s - eph.begin_s) / eph.interval_s)];
+
+    pos.x = cheby_eval(e.t_mid, e.t_half, e.X, s);
+    pos.y = cheby_eval(e.t_mid, e.t_half, e.Y, s);
+    pos.z = cheby_eval(e.t_mid, e.t_half, e.Z, s);
+}
+
 // Fill out the (x, y, z) of each Orrery body and return us an immutable
 // vector containing this information.
 const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
@@ -155,7 +164,9 @@ const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
     for (size_t i = 0; i < ephemera.size(); i++) {
         set_pos(s, *ephemera[i], bodies[i].state.pos);
         bodies[i].state.t = s;
+    }
 
+    for (size_t i = 0; i < ephemera.size(); i++) {
         if (ephemera[i]->center_code != 0) {
             bodies[i].state.pos += bodies[center_idx[i]].state.pos;
         }

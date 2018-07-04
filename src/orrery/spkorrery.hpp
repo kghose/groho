@@ -22,15 +22,6 @@ namespace orrery {
 
 using namespace daffile;
 
-inline void set_pos(double s, const Ephemeris& eph, sim::Vector& pos)
-{
-    Elements e = eph.evec[std::floor((s - eph.begin_s) / eph.interval_s)];
-
-    pos.x = cheby_eval(e.t_mid, e.t_half, e.X, s);
-    pos.y = cheby_eval(e.t_mid, e.t_half, e.Y, s);
-    pos.z = cheby_eval(e.t_mid, e.t_half, e.Z, s);
-}
-
 class SpkOrrery : public Orrery {
 
     EphemerisVec ephemera;
