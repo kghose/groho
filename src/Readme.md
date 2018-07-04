@@ -6,6 +6,7 @@ Developer notes
 - [Code organization](#code-organization)
     - [Flightplans](#flightplans)
 - [C++ Language features](#c-language-features)
+    - [Instrumentation](#instrumentation)
     - [Warnings, Warnings](#warnings-warnings)
         - [Everything](#everything)
     - [std::unique_ptr with forward declared type](#stdunique_ptr-with-forward-declared-type)
@@ -103,6 +104,13 @@ all the code. The structure is as follows
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## Instrumentation
+
+Address sanitizer `-fsanitize=address` is set for debug compiles and LeakSanitizer
+can be run by doing, for e.g. `ASAN_OPTIONS=detect_leaks=1  ../../debug_build/groho scn.groho.txt --no-gui`
+
+
 
 ## Warnings, Warnings
 

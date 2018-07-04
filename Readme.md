@@ -43,10 +43,11 @@ cd examples/002.full-solar-system
     - [Compile](#compile)
 - [Manual/Tutorial](#manualtutorial)
     - [Getting the data](#getting-the-data)
-    - [Tutorial/manual](#tutorialmanual)
-        - [Simulation files](#simulation-files)
+    - [Simulation files](#simulation-files)
             - [Meta: Why is the tutorial/manual in the form of commented examples?](#meta-why-is-the-tutorialmanual-in-the-form-of-commented-examples)
-        - [Orbit view interactions](#orbit-view-interactions)
+    - [Orbit view interactions](#orbit-view-interactions)
+    - [Flight plans](#flight-plans)
+    - [Signals](#signals)
 - [Physics](#physics)
 - [Related software](#related-software)
     - [NASA's GMAT](#nasas-gmat)
@@ -142,10 +143,7 @@ this is a few GB worth of data.
 
 I save all these kernels under the [`examples`][ex-dir] directory.
 
-
-## Tutorial/manual
-
-### Simulation files
+## Simulation files
 
 Groho uses a **scenario file**, one or more **flight plans** and one or more 
 **annotation file** to run a simulation and organize information on screen. 
@@ -171,9 +169,25 @@ in the simulation files as a reliable way to keep upto-date documentation.
 
 [ex-dir]: examples/
 
-### Orbit view interactions
+## Orbit view interactions
 
 Eventually the [tutorial here](docs/tutorial.md) will be copied over into this space.
+
+
+## Flight plans
+
+At it's most basic a flight plan has a time of activation, when the program 
+starts running, and it can affect the entire state of the simulation at each
+time step. A flightplan can check to see if the state satisfies some conditions 
+before executing parts of its program. 
+
+## Signals
+
+A flight plan can create signals on behalf of a ship. Signals travel radially 
+out at the speed of light from their point of origin and can be recieved by
+other ships once they are within the sphere. Once the signal has spread past 
+the furthest simulation object it is removed, since all ships have recieved
+the signal by that time.
 
 # Physics
 
