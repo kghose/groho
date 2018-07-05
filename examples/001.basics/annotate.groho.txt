@@ -3,24 +3,36 @@
 
 ; Annotations consist of an annotation name followed by parameters
 
+mark id:all with:everything at:current-time
+; This is a short cut that puts carets on every object in the simulation
+; and shows all available object data and metadata tracking the current time
+; of the simulation
 
-show id:-1000 p:speed p:name p:fuel
-; show puts a caret on the body in question and text with the properties asked for
-;
-; valid values for properties (p:) are
-; name, speed, acc, fuel
+mark id:-1001 at:current-time
+; This marks just object -1000 (if it exists) and only with a caret at the
+; current time. This is over-shadowed by our previous directive. What we may
+; have wanted to do was ...
 
-show id:-1000 at:2458348.5 p:fuel
-; By default the annotation travels with the time cursor. Adding an 
-; at: <time> parameter restricts the annotation to the given time
+hide id:-1001
+mark id:-1001 at:current-time
+; This removes the marker for -1000 (if it exists, leaving all the others)
+; And then adds a mark for just object -1000 (if it exists) and only with a 
+; caret at the current time. 
 
-show id:-1000 at:max-speed p:speed
-; Instead of a <time> you can write max- or min- followed by a parameter
-; and the annotation will appear only at the local max or min
-; valid values for max-/min- are speed, acc
+; Of course, if we did not have mark id:all at the start, we would not need the
+; hide commands.
 
-show-diff id:-1000 id:-1001 at:2458348.5 p:dist p:speed p:acc
-; show-diff puts a line between the pair of ids and text with the differential
-; of the properties asked for
-;
-; The other rules for show-diff are the same as for show
+mark id:-1002 with:speed at:2458348.5
+; This creates a mark for this object at this particular time
+
+mark id:-1002 with:speed at:max-acc
+; This creates a mark for this object at this particular condition
+
+; Valid values for the with: parameter can be obtained by doing something like
+mark help
+; This just causes this command to error and display a list of valid parameters
+
+
+mark-pair srcid:499 dstid:-1001 with:all
+; mark-pair has a similar syntax to mark and is used to mark the difference
+; in state between the two objects. 
