@@ -40,6 +40,18 @@ public:
         }
     }
 
+    void update(std::shared_ptr<const Buffer> buffer)
+    {
+        for (size_t i = 0, j = 0; i < buffer->body_count(); i++) {
+
+            if (buffer->metadata(i).property.body_type == BARYCENTER) {
+                continue;
+            }
+
+            paths[j++]->update(buffer->get(i));
+        }
+    }
+
     void draw(const Camera& camera)
     {
         _shader.setTransformationProjectionMatrix(camera.get_matrix());

@@ -33,8 +33,11 @@ bool OrbitView::reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     }
 
     buffer->lock();
-
-    trajectories.reload_from_buffer(buffer);
+    if (buffer->simulation_serial() != simulation_serial) {
+        trajectories.reload_from_buffer(buffer);
+    } else {
+        trajectories.update(buffer);
+    }
 
     simulation_serial = buffer->simulation_serial();
     point_count       = buffer->point_count();
