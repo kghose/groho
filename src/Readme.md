@@ -6,7 +6,9 @@ Developer notes
 - [Code organization](#code-organization)
     - [Flightplans](#flightplans)
 - [C++ Language features](#c-language-features)
-    - [Instrumentation](#instrumentation)
+    - [Instrumentation/profiling/debugging](#instrumentationprofilingdebugging)
+        - [`-fsanitize=address`](#-fsanitizeaddress)
+        - [Profiling on mac](#profiling-on-mac)
     - [Warnings, Warnings](#warnings-warnings)
         - [Everything](#everything)
     - [std::unique_ptr with forward declared type](#stdunique_ptr-with-forward-declared-type)
@@ -60,6 +62,16 @@ Developer notes
 
 # Code organization
 
+Once the I/O system (Configuration) has loaded in the scenario
+
+
+simulator(state) -> state
+buffer(state) -> state_history
+display(state_history) -> display
+
+
+
+
 * Orrery - Orrery models (NASA/JPL SPK files) loading and computation
 * Configuraton - collection of scenario information and files 
 * Scenario - Instantiation (loading) of scenario information in a Configuration
@@ -69,9 +81,13 @@ Developer notes
 * State
     - Bodies (orrery)
     - Bodies (ships)
-
-* Simulation
+* Simulator
+    - Buffer
     - Scenario -> State
+* Magnumapp
+    - 
+
+
 
 
 * scenario - Scenario and flightplan loading and parsing
@@ -105,12 +121,17 @@ all the code. The structure is as follows
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
 
-## Instrumentation
+## Instrumentation/profiling/debugging
 
+### `-fsanitize=address`
 Address sanitizer `-fsanitize=address` is set for debug compiles and LeakSanitizer
 can be run by doing, for e.g. `ASAN_OPTIONS=detect_leaks=1  ../../debug_build/groho scn.groho.txt --no-gui`
 
+### Profiling on mac
 
+This is remarkably simple and shows why the tooling on mac is considered very
+good - I used Instruments -> Time Profiler to find code chokepoints and Leaks
+for memory issues.
 
 ## Warnings, Warnings
 
@@ -538,11 +559,17 @@ there are some aesthetic and scientific issues related to straight trajectories.
 A spacecraft flying with high constant acceleration has a very straight 
 trajectory and the display will be jerky. 
 
-The solution chosen is to force a flush of the buffer when the display 
+~The solution chosen is to force a flush of the buffer when the display 
 asks to see it. Whether we have anything to flush depends on whether we've
 accumulated any miles in the downsampler (`cumulative_curve_dist`). No miles,
 no flush, which prevents us from keeping adding data unnecessarily on every 
-flush. (commit `11add0488fca`)
+flush. (commit `11add0488fca`)~
+
+The problem with this solution is that it in-elegantly ties display refresh to
+simulation data sampling. In the current implementation, because of how 
+inefficiently we mirror the simulation buffer to the display buffer, this can
+cause a strange feedback loop where more and more simulation points are sampled
+because it takes longer and longer to mirror the data.
 
 
 ## How much and what data to store
