@@ -3,6 +3,18 @@
 
 ; Annotations consist of an annotation name followed by parameters
 
+view center:399 zoom:1 az:0 el:90 time:current
+; This sets the view of the simulation to center on the Earth (399) at normal
+; zoom, looking from "above" and tracking the current time.
+
+; view center:399 zoom:1 az:0 el:90 time:2458348.5
+; Same as above, but now located at a certain time. The view is "current" until
+; the simulation reaches that time point.
+
+; The view command is over-ridden by any mouse/keyboard commands we issue. For
+; the same simulation 
+
+
 mark id:all with:everything at:current-time
 ; This is a short cut that puts carets on every object in the simulation
 ; and shows all available object data and metadata tracking the current time

@@ -1,17 +1,18 @@
 Groho ( গ্রহ )
 =====
-Groho is a simulator for inter-planetary travel and warfare.
+Groho is a simulator for space flight, communication and warfare within the solar system.
 
-The simulator aims to give the user intuitions of how inter-planetary travel, 
-commerce and conflict would play out in the near future within the solar system. 
-There is no faster than light travel, though there are no limits to 
-how powerful spaceship propulsion can be. 
+Space is unimaginably vast. My goal is to create a simulator that will give us an 
+appreciation of just how lonely even our tiny corner of the universe is. We 
+define a solar system model (the Orrery - based on NASA's planetary data), 
+set up space craft scripts (Flight Plans), and then sit back and watch the action 
+unfold. The program makes it easy to setup, run, save, modify, inspect and 
+compose (combine together) simulations. 
 
-Spacecraft actions are defined using scripts called flight plans. The user
-defines the solar system model, initial conditions (such as number and disposition
-of spaceships) and the simulation evolves according to natural law and
-flight plan actions. The program makes it easy to setup, run, save, modify, inspect 
-and compose (combine together) simulations. 
+My hope is that we will come away with an understanding of basic orbital manuevers, 
+an intuition of the time delays in communicating and coordinating across the solar 
+system and a feel for what life will be like for our descendants who set sail away 
+from the home planet.
 
 *Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the word for 
 planetary system but is more of a mouthful.*
@@ -33,8 +34,7 @@ cd examples/002.full-solar-system
 
 <!-- TOC -->
 
-- [In a bit more detail](#in-a-bit-more-detail)
-    - [Features and use cases](#features-and-use-cases)
+- [Features and use cases](#features-and-use-cases)
     - [This is not an interactive simulation](#this-is-not-an-interactive-simulation)
     - [This is not an n-body simulation](#this-is-not-an-n-body-simulation)
     - [Relativistic effects](#relativistic-effects)
@@ -44,34 +44,34 @@ cd examples/002.full-solar-system
 - [Manual/Tutorial](#manualtutorial)
     - [Getting the data](#getting-the-data)
     - [Simulation files](#simulation-files)
-            - [Meta: Why is the tutorial/manual in the form of commented examples?](#meta-why-is-the-tutorialmanual-in-the-form-of-commented-examples)
+        - [Signals](#signals)
     - [Orbit view interactions](#orbit-view-interactions)
-    - [Flight plans](#flight-plans)
-    - [Signals](#signals)
-- [Physics](#physics)
+        - [Meta](#meta)
+            - [Why is the tutorial/manual in the form of commented examples?](#why-is-the-tutorialmanual-in-the-form-of-commented-examples)
+            - [Why do you have stuff in the manual/examples that isn't implemented yet?](#why-do-you-have-stuff-in-the-manualexamples-that-isnt-implemented-yet)
+- [Physics/astronautics word salad](#physicsastronautics-word-salad)
 - [Related software](#related-software)
     - [NASA's GMAT](#nasas-gmat)
     - [Orbiter by Martin Schweiger](#orbiter-by-martin-schweiger)
     - [Bussard by Phil Hagelberg](#bussard-by-phil-hagelberg)
     - [SolarSystemOrbiter](#solarsystemorbiter)
+    - [Poliastro by Juan Luis Cano Rodríguez](#poliastro-by-juan-luis-cano-rodríguez)
     - [Celestia](#celestia)
 - [Thanks](#thanks)
+    - [Components](#components)
+    - [Dev tooling](#dev-tooling)
 - [Meta: Why did you put everything in this one document?](#meta-why-did-you-put-everything-in-this-one-document)
     - [Some other documents of interest](#some-other-documents-of-interest)
 
 <!-- /TOC -->
 
-
-# In a bit more detail
-
-
-## Features and use cases
+# Features and use cases
 
 This simulator is designed to help gain intuitions of how near-future space 
 flight within the solar system would look like. To this end it allows us to:
 
 - Simulate the flights and interactions of hundreds of spacecraft
-- Simulate multi-year journeys in reasonable CPU time.
+- Simulate decades long journeys in reasonable CPU time.
 - Compose multiple journeys together to make a complex simulation from simpler ones
 - Perform reproducible simulations (seeded random number generators, stable numerical calculations)
 - Compare multiple versions of a simulation
@@ -106,7 +106,8 @@ at one location is detected at other locations/ships.
 [![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master)
 
 
-**This code requires a C++17 compiler.** 
+**This code requires a C++17 compiler.** In case you need it, there is a 
+[Dockerfile](.circleci/dockerfile) that installs a recent GCC.
 `std::optional` is one of the C++17 features used.
 
 ## Dependencies
@@ -117,6 +118,9 @@ You should follow the instructions on the [Magnum project page][magnum-install],
 but in brief:
 
 macOS: `brew install mosra/magnum/magnum` and `brew install mosra/magnum/corrade`
+
+[magnum]: http://magnum.graphics/
+[magnum-install]: http://doc.magnum.graphics/magnum/building.html
 
 ## Compile
 
@@ -137,7 +141,7 @@ Groho simulates the solar system using data produced by NASA/JPL. This data
 is distributed by NASA as planetary kernels found [here][nasa-kernels]. 
 There is a [script](examples/bsp-script.sh) under the examples directory that 
 I used to pull in all the `.bsp` files for the solar system. Be aware that 
-this is a few GB worth of data.
+this is a few GB worth of data. You are free to use whatever kernels you wish.
 
 [nasa-kernels]: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/
 
@@ -146,17 +150,56 @@ I save all these kernels under the [`examples`][ex-dir] directory.
 ## Simulation files
 
 Groho uses a **scenario file**, one or more **flight plans** and one or more 
-**annotation file** to run a simulation and organize information on screen. 
-In the [`examples`][ex-dir] directory are a series of tutorials-by-example. 
-Each directory contains a scenario file, flight plans and annotation files
-with a mixture of commentary and code to show you the syntax. 
-
+**annotation files** to run a simulation and organize information on screen. 
 Simulation files can be edited with your favorite editor and versioned with
 your favourite versioning system. `groho` is independent of all this. What
 `groho` does is monitor changes to the simulation files on the file system and 
 updates the simulation computations when the files change.
 
-#### Meta: Why is the tutorial/manual in the form of commented examples?
+In the [`examples`][ex-dir] directory are a series of tutorials-by-example. 
+Each directory contains a scenario file, flight plans and annotation files
+with a mixture of commentary and code to show you the syntax. 
+
+[ex-dir]: examples/
+
+Start with the [basic example][basic-ex]: Read the [simulation file][basic-sim-file],
+[flight plan file][basic-flt-plan1] (there are [two][basic-flt-plan2]) and the
+[annotation file][basic-ann-file].
+
+[basic-ex]: examples/001.basics
+[basic-sim-file]: examples/001.basics/scn.groho.txt
+[basic-flt-plan1]: examples/001.basics/flt1.groho.txt
+[basic-flt-plan2]: examples/001.basics/flt2.groho.txt
+[basic-ann-file]: examples/001.basics/annotate.groho.txt
+
+After that, just browse the examples to get a feel for what else is available.
+
+### Signals
+
+A flight plan can create signals on behalf of a ship. Signals travel radially 
+out at the speed of light from their point of origin and can be recieved by
+other ships once they are within the sphere. Once the signal has spread past 
+the furthest simulation object it is removed, since all ships have recieved
+the signal by that time.
+
+
+## Orbit view interactions
+
+Dragging the mouse will orbit the camera. Scrolling will zoom in and out. 
+Pressing shift while scrolling will move back and forth in time. The left/right 
+cursor keys cycle through the planets/asteroids/spacecraft and the up/down keys 
+cycle through the satellites of said planets allowing us to center the camera on 
+different objects. 
+
+Once you have sufficient objects in the simulation, it becomes hard to find things. 
+Whatever view you can get to using the mouse/keyboard, you can also get to using
+the `view` annotation and in a much more effective way. Check out the documentation.
+
+*Eventually the [tutorial here](docs/tutorial.md) will be copied over into this space.*
+
+### Meta 
+
+#### Why is the tutorial/manual in the form of commented examples?
 
 I personally learn well by example, so I wanted to try this out. I also use
 these tutorial scripts as ways to prototype proposed simulation file syntax,
@@ -167,29 +210,14 @@ create/update example scripts and a separate manual or tutorial
 (where I'd have to paste in snippets of code anyway). I chose to use comments 
 in the simulation files as a reliable way to keep upto-date documentation. 
 
-[ex-dir]: examples/
+#### Why do you have stuff in the manual/examples that isn't implemented yet?
 
-## Orbit view interactions
+I'm aspirational. But seriously, I use the manual and the example input files as
+functional specifications. As I build out more of the software, more of the
+specifications are implemented. Please file bug reports as necessary.
 
-Eventually the [tutorial here](docs/tutorial.md) will be copied over into this space.
 
-
-## Flight plans
-
-At it's most basic a flight plan has a time of activation, when the program 
-starts running, and it can affect the entire state of the simulation at each
-time step. A flightplan can check to see if the state satisfies some conditions 
-before executing parts of its program. 
-
-## Signals
-
-A flight plan can create signals on behalf of a ship. Signals travel radially 
-out at the speed of light from their point of origin and can be recieved by
-other ships once they are within the sphere. Once the signal has spread past 
-the furthest simulation object it is removed, since all ships have recieved
-the signal by that time.
-
-# Physics
+# Physics/astronautics word salad
 
 There is a bunch of interesting physics and math behind orbital maneuvers.
 From Robert A. Braeunig's [page][bob] we have the following named maneuvers:
@@ -200,6 +228,12 @@ From Robert A. Braeunig's [page][bob] we have the following named maneuvers:
 - Simple plane change
 
 [bob]: http://www.braeunig.us/space/orbmech.htm#maneuver
+
+And, from [poliastro]
+
+- Lambert’s problem
+- Bi-elliptic transfer
+
 
 # Related software
 
@@ -235,6 +269,13 @@ where you write complex programs to fly your spaceship to solve puzzles.
 [SolarSystemOrbiter](https://github.com/madoee/SolarSystemOrbiter) -
 "Plot the orbits of the planets in our Solar System and calculate the Hohmann Transfer Orbits to transfer your rocket ship from one planet to the other and back." 
 
+## Poliastro by Juan Luis Cano Rodríguez
+
+[poliastro] is an open source collection of Python subroutines for solving 
+problems in Astrodynamics and Orbital Mechanics.
+
+[poliastro]: http://docs.poliastro.space/en/latest/index.html
+
 ## Celestia
 
 [Celestia](https://github.com/CelestiaProject/Celestia) - 
@@ -242,16 +283,30 @@ where you write complex programs to fly your spaceship to solve puzzles.
 
 # Thanks
 
+## Components
 Included in the code are the following fine pieces of software
 
 1. [loguru](https://github.com/emilk/loguru) from Emil Ernerfeldt for the logging
 2. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash for unit tests
 3. [magnum/corrade][magnum] from Mosra (Vladimír Von­druš) for everything graphical
-4. [markdown-toc][mtoc] from Alan Walk. I used that to generate the table of contents, which allowed me to consolidate my documentation.
 
-[magnum]: http://magnum.graphics/
-[magnum-install]: http://doc.magnum.graphics/magnum/building.html
+## Dev tooling
+I was helped in writing the code by
+
+1. [The Clang compiler][clang] and `clang-format`  
+1. [Visual Studio Code][vs-code] from microsoft which does everything 
+   I want in a code editor (Though the debugger integration needs some work.)
+1. [Instruments]. I dislike Xcode, but love Instruments
+1. [markdown-toc][mtoc] from Alan Walk. I used that to generate the 
+   table of contents in markdown documents, which allowed me to 
+   consolidate my documentation.
+
+
+[vs-code]: https://code.visualstudio.com/
+[clang]: https://clang.llvm.org/
+[Instruments]: https://help.apple.com/instruments/mac/current/
 [mtoc]: https://github.com/AlanWalk/Markdown-TOC
+
 
 # Meta: Why did you put everything in this one document?
 
