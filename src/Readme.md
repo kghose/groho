@@ -4,7 +4,7 @@ Developer notes
 <!-- TOC -->
 
 - [Code organization](#code-organization)
-    - [Flightplans](#flightplans)
+- [Loading planetary kernels](#loading-planetary-kernels)
 - [C++ Language features](#c-language-features)
     - [Instrumentation/profiling/debugging](#instrumentationprofilingdebugging)
         - [`-fsanitize=address`](#-fsanitizeaddress)
@@ -33,6 +33,10 @@ Developer notes
     - [The use of "f" in code using OpenGL](#the-use-of-f-in-code-using-opengl)
 - [Code design considerations](#code-design-considerations)
     - [Sharing a data buffer between writer and reader](#sharing-a-data-buffer-between-writer-and-reader)
+    - [Flightplans](#flightplans)
+        - [Requirements](#requirements)
+        - [Solution](#solution)
+        - [Code organization](#code-organization-1)
     - [Who does what?](#who-does-what)
 - [Displaying the simulation](#displaying-the-simulation)
     - [Fractal downsampler](#fractal-downsampler)
@@ -102,19 +106,10 @@ display(state_history) -> display
 * buffer - code to handle data storage and sharing
 * magnumapp - Visualization window based on Magnum/Corrade
 
-## Flightplans
 
-I wanted to be able to add new flight plans actions without having to recompile
-all the code. The structure is as follows
+# Loading planetary kernels
 
-- flightplanaction.hpp
-  - contains the base class definiton
-- flightplanaction.cpp
-  - script parser
-  - this is recompiled for each new action, we just add a forward delcaration
-    for each new action
-
-
+ha
 
 # C++ Language features
 
@@ -506,6 +501,44 @@ the current data point (that the writer is working on). This code is more
 involved, however.
 
 
+## Flightplans
+
+### Requirements
+- The flight plan should not block the main thread: we might have computations
+  that run long
+- What a flight plan can do should be limited to
+  - Changing a spacecraft's attitude and acceleration
+  - Sending out a signal
+  - Logging an event
+- It will be nice to be able to add new flight plan actions without having to
+  recompile everything
+
+### Solution
+- Flight plans have a run() action that is called when the activation time of the
+  action is reached. This is started in its own thread.
+- Flight plans have read access to the state of the whole simulation
+- Flight plans can only set a copy of the space craft's attitude and acceleration 
+- For every time step the flight plan is active, the attitude and acceleration
+  set by the action will be copied over to the space craft state
+- Once the run() routine is finished the flight plan will be deactivated.
+
+### Code organization
+I wanted to be able to add new flight plans actions without having to recompile
+all the code. The structure is as follows
+
+- flightplanaction.hpp
+  - contains the base class definiton
+- flightplanaction.cpp
+  - Carries script parser
+  - We add a forward declaration here for each action.
+  - This has to be recompiled when a new action is added
+- actionlib.cpp/.hpp
+  - some common functions shared just by actions
+  - a change here will cause a recompilation of any action that uses this lib
+- actionX.cpp
+  - carries a new action, recompiled when code is changed
+
+
 ## Who does what?
 
 In the initial design (say upto 0.4.0 - 6ef02d21f6368) - which grew a little 
@@ -548,6 +581,10 @@ smoothly fit in with the over all philosophy.
 
 # Displaying the simulation
 
+Our goal is to run a 100 year simulation with multiple ships operating across the
+whole solar system. Just as an assumption probably a 60s time step will suffice for
+
+
 ## Fractal downsampler
 
 The exciting story behind the fractal downsampler is in this [IPython notebook][downsampler].
@@ -566,10 +603,11 @@ no flush, which prevents us from keeping adding data unnecessarily on every
 flush. (commit `11add0488fca`)~
 
 The problem with this solution is that it in-elegantly ties display refresh to
-simulation data sampling. In the current implementation, because of how 
+simulation data sampling. ~In the current implementation, because of how 
 inefficiently we mirror the simulation buffer to the display buffer, this can
 cause a strange feedback loop where more and more simulation points are sampled
-because it takes longer and longer to mirror the data.
+because it takes longer and longer to mirror the data.~ I've made the data
+mirroring more efficient, but in principle this problem remains
 
 
 ## How much and what data to store
