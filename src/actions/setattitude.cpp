@@ -16,17 +16,15 @@ struct SET_ATTITUDE : public FlightPlanAction {
     {
     }
 
-    void setup([[maybe_unused]] State& state) {}
+    void setup(State& state) { FlightPlanAction::setup(state); }
 
-    void operator()(State& state)
+    ShipCommand execute(const State& state)
     {
-        if (state.t_s < meta.t_s)
-            return;
-
-        state.ships[meta.ship_idx].state.att = att;
         DLOG_S(INFO) << state.ships[meta.ship_idx].property.name
                      << " attitude set";
+
         done = true;
+        return { {}, att };
     }
 
     Vector att;

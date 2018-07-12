@@ -34,8 +34,6 @@ Developer notes
 - [Code design considerations](#code-design-considerations)
     - [Sharing a data buffer between writer and reader](#sharing-a-data-buffer-between-writer-and-reader)
     - [Flightplans](#flightplans)
-        - [Requirements](#requirements)
-        - [Solution](#solution)
         - [Code organization](#code-organization-1)
     - [Who does what?](#who-does-what)
 - [Displaying the simulation](#displaying-the-simulation)
@@ -503,24 +501,22 @@ involved, however.
 
 ## Flightplans
 
-### Requirements
-- The flight plan should not block the main thread: we might have computations
-  that run long
-- What a flight plan can do should be limited to
-  - Changing a spacecraft's attitude and acceleration
-  - Sending out a signal
-  - Logging an event
-- It will be nice to be able to add new flight plan actions without having to
-  recompile everything
+Flight plan actions can not change global state during regular running. 
+This is a matter of philosophy: We could say "An action can do whatever we want" 
+and let it do things like teleport other ships (by changing their position 
+abruptly). However, in the spirit of the simulation an action should really 
+only be able to change the thrust (acc + att) of a single spaceship.
+    
+What about if this is a swarm of spaceships, you ask? Why can't I set the 
+states of multiple-spaceships directly? The proper solution is to broadcast a 
+signal that these other spaceships will then catch. Remember, no faster than 
+light travel or communications are allowed.
 
-### Solution
-- Flight plans have a run() action that is called when the activation time of the
-  action is reached. This is started in its own thread.
-- Flight plans have read access to the state of the whole simulation
-- Flight plans can only set a copy of the space craft's attitude and acceleration 
-- For every time step the flight plan is active, the attitude and acceleration
-  set by the action will be copied over to the space craft state
-- Once the run() routine is finished the flight plan will be deactivated.
+It's good to have constraints like this - it enforces the physical law we want
+to obey, and it makes us creative 
+    
+During initial setup, a flightplan still has access to altering global state 
+because that is still part of how we set up initial conditions.
 
 ### Code organization
 I wanted to be able to add new flight plans actions without having to recompile

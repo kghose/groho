@@ -45,6 +45,12 @@ struct FPAmeta {
     double t_s; // This is data. You say tomato, I say tomato
 };
 
+// These are the two ship parameters we can set
+struct ShipCommand {
+    std::optional<float>  acc;
+    std::optional<Vector> att;
+};
+
 // All actions are derived from this base class
 struct FlightPlanAction {
     FlightPlanAction(const FPAmeta& _meta)
@@ -58,11 +64,11 @@ struct FlightPlanAction {
     // Any setup that has to be done at start of simulation. This typically
     // involves resolving indexes into the orrery and ship list that can only
     // be known after the whole scenario has been loaded
-    virtual void setup(State&) = 0;
+    virtual void setup(State&);
 
-    // This is the action function we run each time step until the action is
-    // done
-    virtual void operator()(State&) = 0;
+    // Given the state of the universe, do any computations we need and then
+    // update the ship's acceleration and attitude as needed
+    virtual ShipCommand execute(const State&) = 0;
 
     // We have to convert an id to an index into a list of bodies very often
     // If we fail, we have to disable the action and warn the user. It is
@@ -70,7 +76,11 @@ struct FlightPlanAction {
     bool set_body_idx(const std::vector<Body>&, spkid_t, size_t&);
 
     const FPAmeta meta;
-    bool          done = false;
+
+    ShipCharacteristic ship_characteristic;
+
+    // Set this flag once the action is completely done and can be discarded
+    bool done = false;
 };
 
 // Each FPA we add specializes this function template

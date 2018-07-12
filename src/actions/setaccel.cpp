@@ -16,25 +16,23 @@ struct SET_ACCEL : public FlightPlanAction {
     {
     }
 
-    void setup([[maybe_unused]] State& state) {}
+    void setup(State& state) { FlightPlanAction::setup(state); }
 
-    void operator()(State& state)
+    ShipCommand execute(const State& state)
     {
-        if (state.t_s < meta.t_s)
-            return;
-
-        double _acc = acc;
-        if (_acc > state.ships[meta.ship_idx].param.max_acc) {
-            _acc = state.ships[meta.ship_idx].param.max_acc;
+        float _acc = acc;
+        if (_acc > ship_characteristic.max_acc) {
+            _acc = ship_characteristic.max_acc;
             LOG_S(WARNING) << meta.line_no << ": SET_ACCEL for "
                            << state.ships[meta.ship_idx].property.name
                            << " exceeds max_acc";
         }
 
-        state.ships[meta.ship_idx].state.acc = _acc;
         DLOG_S(INFO) << state.ships[meta.ship_idx].property.name
                      << " acceleration set";
+
         done = true;
+        return { _acc, {} };
     }
 
     double acc;

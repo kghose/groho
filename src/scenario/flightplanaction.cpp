@@ -27,6 +27,10 @@ Base action class and base parser for flight plan actions
 namespace sim {
 
 // Utility functions /////////////////////////////////////////////////////////
+void FlightPlanAction::setup(State& state)
+{
+    ship_characteristic = state.ships[meta.ship_idx].param;
+}
 
 bool FlightPlanAction::set_body_idx(
     const std::vector<Body>& bodies, spkid_t spkid, size_t& idx)

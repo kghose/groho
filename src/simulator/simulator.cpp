@@ -86,7 +86,16 @@ void setup_actions(fpapl_t& actions, State& state)
 void execute_actions(fpapl_t& actions, State& state)
 {
     for (auto& action : actions) {
-        (*action)(state);
+        if (state.t_s < action->meta.t_s)
+            continue;
+
+        ShipCommand cmd = action->execute(state);
+        if (cmd.acc) {
+            state.ships[action->meta.ship_idx].state.acc = *(cmd.acc);
+        }
+        if (cmd.att) {
+            state.ships[action->meta.ship_idx].state.att = *(cmd.att);
+        }
     }
 }
 
