@@ -50,13 +50,13 @@ bool FlightPlanAction::set_body_idx(
 ///////////////////////////////
 
 struct SET_ATTITUDE;
-struct SET_ACCEL;
+struct BURN;
 struct INITIAL_ORBIT;
 struct PARK_IN_ORBIT;
 
 std::unordered_map<str_t, std::function<fpap_t(const FPAmeta&, params_t&)>>
     available_actions{ { "set-attitude", construct<SET_ATTITUDE> },
-                       { "set-accel", construct<SET_ACCEL> },
+                       { "burn", construct<BURN> },
                        { "initial-orbit", construct<INITIAL_ORBIT> },
                        { "park", construct<PARK_IN_ORBIT> } };
 

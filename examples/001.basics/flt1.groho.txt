@@ -53,8 +53,7 @@ burn-rate         = 0.2   ; This is a duplicate key. This value is used
 2458648.8 set-accel    0.01  
 ; This should give an informative error in the logs and carry on ...
 
-2458300.8 set-accel    acc:0.008 ; Primary burn km/s^2
-2458300.85 set-accel    acc:0.00 ; MECO
+2458300.8 burn acc:0.01 for:3000 ; Burn 1G (0.01 km/s^2) for 3000s
 ; We'll find that its very hard to figure out what absolute direction we
 ; should be pointing at ...
 

@@ -115,7 +115,8 @@ void Simulator::run()
 
     LOG_S(INFO) << "Starting simulation";
 
-    // TODO: deprectae this with a new mechnism for giving display a time cursor
+    // TODO: deprecate this with a new mechanism for giving display a time
+    // cursor
     t_s = scenario.config.begin_s;
     // The first run may involve actions that require the Orrery vel vectors
     // to be filled out
