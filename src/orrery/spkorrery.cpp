@@ -157,9 +157,8 @@ void set_pos(double s, const Ephemeris& eph, sim::Vector& pos)
     pos.z = cheby_eval(e.t_mid, e.t_half, e.Z, s);
 }
 
-// Fill out the (x, y, z) of each Orrery body and return us an immutable
-// vector containing this information.
-const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
+// Fill out the (x, y, z) of each Orrery body
+void SpkOrrery::set_orrery_to(double s)
 {
     for (size_t i = 0; i < ephemera.size(); i++) {
         set_pos(s, *ephemera[i], bodies[i].state.pos);
@@ -171,21 +170,26 @@ const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
             bodies[i].state.pos += bodies[center_idx[i]].state.pos;
         }
     }
+}
+
+// Fill out the (x, y, z) of each Orrery body and return us an immutable
+// vector containing this information.
+const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
+{
+    set_orrery_to(s);
     return bodies;
 }
 
 // This is a little expensive because we have to copy over the first set of
 // computations
-const OrreryBodyVec& SpkOrrery::get_orrery_with_vel_at(double s, double delta_s)
+void SpkOrrery::set_orrery_with_vel_to(double s, double delta_s)
 {
-    OrreryBodyVec  obv2 = get_orrery_at(s + delta_s);
-    OrreryBodyVec& obv1 = const_cast<OrreryBodyVec&>(get_orrery_at(s));
-    // Yes, we know what we are doing here ...
+    OrreryBodyVec bodies_plus_delta = get_orrery_at(s + delta_s);
+    set_orrery_to(s);
 
-    for (size_t i = 0; i < obv1.size(); i++) {
-        obv1[i].state.vel = (obv2[i].state.pos - obv1[i].state.pos) / delta_s;
+    for (size_t i = 0; i < bodies.size(); i++) {
+        bodies[i].state.vel
+            = (bodies_plus_delta[i].state.pos - bodies[i].state.pos) / delta_s;
     }
-
-    return obv1;
 }
 }

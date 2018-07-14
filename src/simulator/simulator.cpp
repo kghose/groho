@@ -116,13 +116,14 @@ void Simulator::run()
     // The first run may involve actions that require the Orrery vel vectors
     // to be filled out
     State state(
-        scenario.config.begin_s,
-        scenario.orrery.get_orrery_with_vel_at(scenario.config.begin_s),
-        scenario.ships);
+        scenario.config.begin_s, scenario.orrery.get_orrery(), scenario.ships);
+
+    scenario.orrery.set_orrery_with_vel_to(state.t_s);
     setup_actions(scenario.actions, state);
     cleanup_actions(scenario.actions);
 
     while (running && (state.t_s < scenario.config.end_s)) {
+        scenario.orrery.set_orrery_to(state.t_s);
 
         update_ships(
             state.ships, state.orrery, state.t_s, scenario.config.step_s);
@@ -132,8 +133,6 @@ void Simulator::run()
 
         state.t_s += scenario.config.step_s;
         t_s = state.t_s; // TODO: better mech for giving display a time cursor
-
-        scenario.orrery.get_orrery_at(state.t_s);
     }
     buffer->flush();
     running = false;
