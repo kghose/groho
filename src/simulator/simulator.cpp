@@ -27,20 +27,11 @@ void Simulator::restart_with(const Configuration& config)
     if (!scenario.valid)
         return;
 
+    // TODO: move this into scenario loading ...
     LOG_S(INFO) << scenario.ships.size() << " spaceships in simulation.";
 
-    buffer = std::shared_ptr<Buffer>(new Buffer);
-    buffer->set_simulation_serial(++_simulation_serial);
-
-    buffer->lock();
-    // buffer contains orrery bodies followed by spaceships
-    for (auto& o : scenario.orrery.get_orrery()) {
-        buffer->add_body(o);
-    }
-    for (auto& ship : scenario.ships) {
-        buffer->add_body(ship);
-    }
-    buffer->release();
+    buffer
+        = std::shared_ptr<Buffer>(new Buffer(scenario, ++_simulation_serial));
 
     running = true;
 
@@ -68,11 +59,15 @@ void update_ship(Body& ship, const std::vector<Body>& orrery, double step_s)
     ship.state.pos += ship.state.vel * step_s;
 }
 
-void update_ships(State& state, double step_s)
+void update_ships(
+    std::vector<Body>&       ships,
+    const std::vector<Body>& orrery,
+    double                   t_s,
+    double                   step_s)
 {
-    for (auto& ship : state.ships) {
-        update_ship(ship, state.orrery, step_s);
-        ship.state.t = state.t_s;
+    for (auto& ship : ships) {
+        update_ship(ship, orrery, step_s);
+        ship.state.t = t_s;
     }
 }
 
@@ -129,22 +124,11 @@ void Simulator::run()
 
     while (running && (state.t_s < scenario.config.end_s)) {
 
-        update_ships(state, scenario.config.step_s);
+        update_ships(
+            state.ships, state.orrery, state.t_s, scenario.config.step_s);
         execute_actions(scenario.actions, state);
         cleanup_actions(scenario.actions);
-
-        buffer->lock();
-
-        // First do the orrery
-        for (size_t i = 0; i < state.orrery.size(); i++) {
-            buffer->append(i, state.orrery[i].state);
-        }
-        // Then the spaceships
-        for (size_t i = 0; i < state.ships.size(); i++) {
-            buffer->append(i + state.orrery.size(), state.ships[i].state);
-        }
-
-        buffer->release();
+        buffer->append(state);
 
         state.t_s += scenario.config.step_s;
         t_s = state.t_s; // TODO: better mech for giving display a time cursor

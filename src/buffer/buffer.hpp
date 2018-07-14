@@ -26,6 +26,7 @@ should see if this is fast enough for us.
 #include "body.hpp"
 #include "fractaldownsampler.hpp"
 #include "groho.hpp"
+#include "scenario.hpp"
 #include "vector.hpp"
 
 namespace sim {
@@ -66,14 +67,19 @@ struct SubBuffer {
 
     const Body& get_metadata() const { return body; }
 
-    Body                     body;
-    FractalDownsampler       sampler;
-    std::vector<BodyState>   data;
+    Body                   body;
+    FractalDownsampler     sampler;
+    std::vector<BodyState> data;
+
+    // This is the last point we passed to the sampler that wasn't saved
+    // We use this when we flush the buffer
     std::optional<BodyState> _last_state;
 };
 
 class Buffer {
 public:
+    Buffer(const Scenario&, unsigned int);
+
     size_t      body_count() const { return sub_buffer.size(); }
     const Body& metadata(size_t i) const
     {
@@ -85,14 +91,12 @@ public:
     size_t       point_count() const { return _point_count; }
 
     // Add another body to the buffer
-    void add_body(const Body body)
-    {
-        sub_buffer.push_back(SubBuffer(body));
-        id_to_index[body.property.code] = sub_buffer.size() - 1;
-    }
+    void add_body(const Body body, size_t idx);
 
     void lock() const { buffer_mutex.lock(); }
     void release() const { buffer_mutex.unlock(); }
+
+    void append(const State&);
 
     void append(size_t i, const BodyState& state)
     {
@@ -114,6 +118,7 @@ public:
         return flushed;
     }
 
+    // TODO: migrate this to spkid_t
     std::optional<size_t> get_index(int spkid) const
     {
         auto result = id_to_index.find(spkid);
@@ -132,11 +137,16 @@ public:
     BodyState at(size_t i, double t_s) const;
 
 private:
+    // This allows a reader to figure out if the buffer has changed since their
+    // last read
     std::atomic<size_t>       _point_count = 0;
     std::atomic<unsigned int> _simulation_serial;
 
+    // This allows us to find a buffer based on spkid
+    // TODO: migrate this to spkid_t
     std::unordered_map<int, size_t> id_to_index;
 
+    //
     std::vector<SubBuffer> sub_buffer;
     mutable std::mutex     buffer_mutex;
 };
