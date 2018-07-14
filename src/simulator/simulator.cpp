@@ -141,12 +141,6 @@ void Simulator::run()
     LOG_S(INFO) << "Stopping simulation";
 }
 
-std::shared_ptr<const Buffer> Simulator::get_buffer() const
-{
-    if (buffer) {
-        buffer->flush();
-    }
-    return buffer;
-}
+std::shared_ptr<const Buffer> Simulator::get_buffer() const { return buffer; }
 
 } // namespace sim

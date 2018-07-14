@@ -13,9 +13,15 @@ namespace sim {
 
 // This overwrites the existing data
 // We don't deallocate the display buffer
-void Path::set_data(const std::vector<BodyState>& state)
+void Path::set_data(Buffer::data_t buf_data)
 {
-    size_t size = state.size();
+    auto [sampled, unsampled] = buf_data;
+
+    size_t size = sampled.size();
+    if (unsampled) {
+        size += 1;
+        last_point_is_unsaved = true;
+    }
 
     // If we try to map zero points we get a runtime error ...
     if (size == 0) {
@@ -42,8 +48,13 @@ void Path::set_data(const std::vector<BodyState>& state)
 
     CORRADE_INTERNAL_ASSERT(data);
 
-    for (size_t i = 0; i < size; i++) {
-        data[i] = v2v(state[i].pos);
+    for (size_t i = 0; i < size - 1; i++) {
+        data[i] = v2v(sampled[i].pos);
+    }
+    if (last_point_is_unsaved) {
+        data[size - 1] = v2v(unsampled->pos);
+    } else {
+        data[size - 1] = v2v(sampled[size - 1].pos);
     }
 
     current_size = size;
@@ -59,9 +70,21 @@ void Path::set_data(const std::vector<BodyState>& state)
 // Raises runtime error if "state" is smaller than the display buffer
 // because this is a sure sign we've messed up - we probably missed doing
 // a "set" somewhere.
-void Path::update(const std::vector<BodyState>& state)
+void Path::update(Buffer::data_t buf_data)
 {
-    size_t size = state.size();
+    auto [sampled, unsampled] = buf_data;
+
+    if (last_point_is_unsaved) {
+        current_size -= 1;
+    }
+
+    size_t size = sampled.size();
+    if (unsampled) {
+        size += 1;
+        last_point_is_unsaved = true;
+    } else {
+        last_point_is_unsaved = false;
+    }
 
     if (size < current_size) {
         throw std::runtime_error("You may have forgotten to 'set' before you "
@@ -73,7 +96,7 @@ void Path::update(const std::vector<BodyState>& state)
     }
 
     if (allocated_size < size) {
-        return set_data(state);
+        return set_data(buf_data);
     }
 
     Containers::ArrayView<Vector3> data
@@ -84,8 +107,13 @@ void Path::update(const std::vector<BodyState>& state)
 
     CORRADE_INTERNAL_ASSERT(data);
 
-    for (size_t i = current_size; i < size; i++) {
-        data[i] = v2v(state[i].pos);
+    for (size_t i = current_size; i < size - 1; i++) {
+        data[i] = v2v(sampled[i].pos);
+    }
+    if (last_point_is_unsaved) {
+        data[size - 1] = v2v(unsampled->pos);
+    } else {
+        data[size - 1] = v2v(sampled[size - 1].pos);
     }
 
     _buffer.flushMappedRange(
