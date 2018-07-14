@@ -53,7 +53,7 @@ public:
         = 0;
 
     // Just return the list of bodies with the positions in an undefined state
-    const OrreryBodyVec& get_orrery() { return bodies; }
+    const OrreryBodyVec& get_orrery() const { return bodies; }
 
     // Fill out the (x, y, z) of each Orrery body and return us an immutable
     // vector containing this information.
