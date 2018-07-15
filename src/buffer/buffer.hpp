@@ -129,9 +129,23 @@ public:
         }
     }
 
-    typedef std::
-        tuple<const std::vector<BodyState>&, const std::optional<BodyState>&>
-            data_t;
+    struct data_t {
+        const std::vector<BodyState>&   sampled;
+        const std::optional<BodyState>& unsampled;
+
+        size_t required_size()
+        {
+            size_t size = sampled.size();
+            if (unsampled) {
+                size += 1;
+            }
+            return size;
+        }
+    };
+
+    // typedef std::
+    //     tuple<const std::vector<BodyState>&, const std::optional<BodyState>&>
+    //         data_t;
 
     data_t get(size_t i) const
     {

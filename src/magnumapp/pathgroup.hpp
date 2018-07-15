@@ -35,7 +35,7 @@ public:
 
             auto p = std::shared_ptr<Path>(new Path);
             p->set_color(Color3(buffer->metadata(i).property.color));
-            p->set_data(buffer->get(i));
+            p->copy_all(buffer->get(i));
             paths.push_back(p);
         }
     }
@@ -48,7 +48,7 @@ public:
                 continue;
             }
 
-            paths[j++]->update(buffer->get(i));
+            paths[j++]->copy_new(buffer->get(i));
         }
     }
 

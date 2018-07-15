@@ -29,14 +29,11 @@ class Path {
 public:
     void set_color(Color3 color) { _color = color; }
 
-    // This overwrites the existing data
-    void set_data(Buffer::data_t);
+    // This copies over all the data
+    void copy_all(Buffer::data_t);
 
-    // This adds on the new elements of "state" to the display buffer.
-    // Raises runtime error if "state" is smaller than the display buffer
-    // because this is a sure sign we've messed up - we probably missed doing
-    // a "set" somewhere.
-    void update(Buffer::data_t);
+    // This copies just the new elements
+    void copy_new(Buffer::data_t);
 
     void draw(Shaders::Flat3D& shader)
     {
@@ -47,15 +44,21 @@ public:
     }
 
 private:
+    void reallocate(size_t new_size);
+
+    enum Mode { ALL, JUST_NEW };
+
+    void map(Buffer::data_t buf_data, Mode mode);
+
     GL::Buffer _buffer;
     size_t     allocated_size = 0;
     size_t     current_size   = 0;
 
     // The simulation data buffer can carry an unsaved last point. For
     // interpolation and display purposes we want to show this, but we
-    // need to also keep in mind that this point may not be eventually
-    // besampled to the buffer
-    bool last_point_is_unsaved = false;
+    // need to also keep in mind that this point may not eventually
+    // be sampled to the buffer
+    bool last_point_is_provisional = false;
 
     GL::Mesh _mesh;
     Color3   _color;
