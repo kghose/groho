@@ -43,6 +43,8 @@ private:
     void mouseMoveEvent(MouseMoveEvent& event) override;
     void mouseScrollEvent(MouseScrollEvent& event) override;
 
+    void keyReleaseEvent(KeyEvent& event) override;
+
 private:
     const sim::Simulator& simulator;
 

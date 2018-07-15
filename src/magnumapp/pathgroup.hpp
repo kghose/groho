@@ -26,6 +26,7 @@ public:
     void reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     {
         paths.clear();
+        body_tree = BodyTree();
 
         for (size_t i = 0; i < buffer->body_count(); i++) {
 
@@ -37,6 +38,8 @@ public:
             p->set_color(Color3(buffer->metadata(i).property.color));
             p->copy_all(buffer->get(i));
             paths.push_back(p);
+
+            body_tree.add(spkid_t(buffer->metadata(i).property.code));
         }
     }
 
@@ -52,6 +55,8 @@ public:
         }
     }
 
+    BodyTree get_body_tree() { return body_tree; }
+
     void draw(const Camera& camera)
     {
         _shader.setTransformationProjectionMatrix(camera.get_matrix());
@@ -63,5 +68,7 @@ public:
 private:
     std::vector<std::shared_ptr<Path>> paths;
     Shaders::Flat3D                    _shader;
+
+    BodyTree body_tree;
 };
 }

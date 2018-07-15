@@ -35,6 +35,7 @@ bool OrbitView::reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     buffer->lock();
     if (buffer->simulation_serial() != simulation_serial) {
         trajectories.reload_from_buffer(buffer);
+        body_tree = trajectories.get_body_tree();
     } else {
         trajectories.update(buffer);
     }

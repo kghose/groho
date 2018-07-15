@@ -52,12 +52,13 @@ void GrohoApp::tickEvent()
     if (orbit_view.reload_from_buffer(buffer)) {
 
         // JUST TESTING - TAKE THIS OUT
-        /*
-        auto idx = buffer->get_index(499);
-        if (buffer->get(*idx).size() > 2) {
-            auto bs       = buffer->at(*idx, simulator.t_s);
-            camera.center = v2v(bs.pos);
-        }*/
+        if (camera.center_id) {
+            auto idx = buffer->get_index(camera.center_id->id);
+            if (buffer->get(*idx).sampled.size() > 2) {
+                auto bs       = buffer->at(*idx, simulator.t_s);
+                camera.center = v2v(bs.pos);
+            }
+        }
 
         redraw();
     }
@@ -128,5 +129,25 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
 
     event.setAccepted();
     redraw();
+}
+
+void GrohoApp::keyReleaseEvent(KeyEvent& event)
+{
+    switch (event.key()) {
+    case KeyEvent::Key::Left:
+        camera.center_id = orbit_view.body_tree.change_item(-1);
+        break;
+    case KeyEvent::Key::Right:
+        camera.center_id = orbit_view.body_tree.change_item(+1);
+        break;
+    case KeyEvent::Key::Up:
+        camera.center_id = orbit_view.body_tree.change_cat(-1);
+        break;
+    case KeyEvent::Key::Down:
+        camera.center_id = orbit_view.body_tree.change_cat(+1);
+        break;
+    default:
+        break;
+    }
 }
 }

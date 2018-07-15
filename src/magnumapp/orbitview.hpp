@@ -8,6 +8,7 @@ the object trajectories (paths), object markers and annotations.
 
 #pragma once
 
+#include "bodytree.hpp"
 #include "buffer.hpp"
 #include "camera.hpp"
 #include "pathgroup.hpp"
@@ -25,6 +26,8 @@ class OrbitView {
 public:
     void draw(const Camera& camera);
     bool reload_from_buffer(std::shared_ptr<const Buffer> buffer);
+
+    BodyTree body_tree;
 
     TimeCursor time_cursor;
 

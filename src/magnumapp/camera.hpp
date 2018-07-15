@@ -8,8 +8,12 @@ so that they know what camera model to use.
 
 #pragma once
 
+#include <optional>
+
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Matrix4.h>
+
+#include "groho.hpp"
 
 namespace sim {
 
@@ -22,9 +26,13 @@ public:
     float aspect_ratio = 2.0;
     float scale        = 1.0;
 
+    std::optional<spkid_t> center_id = spkid_t(0);
+
     Vector3 center = { 0, 0, 0 };
     Deg     az     = 0.0_degf;
     Deg     el     = 0.0_degf;
+
+    double t_s;
 
     Matrix4 get_matrix() const
     {
