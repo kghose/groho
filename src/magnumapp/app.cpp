@@ -28,6 +28,17 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
 
 void GrohoApp::drawEvent()
 {
+    // JUST TESTING - TAKE THIS OUT
+    if (camera.center_id && buffer) {
+        auto idx = buffer->get_index(camera.center_id->id);
+        if (idx) {
+            if (buffer->get(*idx).sampled.size() > 2) {
+                auto bs       = buffer->at(*idx, simulator.t_s);
+                camera.center = v2v(bs.pos);
+            }
+        }
+    }
+
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
     //_shader.setTransformationProjectionMatrix(_projection * _transformation);
@@ -47,25 +58,26 @@ void GrohoApp::viewportEvent(const Vector2i& size)
 
 void GrohoApp::tickEvent()
 {
-    // TODO: make this work for multiple buffers
-    refresh_buffer();
-    if (orbit_view.reload_from_buffer(buffer)) {
+    bool redraw_required = false;
 
-        // JUST TESTING - TAKE THIS OUT
-        if (camera.center_id) {
-            auto idx = buffer->get_index(camera.center_id->id);
-            if (buffer->get(*idx).sampled.size() > 2) {
-                auto bs       = buffer->at(*idx, simulator.t_s);
-                camera.center = v2v(bs.pos);
-            }
-        }
+    if (simulation_has_been_restarted()) {
+        buffer = simulator.get_buffer();
+        orbit_view.load_new_simulation_from_buffer(buffer);
+        redraw_required = true;
+    }
 
+    if (orbit_view.buffer_has_more_points_now(buffer)) {
+        orbit_view.update_simulation_from_buffer(buffer);
+        redraw_required = true;
+    }
+
+    if (redraw_required) {
         redraw();
     }
 }
 
-// If a new buffer is available from the simulation, load it in
-void GrohoApp::refresh_buffer()
+// The simulator has been restarted with a new simulation
+bool GrohoApp::simulation_has_been_restarted()
 {
     std::shared_ptr<const Buffer> sim_buffer = simulator.get_buffer();
 
@@ -73,16 +85,15 @@ void GrohoApp::refresh_buffer()
     // but this code shows our real intent explicitly
 
     if (sim_buffer == nullptr) {
-        return;
+        return false;
     }
 
     if ((buffer != nullptr)
         && (buffer->simulation_serial() == sim_buffer->simulation_serial())) {
-        return;
+        return false;
     }
 
-    // TODO: Make this a rolling buffer for sim overlays
-    buffer = sim_buffer;
+    return true;
 }
 
 void GrohoApp::mousePressEvent(MouseEvent& event)
@@ -149,5 +160,6 @@ void GrohoApp::keyReleaseEvent(KeyEvent& event)
     default:
         break;
     }
+    redraw();
 }
 }

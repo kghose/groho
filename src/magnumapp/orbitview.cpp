@@ -12,39 +12,41 @@ namespace sim {
 
 void OrbitView::draw(const Camera& camera)
 {
-    trajectories.draw(camera);
+    trajectories.draw(camera.get_matrix());
     // ref_plane.draw(camera);
     // sphere.draw(camera);
 }
 
-bool OrbitView::reload_from_buffer(std::shared_ptr<const Buffer> buffer)
+void OrbitView::load_new_simulation_from_buffer(
+    std::shared_ptr<const Buffer> buffer)
+{
+    buffer->lock();
+    trajectories.reload_from_buffer(buffer);
+    body_tree         = trajectories.get_body_tree();
+    simulation_serial = buffer->simulation_serial();
+    point_count       = buffer->point_count();
+    buffer->release();
+}
+
+bool OrbitView::buffer_has_more_points_now(std::shared_ptr<const Buffer> buffer)
 {
     if (buffer == nullptr) {
         return false;
     }
 
-    if ((buffer->simulation_serial() == simulation_serial)
-        && buffer->point_count() == point_count) {
-        return false;
+    if (point_count < buffer->point_count()) {
+        return true;
     }
 
-    if (buffer->simulation_serial() != simulation_serial) {
-        time_cursor.pinned = false;
-    }
+    return false;
+}
 
+void OrbitView::update_simulation_from_buffer(
+    std::shared_ptr<const Buffer> buffer)
+{
     buffer->lock();
-    if (buffer->simulation_serial() != simulation_serial) {
-        trajectories.reload_from_buffer(buffer);
-        body_tree = trajectories.get_body_tree();
-    } else {
-        trajectories.update(buffer);
-    }
-
-    simulation_serial = buffer->simulation_serial();
-    point_count       = buffer->point_count();
-
+    trajectories.update(buffer);
+    point_count = buffer->point_count();
     buffer->release();
-
-    return true;
 }
 }

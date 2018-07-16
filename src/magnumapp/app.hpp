@@ -33,10 +33,7 @@ private:
     void viewportEvent(const Vector2i& size) override;
     void tickEvent() override;
 
-    // If a new buffer is available from the simulation, load it in
-    void refresh_buffer();
-
-    void set_buffers();
+    bool simulation_has_been_restarted();
 
     void mousePressEvent(MouseEvent& event) override;
     void mouseReleaseEvent(MouseEvent& event) override;

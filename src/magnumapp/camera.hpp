@@ -27,12 +27,11 @@ public:
     float scale        = 1.0;
 
     std::optional<spkid_t> center_id = spkid_t(0);
+    double                 t_s;
 
     Vector3 center = { 0, 0, 0 };
     Deg     az     = 0.0_degf;
     Deg     el     = 0.0_degf;
-
-    double t_s;
 
     Matrix4 get_matrix() const
     {
@@ -46,8 +45,5 @@ public:
 private:
     float front = 0.01f;
     float back  = 100.0f;
-
-    Matrix4 transformation;
-    Matrix4 projection;
 };
 }

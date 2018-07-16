@@ -25,7 +25,10 @@ struct TimeCursor {
 class OrbitView {
 public:
     void draw(const Camera& camera);
-    bool reload_from_buffer(std::shared_ptr<const Buffer> buffer);
+
+    void load_new_simulation_from_buffer(std::shared_ptr<const Buffer> buffer);
+    bool buffer_has_more_points_now(std::shared_ptr<const Buffer> buffer);
+    void update_simulation_from_buffer(std::shared_ptr<const Buffer> buffer);
 
     BodyTree body_tree;
 

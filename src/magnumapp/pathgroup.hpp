@@ -13,7 +13,6 @@ Convenient container for managing a group of data to display for a simulation
 #include <Magnum/Shaders/Flat.h>
 
 #include "buffer.hpp"
-#include "camera.hpp"
 #include "path.hpp"
 
 namespace sim {
@@ -57,9 +56,9 @@ public:
 
     BodyTree get_body_tree() { return body_tree; }
 
-    void draw(const Camera& camera)
+    void draw(const Matrix4& projection_matrix)
     {
-        _shader.setTransformationProjectionMatrix(camera.get_matrix());
+        _shader.setTransformationProjectionMatrix(projection_matrix);
         for (auto& p : paths) {
             p->draw(_shader);
         }
