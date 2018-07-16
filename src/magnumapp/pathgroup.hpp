@@ -8,6 +8,7 @@ Convenient container for managing a group of data to display for a simulation
 #pragma once
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 #include <Magnum/Shaders/Flat.h>
@@ -25,7 +26,7 @@ public:
     void reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     {
         paths.clear();
-        body_tree = BodyTree();
+        bodies_present.clear();
 
         for (size_t i = 0; i < buffer->body_count(); i++) {
 
@@ -38,7 +39,7 @@ public:
             p->copy_all(buffer->get(i));
             paths.push_back(p);
 
-            body_tree.add(spkid_t(buffer->metadata(i).property.code));
+            bodies_present.insert(buffer->metadata(i).property.code);
         }
     }
 
@@ -54,7 +55,7 @@ public:
         }
     }
 
-    BodyTree get_body_tree() { return body_tree; }
+    BodyTree get_body_tree() { return BodyTree(bodies_present); }
 
     void draw(const Matrix4& projection_matrix)
     {
@@ -68,6 +69,6 @@ private:
     std::vector<std::shared_ptr<Path>> paths;
     Shaders::Flat3D                    _shader;
 
-    BodyTree body_tree;
+    std::unordered_set<int> bodies_present;
 };
 }

@@ -146,16 +146,16 @@ void GrohoApp::keyReleaseEvent(KeyEvent& event)
 {
     switch (event.key()) {
     case KeyEvent::Key::Left:
-        camera.center_id = orbit_view.body_tree.change_item(-1);
+        camera.center_id = orbit_view.body_tree.change_item(BodyTree::PREVBODY);
         break;
     case KeyEvent::Key::Right:
-        camera.center_id = orbit_view.body_tree.change_item(+1);
+        camera.center_id = orbit_view.body_tree.change_item(BodyTree::NEXTBODY);
         break;
     case KeyEvent::Key::Up:
-        camera.center_id = orbit_view.body_tree.change_cat(-1);
+        camera.center_id = orbit_view.body_tree.change_cat(BodyTree::PREVCAT);
         break;
     case KeyEvent::Key::Down:
-        camera.center_id = orbit_view.body_tree.change_cat(+1);
+        camera.center_id = orbit_view.body_tree.change_cat(BodyTree::NEXTCAT);
         break;
     default:
         break;

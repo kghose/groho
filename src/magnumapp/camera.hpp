@@ -13,6 +13,7 @@ so that they know what camera model to use.
 #include <Magnum/Magnum.h>
 #include <Magnum/Math/Matrix4.h>
 
+#include "bodytree.hpp"
 #include "groho.hpp"
 
 namespace sim {
@@ -25,6 +26,8 @@ public:
     Deg   fov          = 35.0_degf;
     float aspect_ratio = 2.0;
     float scale        = 1.0;
+
+    BodyTree body_tree;
 
     std::optional<spkid_t> center_id = spkid_t(0);
     double                 t_s;
