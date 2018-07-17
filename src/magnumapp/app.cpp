@@ -30,11 +30,15 @@ void GrohoApp::drawEvent()
 {
     // JUST TESTING - TAKE THIS OUT
     if (camera.center_id && buffer) {
-        auto idx = buffer->get_index(camera.center_id->id);
-        if (idx) {
-            if (buffer->get(*idx).sampled.size() > 2) {
-                auto bs       = buffer->at(*idx, simulator.t_s);
-                camera.center = v2v(bs.pos);
+        if (camera.center_id->id == 0) {
+            camera.center = { 0, 0, 0 };
+        } else {
+            auto idx = buffer->get_index(camera.center_id->id);
+            if (idx) {
+                if (buffer->get(*idx).sampled.size() > 2) {
+                    auto bs       = buffer->at(*idx, simulator.t_s);
+                    camera.center = v2v(bs.pos);
+                }
             }
         }
     }

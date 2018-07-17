@@ -39,9 +39,13 @@ struct BodyTree {
         }
         tree.push_back(ships);
 
+        tree.push_back({ 0 }); // SSB
+        cat_id  = 1;
+        body_id = 0;
+
         // mercury, venus, earth, mars, jupiter, saturn, nepture,
         // uranus, pluto
-        for (size_t _cat_id = 1; _cat_id < 10; _cat_id++) {
+        for (size_t _cat_id = 2; _cat_id < 11; _cat_id++) {
             std::vector<spkid_t> this_planet; // yes, Pluto too ...
 
             int planet_id = _cat_id * 100 + 99;
@@ -91,9 +95,12 @@ struct BodyTree {
 
     std::optional<spkid_t> change_cat(int sign)
     {
+        if (tree.size() == 0)
+            return {};
+
         size_t orig_cat_id = cat_id;
-        while (1) {
-            cat_id = (12 + cat_id + sign) % 12;
+        while (true) {
+            cat_id = (13 + cat_id + sign) % 13;
             if (tree[cat_id].size() > 0) {
                 body_id = 0;
                 return get_body_id();
@@ -105,6 +112,9 @@ struct BodyTree {
 
     std::optional<spkid_t> change_item(int sign)
     {
+        if (tree.size() == 0)
+            return {};
+
         size_t item_cnt = tree[cat_id].size();
         if (item_cnt == 0)
             return {};
