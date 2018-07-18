@@ -48,6 +48,7 @@ void GrohoApp::drawEvent()
     //_shader.setTransformationProjectionMatrix(_projection * _transformation);
     // orrery.draw(_shader);
     orbit_view.draw(camera);
+    label.draw();
 
     swapBuffers();
 }

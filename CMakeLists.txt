@@ -28,6 +28,7 @@ find_package( Magnum REQUIRED
     MeshTools
     Primitives
     Shaders
+    Text
     Sdl2Application
 )
 
@@ -67,5 +68,6 @@ target_link_libraries(
     Magnum::MeshTools
     Magnum::Primitives
     Magnum::Shaders
+    Magnum::Text
     -lpthread # gcc on linux requires this
 )

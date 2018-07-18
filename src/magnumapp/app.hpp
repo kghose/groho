@@ -17,6 +17,7 @@ Magnum App to handle windowing and display
 #include "camera.hpp"
 #include "orbitview.hpp"
 #include "simulator.hpp"
+#include "textlabel.hpp"
 
 namespace sim {
 
@@ -55,5 +56,7 @@ private:
 
     Matrix4  _transformation, _projection;
     Vector2i _previousMousePosition;
+
+    TextLabel label;
 };
 }
