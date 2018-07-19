@@ -6,6 +6,7 @@ Developer notes
 - [Code organization](#code-organization)
 - [Loading planetary kernels](#loading-planetary-kernels)
 - [C++ Language features](#c-language-features)
+    - [Order matters](#order-matters)
     - [Instrumentation/profiling/debugging](#instrumentationprofilingdebugging)
         - [`-fsanitize=address`](#-fsanitizeaddress)
         - [Profiling on mac](#profiling-on-mac)
@@ -113,6 +114,91 @@ ha
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## Order matters
+
+In a block of code the order of destruction of objects is the reverse of their
+creation which is simply their order of declaration. In a normal block of code
+I'm cognizant of imperative order because, well, that's imperative code. In
+a class declaration, however, I don't pay that much attention to the order of
+my definitions unless I'm worrying about serialization.
+
+I tend to think
+```
+class A {
+    int x;
+    float y;
+    std::string z;
+};
+```
+is equivalent to
+```
+class A {
+    std::string z;
+    int x;
+    float y;
+};
+```
+
+But that is not exactly true. When class A is destroyed the destruction of the
+objects in the first case is `z, y, x` and in the second case is `y, x, z`. In
+most cases it does not matter except when it mysteriously does.
+
+My original code was
+
+```
+    ... {
+        _font = _manager.loadAndInstantiate("FreeTypeFont");
+
+        ...
+    }
+
+    ...
+
+    PluginManager::Manager<Text::AbstractFont> _manager;
+    std::unique_ptr<Text::AbstractFont> _font;
+    Text::DistanceFieldGlyphCache       _cache;
+```
+
+I decided to refactor some stuff and separate out the private and public parts.
+For aesthetic reasons I put the private bits last ...
+
+```
+public:
+    std::unique_ptr<Text::AbstractFont> _font;
+    Text::DistanceFieldGlyphCache       _cache;
+private:
+    PluginManager::Manager<Text::AbstractFont> _manager;
+```
+This lead to 
+```
+Loguru caught a signal: SIGABRT
+Stack trace:
+7                  0x2 11  ???                                 0x0000000000000002 0x0 + 2
+6       0x7fff5288b015 start + 1
+5          0x10b1bd093 main + 675
+4          0x10b1b1c0e sim::GrohoApp::~GrohoApp() + 190
+3          0x10b588945 Corrade::PluginManager::AbstractManager::~AbstractManager() + 115
+2          0x10b588b7f Corrade::PluginManager::AbstractManager::unloadRecursiveInternal(Corrade::PluginManager::AbstractManager::Plugin&) + 305
+1       0x7fff529371ae abort + 127
+0          0x1173950a8 4   ???                                 0x00000001173950a8 0x0 + 4684599464
+2018-07-19 00:20:20.528 (   2.023s) [main thread     ]                       :0     FATL| Signal: SIGABRT
+Abort trap: 6
+```
+At exit. Of course, as is usually the case, I had made a bunch of other changes
+with this and it took me a while to zero in on what was actually going on.
+
+Restoring the imperative order
+```
+private:
+    PluginManager::Manager<Text::AbstractFont> _manager;
+
+public:
+    std::unique_ptr<Text::AbstractFont> _font;
+    Text::DistanceFieldGlyphCache       _cache;
+```
+restored order (and gave me the opportunity to make a subtle Darth Vader related pun)
+
 
 ## Instrumentation/profiling/debugging
 
