@@ -38,8 +38,10 @@ public:
             _cache,
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:-+,"
             ".\n");
+    }
 
-        // This probably should go in some initialization routine somewhere ...
+    static void enable_blending()
+    {
         GL::Renderer::enable(GL::Renderer::Feature::Blending);
         GL::Renderer::setBlendFunction(
             GL::Renderer::BlendFunction::SourceAlpha,
@@ -48,8 +50,11 @@ public:
             GL::Renderer::BlendEquation::Add, GL::Renderer::BlendEquation::Add);
     }
 
+private:
     PluginManager::Manager<Text::AbstractFont> _manager;
-    std::unique_ptr<Text::AbstractFont>        _font;
-    Text::DistanceFieldGlyphCache              _cache;
+
+public:
+    std::unique_ptr<Text::AbstractFont> _font;
+    Text::DistanceFieldGlyphCache       _cache;
 };
 }

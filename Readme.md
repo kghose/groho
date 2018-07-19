@@ -40,6 +40,7 @@ cd examples/002.full-solar-system
     - [Relativistic effects](#relativistic-effects)
 - [Compilation/building](#compilationbuilding)
     - [Dependencies](#dependencies)
+        - [[Magnum/Corrade][magnum]](#magnumcorrademagnum)
     - [Compile](#compile)
 - [Manual/Tutorial](#manualtutorial)
     - [Getting the data](#getting-the-data)
@@ -112,12 +113,15 @@ at one location is detected at other locations/ships.
 
 ## Dependencies
 
-- [Magnum/Corrade][magnum]
+### [Magnum/Corrade][magnum]
 
 You should follow the instructions on the [Magnum project page][magnum-install], 
 but in brief:
 
-macOS: `brew install mosra/magnum/magnum` and `brew install mosra/magnum/corrade`
+For macOS:
+
+* For the base: `brew install mosra/magnum/magnum` and `brew install mosra/magnum/corrade`
+* For the plugins (required for text rendering): `brew install mosra/magnum/magnum-plugins`
 
 [magnum]: http://magnum.graphics/
 [magnum-install]: http://doc.magnum.graphics/magnum/building.html

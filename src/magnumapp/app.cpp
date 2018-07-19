@@ -22,6 +22,8 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
 {
     using namespace Math::Literals;
 
+    label = std::unique_ptr<TextLabel>(new TextLabel(font));
+
     camera.aspect_ratio = (float)GL::defaultFramebuffer.viewport().sizeX()
         / GL::defaultFramebuffer.viewport().sizeY();
 }
@@ -48,7 +50,8 @@ void GrohoApp::drawEvent()
     //_shader.setTransformationProjectionMatrix(_projection * _transformation);
     // orrery.draw(_shader);
     orbit_view.draw(camera);
-    label.draw();
+    label->set_text(std::to_string(simulator.t_s));
+    label->draw(camera);
 
     swapBuffers();
 }

@@ -47,7 +47,8 @@ file(GLOB SOURCES
 )
 
 set(SOURCE_FILES ${SOURCES})
-add_executable( groho ${SOURCE_FILES} )
+corrade_add_resource(RESOURCES resources.conf)
+add_executable( groho ${SOURCE_FILES} ${RESOURCES} )
 
 include_directories(
     "src/"

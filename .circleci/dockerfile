@@ -10,16 +10,15 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget
 
-# For Magnum
-RUN add-apt-repository -y ppa:chrome/magnum.graphics
-RUN apt-get update && apt-get install -y magnum magnum-dev
-
 # For gcc
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update && apt-get install -y gcc-8 g++-8 gcc-8
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 \
     && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 100
 
+# For Magnum
+RUN add-apt-repository -y ppa:chrome/magnum.graphics
+RUN apt-get update && apt-get install -y magnum magnum-dev magnum-plugins magnum-plugins-dev
 
 # docker build -f dockerfile -t kghose/liftoff .
 # docker push kghose/liftoff

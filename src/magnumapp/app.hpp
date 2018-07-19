@@ -7,6 +7,8 @@ Magnum App to handle windowing and display
 
 #pragma once
 
+#include <memory>
+
 #include <Corrade/Containers/ArrayView.h>
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/DefaultFramebuffer.h>
@@ -57,6 +59,8 @@ private:
     Matrix4  _transformation, _projection;
     Vector2i _previousMousePosition;
 
-    TextLabel label;
+    Font font;
+
+    std::unique_ptr<TextLabel> label;
 };
 }

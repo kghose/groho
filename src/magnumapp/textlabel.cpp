@@ -9,17 +9,17 @@ Renders a text label
 
 namespace sim {
 
-TextLabel::TextLabel(Font* font)
+TextLabel::TextLabel(Font& font)
 {
     _text2.reset(new Text::Renderer2D(
-        *(font->_font), font->_cache, 1.5f, Text::Alignment::LineLeft));
+        *(font._font), font._cache, 1.5f, Text::Alignment::LineLeft));
     _text2->reserve(
         40, GL::BufferUsage::DynamicDraw, GL::BufferUsage::StaticDraw);
 
-    _shader.bindVectorTexture(font->_cache.texture());
+    _shader.bindVectorTexture(font._cache.texture());
 
     _transformation
-        = Matrix3::rotation(Deg(0.0f)) * Matrix3::scaling(Vector2(0.1f));
+        = Matrix3::rotation(Deg(0.0f)) * Matrix3::scaling(Vector2(0.5f));
     _projection = Matrix3::scaling(Vector2::yScale(
         Vector2(GL::defaultFramebuffer.viewport().size()).aspectRatio()));
 
