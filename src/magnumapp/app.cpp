@@ -22,6 +22,7 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
 {
     using namespace Math::Literals;
 
+    Font::enable_blending();
     label = std::unique_ptr<TextLabel>(new TextLabel(font));
 
     camera.aspect_ratio = (float)GL::defaultFramebuffer.viewport().sizeX()
