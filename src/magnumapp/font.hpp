@@ -8,7 +8,6 @@ Handles font cache
 #pragma once
 
 #include <Corrade/PluginManager/Manager.h>
-#include <Magnum/Shaders/DistanceFieldVector.h>
 #include <Magnum/Text/AbstractFont.h>
 #include <Magnum/Text/DistanceFieldGlyphCache.h>
 #include <Magnum/Text/Renderer.h>
