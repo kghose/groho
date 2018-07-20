@@ -12,6 +12,7 @@ This file contains declarations for the scenario configuration data structure
 #include <string>
 #include <unordered_map>
 
+#include "groholib.hpp"
 #include "scenariolib.hpp"
 
 namespace sim {

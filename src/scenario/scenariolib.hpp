@@ -31,11 +31,6 @@ This file contains some common functions used in parsing scenario files
 
 namespace sim {
 
-const double T0        = 2451545.0;
-const double S_PER_DAY = 86400.0;
-
-inline double jd2s(double jd) { return (jd - T0) * S_PER_DAY; }
-
 struct KeyValue {
     std::string key, value;
 };
