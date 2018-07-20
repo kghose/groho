@@ -24,13 +24,15 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
 
     Font::enable_blending();
 
-    camera.aspect_ratio = (float)GL::defaultFramebuffer.viewport().sizeX()
-        / GL::defaultFramebuffer.viewport().sizeY();
+    camera.set_viewport(
+        GL::defaultFramebuffer.viewport().sizeX(),
+        GL::defaultFramebuffer.viewport().sizeY());
 }
 
 void GrohoApp::drawEvent()
 {
-    overlay.t_s = simulator.t_s;
+    overlay.status = simulator.status;
+    overlay.t_s    = simulator.t_s;
 
     // JUST TESTING - TAKE THIS OUT
     if (camera.center_id && buffer) {
@@ -60,8 +62,10 @@ void GrohoApp::drawEvent()
 void GrohoApp::viewportEvent(const Vector2i& size)
 {
     GL::defaultFramebuffer.setViewport(Range2Di{ { 0, 0 }, size });
+    camera.set_viewport(
+        GL::defaultFramebuffer.viewport().sizeX(),
+        GL::defaultFramebuffer.viewport().sizeY());
 
-    camera.aspect_ratio = (double)size.x() / (double)size.y();
     redraw();
 }
 

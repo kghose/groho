@@ -11,6 +11,7 @@ so that they know what camera model to use.
 #include <optional>
 
 #include <Magnum/Magnum.h>
+#include <Magnum/Math/Math.h>
 #include <Magnum/Math/Matrix4.h>
 
 #include "bodytree.hpp"
@@ -23,9 +24,10 @@ using namespace Math::Literals;
 
 class Camera {
 public:
-    Deg   fov          = 35.0_degf;
-    float aspect_ratio = 2.0;
-    float scale        = 1.0;
+    Deg   fov   = 35.0_degf;
+    float scale = 1.0;
+
+    int viewport_x, viewport_y;
 
     BodyTree body_tree;
 
@@ -35,6 +37,13 @@ public:
     Vector3 center = { 0, 0, 0 };
     Deg     az     = 0.0_degf;
     Deg     el     = 0.0_degf;
+
+    void set_viewport(int x, int y)
+    {
+        viewport_x   = x;
+        viewport_y   = y;
+        aspect_ratio = (float)x / (float)y;
+    }
 
     Matrix4 get_matrix() const
     {
@@ -53,7 +62,8 @@ public:
     }
 
 private:
-    float front = 0.01f;
-    float back  = 100.0f;
+    float front        = 0.01f;
+    float back         = 100.0f;
+    float aspect_ratio = 2.0;
 };
 }

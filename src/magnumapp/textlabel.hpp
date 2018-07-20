@@ -20,7 +20,7 @@ using namespace Magnum;
 class TextBase {
 
 public:
-    TextBase(Font& font);
+    TextBase(Font&, Text::Alignment);
     virtual ~TextBase() = default;
 
     TextBase& set_text(std::string str);
@@ -40,7 +40,10 @@ protected:
 class Label2D : public TextBase {
 
 public:
-    Label2D(Font& font);
+    enum Anchor { BOTTOM_LEFT, BOTTOM_RIGHT, TOP_LEFT, TOP_RIGHT };
+
+    Label2D(Font&, Text::Alignment);
+    Label2D& set_anchor(Anchor a);
     Label2D& set_pos(const Vector2& p);
     void     draw(const Camera& camera);
 
@@ -48,12 +51,13 @@ private:
     Shaders::DistanceFieldVector2D _shader;
 
     Vector2 _pos;
+    Anchor  anchor;
 };
 
 class Billboard : public TextBase {
 
 public:
-    Billboard(Font& font);
+    Billboard(Font& font, Text::Alignment);
     Billboard& set_pos(const Vector3& v);
     void       draw(const Camera& camera);
 

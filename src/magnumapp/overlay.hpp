@@ -7,6 +7,7 @@ This is the information overlay that we place over the window
 
 #pragma once
 
+#include "simulator.hpp"
 #include "textlabel.hpp"
 
 namespace sim {
@@ -17,6 +18,8 @@ public:
     void draw(const Camera& camera);
 
 public:
+    Simulator::Status status;
+
     double t_s;
 
 private:

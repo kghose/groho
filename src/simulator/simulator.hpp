@@ -26,7 +26,11 @@ namespace sim {
 
 class Simulator {
 public:
-    Simulator() { running = false; }
+    Simulator()
+    {
+        running = false;
+        status  = WAITING;
+    }
     void restart_with(const Configuration&);
     void run();
     void stop();
@@ -34,6 +38,9 @@ public:
     std::shared_ptr<const Buffer> get_buffer() const;
 
 public:
+    enum Status { WAITING, LOADING, RUNNING };
+    std::atomic<Status> status;
+
     // TODO: this is used by display to find latest time cursor
     // this is in-elegant. Let's change this to a better mechanism
     double t_s;

@@ -9,23 +9,23 @@ Renders a text label
 
 namespace sim {
 
-TextBase::TextBase(Font& font)
+TextBase::TextBase(Font& font, Text::Alignment ta)
 {
-    _text.reset(new Text::Renderer2D(
-        *(font._font), font._cache, 1.0f, Text::Alignment::LineLeft));
+    _text.reset(new Text::Renderer2D(*(font._font), font._cache, 1.0f, ta));
+    // TODO: Figure out how to dynamically allocate
     _text->reserve(
-        40, GL::BufferUsage::DynamicDraw, GL::BufferUsage::StaticDraw);
-
+        100, GL::BufferUsage::DynamicDraw, GL::BufferUsage::StaticDraw);
     _shader.bindVectorTexture(font._cache.texture());
 
     _color = { 1, 1, 1 };
-    _size  = 0.1;
+    _size  = 100;
 }
 
 TextBase& TextBase::set_text(std::string str)
 {
-    _text->reserve(
-        str.size(), GL::BufferUsage::DynamicDraw, GL::BufferUsage::StaticDraw);
+    // TODO: Figure out how to dynamically allocate
+    if (str.size() > 100)
+        str.resize(100);
     _text->render(str);
     return *this;
 }
@@ -42,9 +42,15 @@ TextBase& TextBase::set_color(Color3 col)
     return *this;
 }
 
-Label2D::Label2D(Font& font)
-    : TextBase(font)
+Label2D::Label2D(Font& font, Text::Alignment ta)
+    : TextBase(font, ta)
 {
+}
+
+Label2D& Label2D::set_anchor(Anchor a)
+{
+    anchor = a;
+    return *this;
 }
 
 Label2D& Label2D::set_pos(const Vector2& p)
@@ -55,15 +61,40 @@ Label2D& Label2D::set_pos(const Vector2& p)
 
 void Label2D::draw(const Camera& camera)
 {
+    Vector2d normalized_pos;
+    switch (anchor) {
+    case BOTTOM_LEFT:
+        normalized_pos = { 2 * _pos.x() / camera.viewport_x - 1.0,
+                           2 * _pos.y() / camera.viewport_y - 1.0 };
+        break;
+    case BOTTOM_RIGHT:
+        normalized_pos = { 1.0 - 2 * _pos.x() / camera.viewport_x,
+                           2 * _pos.y() / camera.viewport_y - 1.0 };
+        break;
+    case TOP_LEFT:
+        normalized_pos = { 2 * _pos.x() / camera.viewport_x - 1.0,
+                           1.0 - 2 * _pos.y() / camera.viewport_y };
+        break;
+    case TOP_RIGHT:
+        normalized_pos = { 1.0 - 2 * _pos.x() / camera.viewport_x,
+                           1.0 - 2 * _pos.y() / camera.viewport_y };
+        break;
+
+    default:
+        break;
+    }
+
     _shader
         .setTransformationProjectionMatrix(
-            Matrix3::scaling(Vector2(_size)) * Matrix3::translation(_pos))
+            Matrix3::translation((Vector2)normalized_pos)
+            * Matrix3::scaling(
+                  { _size / camera.viewport_x, _size / camera.viewport_y }))
         .setColor(_color);
     _text->mesh().draw(_shader);
 }
 
-Billboard::Billboard(Font& font)
-    : TextBase(font)
+Billboard::Billboard(Font& font, Text::Alignment ta)
+    : TextBase(font, ta)
 {
 }
 
@@ -79,43 +110,4 @@ void Billboard::draw(const Camera& camera)
         .setColor(_color);
     _text->mesh().draw(_shader);
 }
-
-// TextLabel& TextLabel::set_pos2d(Vector2d p)
-// {
-//     _pos_2d = p;
-//     _mode   = TEXT_2D;
-//     return *this;
-// }
-
-// TextLabel& TextLabel::set_pos3d_as_fixed_size_billboard(Vector3d p)
-// {
-//     _pos_3d = p;
-//     _mode   = TEXT_3D_FIXED_BILLBOARD;
-//     return *this;
-// }
-
-// TextLabel& TextLabel::set_pos3d_as_scaled_billboard(Vector3d p)
-// {
-//     _pos_3d = p;
-//     _mode   = TEXT_3D_SCALED_BILLBOARD;
-//     return *this;
-// }
-
-// // TODO:
-// // 1. Inversely scale with viewport size to maintain font size constancy
-// // 2. Figure out screen coordinates (probably from viewport)
-// // 3. Learn how to project from 3D to 2D for billboards of two types
-// void TextLabel::draw(const Camera& camera)
-// {
-//     // _transformation = Matrix3::scaling(Vector2(_size))
-//     //     * Matrix3::translation(Vector2::yAxis(-2.0f))
-//     //     * Matrix3::translation(Vector2::xAxis(-3.0f));
-//     // _shader.setTransformationProjectionMatrix(_projection *
-//     _transformation)
-//     //     .setColor(_color);
-//     // _text->mesh().draw(_shader);
-//     _shader2.setTransformationProjectionMatrix(camera.get_billboard_matrix())
-//         .setColor(_color);
-//     _text->mesh().draw(_shader2);
-// }
 }

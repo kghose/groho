@@ -18,11 +18,13 @@ void Simulator::stop()
     if (compute_thread.joinable()) {
         compute_thread.join();
     }
+    status = WAITING;
 }
 
 void Simulator::restart_with(const Configuration& config)
 {
     stop();
+    status = LOADING;
     scenario.from(config);
     if (!scenario.valid)
         return;
@@ -122,6 +124,7 @@ void Simulator::run()
     setup_actions(scenario.actions, state);
     cleanup_actions(scenario.actions);
 
+    status = RUNNING;
     while (running && (state.t_s < scenario.config.end_s)) {
         scenario.orrery.set_orrery_to(state.t_s);
 
@@ -136,6 +139,7 @@ void Simulator::run()
     }
     buffer->flush();
     running = false;
+    status  = WAITING;
 
     LOG_S(INFO) << "Saved " << buffer->point_count() << " state vectors";
     LOG_S(INFO) << "Stopping simulation";
