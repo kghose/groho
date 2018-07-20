@@ -45,6 +45,13 @@ public:
             * Matrix4::translation(-center);
     }
 
+    Matrix4 get_billboard_matrix() const
+    {
+        return Matrix4::perspectiveProjection(fov, aspect_ratio, front, back)
+            * Matrix4::translation(Vector3::zAxis(-10.0f))
+            * Matrix4::scaling(Vector3(scale)) * Matrix4::translation(-center);
+    }
+
 private:
     float front = 0.01f;
     float back  = 100.0f;

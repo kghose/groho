@@ -18,8 +18,8 @@ Magnum App to handle windowing and display
 
 #include "camera.hpp"
 #include "orbitview.hpp"
+#include "overlay.hpp"
 #include "simulator.hpp"
-#include "textlabel.hpp"
 
 namespace sim {
 
@@ -53,14 +53,11 @@ private:
 
     Camera    camera;
     OrbitView orbit_view;
+    Overlay   overlay;
 
     Shaders::Flat3D _shader;
 
     Matrix4  _transformation, _projection;
     Vector2i _previousMousePosition;
-
-    Font font;
-
-    std::unique_ptr<TextLabel> label;
 };
 }

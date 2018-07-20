@@ -27,24 +27,49 @@ namespace sim {
 
 using namespace Magnum;
 
-class TextLabel {
+class TextBase {
 
 public:
-    TextLabel(Font& font);
+    TextBase(Font& font);
+    virtual ~TextBase() = default;
 
-    TextLabel& set_text(std::string str);
-    TextLabel& set_color(Color3 col);
-    TextLabel& set_pos(Vector3d p);
+    TextBase& set_text(std::string str);
+    TextBase& set_size(float s);
+    TextBase& set_color(Color3 col);
 
-    void draw(const Camera& camera);
+    virtual void draw(const Camera& camera) = 0;
 
-private:
-    std::unique_ptr<Text::Renderer2D> _text2;
+protected:
+    std::unique_ptr<Text::Renderer2D> _text;
     Shaders::DistanceFieldVector2D    _shader;
 
-    Matrix3 _transformation;
-    Matrix3 _projection;
-
     Color3 _color;
+    float  _size;
+};
+
+class Label2D : public TextBase {
+
+public:
+    Label2D(Font& font);
+    Label2D& set_pos(const Vector2& p);
+    void     draw(const Camera& camera);
+
+private:
+    Shaders::DistanceFieldVector2D _shader;
+
+    Vector2 _pos;
+};
+
+class Billboard : public TextBase {
+
+public:
+    Billboard(Font& font);
+    Billboard& set_pos(const Vector3& v);
+    void       draw(const Camera& camera);
+
+private:
+    Shaders::DistanceFieldVector3D _shader;
+
+    Vector3 _pos;
 };
 }

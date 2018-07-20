@@ -23,7 +23,6 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
     using namespace Math::Literals;
 
     Font::enable_blending();
-    label = std::unique_ptr<TextLabel>(new TextLabel(font));
 
     camera.aspect_ratio = (float)GL::defaultFramebuffer.viewport().sizeX()
         / GL::defaultFramebuffer.viewport().sizeY();
@@ -31,6 +30,8 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
 
 void GrohoApp::drawEvent()
 {
+    overlay.t_s = simulator.t_s;
+
     // JUST TESTING - TAKE THIS OUT
     if (camera.center_id && buffer) {
         if (camera.center_id->id == 0) {
@@ -51,8 +52,7 @@ void GrohoApp::drawEvent()
     //_shader.setTransformationProjectionMatrix(_projection * _transformation);
     // orrery.draw(_shader);
     orbit_view.draw(camera);
-    label->set_text(std::to_string(simulator.t_s));
-    label->draw(camera);
+    overlay.draw(camera);
 
     swapBuffers();
 }
