@@ -20,7 +20,7 @@ class Font {
 
 public:
     Font(std::string fname = "resources/UbuntuMono-R.ttf")
-        : _cache(Vector2i(2048), Vector2i(512), 22)
+        : _cache(Vector2i(2048), Vector2i(512), 5)
     {
         _font = _manager.loadAndInstantiate("FreeTypeFont");
         if (!_font)
@@ -28,7 +28,7 @@ public:
 
         /* Open the font and fill glyph cache */
         Utility::Resource rs("fonts");
-        if (!_font->openSingleData(rs.getRaw(fname), 200.0f)) {
+        if (!_font->openSingleData(rs.getRaw(fname), 110.0f)) {
             Error() << "Cannot open font file";
             std::exit(1);
         }
