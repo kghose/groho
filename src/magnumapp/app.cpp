@@ -28,7 +28,7 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
         GL::defaultFramebuffer.viewport().sizeX(),
         GL::defaultFramebuffer.viewport().sizeY());
 
-    setMinimalLoopPeriod(10);
+    setMinimalLoopPeriod(5);
 }
 
 void GrohoApp::drawEvent()
@@ -39,13 +39,17 @@ void GrohoApp::drawEvent()
     // JUST TESTING - TAKE THIS OUT
     if (camera.center_id && buffer) {
         if (camera.center_id->id == 0) {
-            camera.center = { 0, 0, 0 };
+            camera.center         = { 0, 0, 0 };
+            overlay.camera_center = "SSB";
         } else {
             auto idx = buffer->get_index(camera.center_id->id);
             if (idx) {
                 if (buffer->get(*idx).sampled.size() > 2) {
                     auto bs       = buffer->at(*idx, simulator.t_s);
                     camera.center = v2v(bs.pos);
+
+                    overlay.camera_center
+                        = buffer->metadata(*idx).property.name;
                 }
             }
         }

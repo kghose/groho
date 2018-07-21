@@ -11,9 +11,20 @@ namespace sim {
 
 Overlay::Overlay()
 {
-    label = std::unique_ptr<Label2D>(
-        new Label2D(font, Text::Alignment::LineLeft));
-    (*label).set_anchor(Label2D::BOTTOM_LEFT).set_pos({ 10, 10 }).set_size(50);
+    status_label = std::unique_ptr<Label2D>(
+        new Label2D(font, Text::Alignment::LineRight));
+    (*status_label)
+        .set_anchor(Label2D::BOTTOM_RIGHT)
+        .set_pos({ 10, 10 })
+        .set_size(30);
+
+    view_label
+        = std::unique_ptr<Label2D>(new Label2D(font, Text::Alignment::TopLeft));
+    (*view_label)
+        .set_anchor(Label2D::TOP_LEFT)
+        .set_pos({ 10, 10 })
+        .set_size(30);
+
     billboard = std::unique_ptr<Billboard>(
         new Billboard(font, Text::Alignment::LineLeft));
 }
@@ -32,7 +43,7 @@ void Overlay::draw(const Camera& camera)
         break;
 
     case Simulator::RUNNING:
-        status_string = "Running: " + std::to_string(t_s);
+        status_string = "Running: " + std::to_string(jd);
         break;
 
     default:
@@ -40,7 +51,10 @@ void Overlay::draw(const Camera& camera)
         break;
     }
 
-    label->set_text(status_string);
-    label->draw(camera);
+    status_label->set_text(status_string);
+    status_label->draw(camera);
+
+    view_label->set_text("View: " + camera_center);
+    view_label->draw(camera);
 }
 }

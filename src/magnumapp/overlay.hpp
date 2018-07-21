@@ -20,12 +20,14 @@ public:
 public:
     Simulator::Status status;
 
-    double t_s;
+    std::string camera_center;
+    double      jd;
 
 private:
     Font font;
 
-    std::unique_ptr<Label2D>   label;
+    std::unique_ptr<Label2D>   status_label;
+    std::unique_ptr<Label2D>   view_label;
     std::unique_ptr<Billboard> billboard;
 };
 }
