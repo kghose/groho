@@ -107,6 +107,7 @@ OrreryBodyVec create_bodies(const EphemerisVec& ephemera)
         if (body_library.count(e->target_code)) {
             ob.property = body_library[e->target_code];
         } else {
+            ob.property.name = std::to_string(e->target_code);
             LOG_S(WARNING) << e->target_code
                            << " not found in solar system library";
         }
