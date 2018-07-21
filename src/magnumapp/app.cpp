@@ -27,12 +27,14 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
     camera.set_viewport(
         GL::defaultFramebuffer.viewport().sizeX(),
         GL::defaultFramebuffer.viewport().sizeY());
+
+    setMinimalLoopPeriod(10);
 }
 
 void GrohoApp::drawEvent()
 {
     overlay.status = simulator.status;
-    overlay.t_s    = simulator.t_s;
+    overlay.jd     = s2jd(simulator.t_s);
 
     // JUST TESTING - TAKE THIS OUT
     if (camera.center_id && buffer) {
