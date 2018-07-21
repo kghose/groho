@@ -106,6 +106,9 @@ OrreryBodyVec create_bodies(const EphemerisVec& ephemera)
         OrreryBody ob;
         if (body_library.count(e->target_code)) {
             ob.property = body_library[e->target_code];
+        } else {
+            LOG_S(WARNING) << e->target_code
+                           << " not found in solar system library";
         }
         bodies.push_back(ob);
     }
