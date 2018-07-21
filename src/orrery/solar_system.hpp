@@ -5,7 +5,9 @@ Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 The following code stores a mapping from a SPK ID of a solar system bod to a
 structure carrying information about its name, GM and radius
 
-This table has been compiled from:
+A very comprehensive table is found at https://ssd.jpl.nasa.gov/?sat_phys_par
+
+However, before I found this table, I scrabbled through the following sources:
 
 Names correspondng to SPK IDs: [NAIF/JPL/NASA][naif] and, for the smaller
 bodies, [SSD/JPL/NASA][ssd]
@@ -15,6 +17,7 @@ GM: [NAIF/JPL/NASA][naif2]
 Radii from [NAIF/JPL/NASA][naif3] and for the three moons of Pluto, from
 [wikipedia][wp]
 
+For some of Jupiter's [moons][jupiter]
 
 [naif]:
 https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/naif_ids.html#NAIF%20Object%20ID%20numbers
@@ -25,6 +28,9 @@ https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/naif_ids.html#NAIF%2
 [naif3]: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc
 
 [wp]: https://en.wikipedia.org/wiki/List_of_Solar_System_objects_by_size
+
+[jupiter]:
+https://naif.jpl.nasa.gov/pub/naif/pds/data/co-s_j_e_v-spice-6-v1.0/cosp_1000/data/pck/cpck30Sep2004_jupiter.tpc
 */
 
 #pragma once
@@ -36,9 +42,9 @@ https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/FORTRAN/req/naif_ids.html#NAIF%2
 namespace orrery {
 
 /*
-Data is arranged to match OrreryBody
+Data is arranged to match BodyConstant
 
-struct Body {
+struct BodyConstant {
     BodyType    body_type;
     int         code; // SPK code for body (made up ones for spaceships)
     std::string name; // Human readable name for body
@@ -47,18 +53,6 @@ struct Body {
     float r;  // Radius of body (for collision tests)
 
     uint32_t color; // For display purposes
-
-    float max_acc;   // Maximum acceleration possible for ship m/s^2
-    float acc;       // Current acceleration m/s^2
-    float max_fuel;  // Maximum fuel reserve (U)
-    float fuel;      // Current fuel reserve (U)
-    float fuel_cons; // Fuel consumption rate (U/ (m/s^2))
-
-    FlightState flight_state;
-
-    sim::Vector pos; // Position referenced to solar system barycenter
-    sim::Vector vel; // Velocity
-    sim::Vector att; // Attitude
 };
 
 */
@@ -67,7 +61,7 @@ using namespace sim;
 
 // clang-format off
 std::unordered_map<int, BodyConstant> body_library = {
-
+    //                                                        GM                   R
     //                                                      km^3 s^−2             km 
     {       1, { BARYCENTER,       1, "Mercury BC",  2.2031780000000021E+04,            0, 0x000000 } },
     {       2, { BARYCENTER,       2, "Venus BC",    3.2485859200000006E+05,            0, 0x000000 } },
@@ -93,6 +87,9 @@ std::unordered_map<int, BodyConstant> body_library = {
     {     504, {       ROCK,     504, "Callisto",    7.1792893613972700E+03,     2410.300, 0x808080 } },
     {     505, {       ROCK,     505, "Amalthea",    1.3784805712026150E-01,      125.000, 0x808080 } },
     {     506, {       ROCK,     506, "Himalia",     1.3800806960789660E-01,       85.000, 0x808080 } },
+    {     514, {       ROCK,     514, "Thebe",       1.0000000000000000E-01,       49.000, 0x808080 } },
+    {     515, {       ROCK,     515, "Adrastea",    5.0000000000000000E-04,        8.000, 0x808080 } },
+    {     516, {       ROCK,     516, "Metis",       8.0000000000000000E-03,       21.500, 0x808080 } },
     {     699, {       ROCK,     699, "Saturn",      3.7931207498652240E+07,    60268.000, 0xFFD700 } },
     {     601, {       ROCK,     601, "Mimas",       2.5035228846617950E+00,      207.800, 0x808080 } },
     {     602, {       ROCK,     602, "Enceladus",   7.2112920854799890E+00,      256.600, 0x808080 } },
@@ -116,11 +113,14 @@ std::unordered_map<int, BodyConstant> body_library = {
     {     705, {       ROCK,     705, "Miranda",     4.3195168992321000E+00,      240.400, 0x808080 } },
     {     899, {       ROCK,     899, "Neptune",     6.8350995024396720E+06,    24764.000, 0xADD8E6 } },
     {     801, {       ROCK,     801, "Triton",      1.4275981407250340E+03,     1352.600, 0x808080 } },
+    {     802, {       ROCK,     802, "Nereid",      2.0600000000000000E+00,      170.000, 0x808080 } },
+    {     808, {       ROCK,     808, "Proteus",     3.3600000000000000E+00,      210.000, 0x808080 } },
     {     999, {       ROCK,     999, "Pluto",       8.6961381776087480E+02,     1195.000, 0xF4A460 } },
     {     901, {       ROCK,     901, "Charon",      1.0587998886018810E+02,      605.000, 0x808080 } },
     {     902, {       ROCK,     902, "Nix",         3.0481756481697600E-03,       17.500, 0x808080 } },
     {     903, {       ROCK,     903, "Hydra",       3.2110392061552550E-03,       19.000, 0x808080 } },
-    {     904, {       ROCK,     904, "Kerberos",    1.1100408505366760E-03,       10.000, 0x808080 } },
+    {     904, {       ROCK,     904, "Kerberos",    1.1100408505366760E-03,       14.000, 0x808080 } },
+    {     905, {       ROCK,     905, "Styx",        8.0000000000000000E-04,       10.000, 0x808080 } }, // Given as zero
     { 2000001, {       ROCK, 2000001, "Ceres",       6.3130000000000003E+01,      469.700, 0x808080 } },
     { 2000002, {       ROCK, 2000002, "Pallas",      1.3730000000000000E+01,      272.500, 0x808080 } },
     { 2000003, {       ROCK, 2000003, "Juno",        1.8200000000000001E+00,      123.298, 0x808080 } },
