@@ -45,14 +45,14 @@ struct BodyTree {
 
         // mercury, venus, earth, mars, jupiter, saturn, nepture,
         // uranus, pluto
-        for (size_t _cat_id = 2; _cat_id < 11; _cat_id++) {
+        for (size_t _id = 1; _id < 10; _id++) {
             std::vector<spkid_t> this_planet; // yes, Pluto too ...
 
-            int planet_id = _cat_id * 100 + 99;
+            int planet_id = _id * 100 + 99;
             if (bodies_present.count(planet_id) > 0) {
                 this_planet.push_back(planet_id);
             }
-            for (int sat_id = _cat_id * 100; sat_id < planet_id; sat_id++) {
+            for (int sat_id = _id * 100; sat_id < planet_id; sat_id++) {
                 if (bodies_present.count(sat_id) > 0) {
                     this_planet.push_back(sat_id);
                 }
