@@ -36,7 +36,7 @@ public:
         _font->fillGlyphCache(
             _cache,
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789: "
-            "-+.\n");
+            "-+.(),\n");
     }
 
     static void enable_blending()
