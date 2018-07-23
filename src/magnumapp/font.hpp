@@ -20,7 +20,7 @@ class Font {
 
 public:
     Font(std::string fname = "resources/UbuntuMono-R.ttf")
-        : _cache(Vector2i(2048), Vector2i(512), 5)
+        : _cache(Vector2i(2048), Vector2i(512), 10)
     {
         _font = _manager.loadAndInstantiate("FreeTypeFont");
         if (!_font)
