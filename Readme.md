@@ -191,7 +191,7 @@ the signal by that time.
 ## Orbit view interactions
 
 Dragging the mouse will orbit the camera. Scrolling will zoom in and out. 
-Pressing shift while scrolling will move back and forth in time. The left/right 
+Pressing ALT while scrolling will move back and forth in time. The left/right 
 cursor keys cycle through the planets/asteroids/spacecraft and the up/down keys 
 cycle through the satellites of said planets allowing us to center the camera on 
 different objects. 

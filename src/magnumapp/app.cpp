@@ -20,8 +20,6 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
                              GLConfiguration{}.setSampleCount(3) }
     , simulator(simulator)
 {
-    using namespace Math::Literals;
-
     Font::enable_blending();
 
     camera.set_viewport(
@@ -29,6 +27,7 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
         GL::defaultFramebuffer.viewport().sizeY());
 
     setMinimalLoopPeriod(5);
+    // setSwapInterval(1);
 }
 
 void GrohoApp::drawEvent()
@@ -45,7 +44,7 @@ void GrohoApp::drawEvent()
             auto idx = buffer->get_index(camera.center_id->id);
             if (idx) {
                 if (buffer->get(*idx).sampled.size() > 2) {
-                    auto bs       = buffer->at(*idx, simulator.t_s);
+                    auto bs       = buffer->at(*idx, camera.current_s);
                     camera.center = v2v(bs.pos);
 
                     overlay.camera_center
@@ -82,7 +81,10 @@ void GrohoApp::tickEvent()
     if (simulation_has_been_restarted()) {
         buffer = simulator.get_buffer();
         orbit_view.load_new_simulation_from_buffer(buffer);
-        redraw_required = true;
+        camera.current_s   = simulator.begin_s();
+        camera.sim_begin_s = simulator.begin_s();
+        camera.sim_end_s   = simulator.end_s();
+        redraw_required    = true;
     }
 
     if (orbit_view.buffer_has_more_points_now(buffer)) {
@@ -152,10 +154,22 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
     if (!event.offset().y())
         return;
 
-    if (event.offset().y() > 0)
-        camera.scale *= 1.1;
-    else
-        camera.scale /= 1.1;
+    if (event.modifiers() == InputEvent::Modifier::Alt) {
+        // Scroll in time
+        if (event.offset().y() > 0)
+            camera.current_s
+                = std::min(camera.sim_end_s, camera.current_s + camera.delta_s);
+        else
+            camera.current_s = std::max(
+                camera.sim_begin_s, camera.current_s - camera.delta_s);
+
+    } else {
+        // Zoom in and out
+        if (event.offset().y() > 0)
+            camera.scale *= 1.1;
+        else
+            camera.scale /= 1.1;
+    }
 
     event.setAccepted();
     redraw();

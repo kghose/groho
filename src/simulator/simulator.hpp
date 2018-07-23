@@ -35,6 +35,9 @@ public:
     void run();
     void stop();
 
+    double begin_s() const;
+    double end_s() const;
+
     std::shared_ptr<const Buffer> get_buffer() const;
 
 public:

@@ -105,6 +105,10 @@ void cleanup_actions(fpapl_t& actions)
     });
 }
 
+double Simulator::begin_s() const { return scenario.config.begin_s; }
+
+double Simulator::end_s() const { return scenario.config.end_s; }
+
 void Simulator::run()
 {
     if (!running)

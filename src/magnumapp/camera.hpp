@@ -32,7 +32,11 @@ public:
     BodyTree body_tree;
 
     std::optional<spkid_t> center_id = spkid_t(0);
-    double                 t_s;
+
+    double current_s;
+    double delta_s = 86400; // how far we advance when we scroll in time
+    double sim_begin_s;
+    double sim_end_s;
 
     Vector3 center = { 0, 0, 0 };
     Deg     az     = 0.0_degf;
