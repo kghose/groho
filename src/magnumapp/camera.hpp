@@ -143,6 +143,7 @@ public:
         return Matrix4::perspectiveProjection(
                    view.fov, view.aspect_ratio, view.front, view.back)
             * Matrix4::translation(Vector3::zAxis(-10.0f))
+            * Matrix4::rotationX(ecliptic_correction)
             * Matrix4::scaling(Vector3(space_cursor.scale))
             * Matrix4::translation(-space_cursor.center);
     }
