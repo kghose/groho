@@ -27,9 +27,14 @@ struct BodyTree {
     static const int NEXTBODY = +1;
     static const int PREVBODY = -1;
 
-    BodyTree() = default;
+    BodyTree()
+    {
+        tree.push_back({ { 0, "SSB" } });
+        cat_id  = 0;
+        body_id = 0;
+    }
 
-    BodyTree(const std::unordered_set<int> bodies_present)
+    BodyTree(const std::unordered_set<spkid_t>& bodies_present)
     {
         std::vector<spkid_t> ships;
         for (auto b : bodies_present) {
@@ -48,13 +53,15 @@ struct BodyTree {
         for (size_t _id = 1; _id < 10; _id++) {
             std::vector<spkid_t> this_planet; // yes, Pluto too ...
 
-            int planet_id = _id * 100 + 99;
-            if (bodies_present.count(planet_id) > 0) {
-                this_planet.push_back(planet_id);
+            int  planet_id = _id * 100 + 99;
+            auto idx       = bodies_present.find(planet_id);
+            if (idx != bodies_present.end()) {
+                this_planet.push_back(*idx);
             }
             for (int sat_id = _id * 100; sat_id < planet_id; sat_id++) {
-                if (bodies_present.count(sat_id) > 0) {
-                    this_planet.push_back(sat_id);
+                auto idx = bodies_present.find(sat_id);
+                if (idx != bodies_present.end()) {
+                    this_planet.push_back(*idx);
                 }
             }
             tree.push_back(this_planet);
@@ -93,44 +100,26 @@ struct BodyTree {
             return COMET;
     }
 
-    std::optional<spkid_t> change_cat(int sign)
+    spkid_t change_cat(int sign)
     {
-        if (tree.size() == 0)
-            return {};
-
-        size_t orig_cat_id = cat_id;
         while (true) {
-            cat_id = (13 + cat_id + sign) % 13;
+            cat_id = (tree.size() + cat_id + sign) % tree.size();
             if (tree[cat_id].size() > 0) {
                 body_id = 0;
                 return get_body_id();
             }
-            if (cat_id == orig_cat_id)
-                return {};
         }
     }
 
-    std::optional<spkid_t> change_item(int sign)
+    spkid_t change_item(int sign)
     {
-        if (tree.size() == 0)
-            return {};
-
         size_t item_cnt = tree[cat_id].size();
-        if (item_cnt == 0)
-            return {};
-        body_id = (item_cnt + *body_id + sign) % item_cnt;
 
+        body_id = (item_cnt + *body_id + sign) % item_cnt;
         return get_body_id();
     }
 
-    std::optional<spkid_t> get_body_id()
-    {
-        if (body_id) {
-            return tree[cat_id][*body_id];
-        } else {
-            return {};
-        }
-    }
+    spkid_t get_body_id() { return tree[cat_id][*body_id]; }
 
     std::vector<std::vector<spkid_t>> tree;
 
