@@ -26,37 +26,24 @@ public:
     void reload_from_buffer(std::shared_ptr<const Buffer> buffer)
     {
         paths.clear();
-        bodies_present.clear();
-
         for (size_t i = 0; i < buffer->body_count(); i++) {
-
-            if (buffer->metadata(i).property.body_type == BARYCENTER) {
-                continue;
-            }
-
             auto p = std::shared_ptr<Path>(new Path);
             p->set_color(Color3(buffer->metadata(i).property.color));
-            p->copy_all(buffer->get(i));
+            if (buffer->metadata(i).property.body_type != BARYCENTER) {
+                p->copy_all(buffer->get(i));
+            }
             paths.push_back(p);
-
-            bodies_present.insert({ buffer->metadata(i).property.code,
-                                    buffer->metadata(i).property.name });
         }
     }
 
     void update(std::shared_ptr<const Buffer> buffer)
     {
-        for (size_t i = 0, j = 0; i < buffer->body_count(); i++) {
-
-            if (buffer->metadata(i).property.body_type == BARYCENTER) {
-                continue;
+        for (size_t i = 0; i < buffer->body_count(); i++) {
+            if (buffer->metadata(i).property.body_type != BARYCENTER) {
+                paths[i]->copy_new(buffer->get(i));
             }
-
-            paths[j++]->copy_new(buffer->get(i));
         }
     }
-
-    BodyTree get_body_tree() { return BodyTree(bodies_present); }
 
     void draw(const Matrix4& projection_matrix)
     {
@@ -69,7 +56,5 @@ public:
 private:
     std::vector<std::shared_ptr<Path>> paths;
     Shaders::Flat3D                    _shader;
-
-    std::unordered_set<spkid_t> bodies_present;
 };
 }

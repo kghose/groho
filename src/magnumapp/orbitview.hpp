@@ -17,11 +17,6 @@ the object trajectories (paths), object markers and annotations.
 
 namespace sim {
 
-// struct TimeCursor {
-//     double t_s    = 0;
-//     bool   pinned = false;
-// };
-
 class OrbitView {
 public:
     void draw(const Camera& camera);
@@ -32,6 +27,11 @@ public:
     void update_simulation_from_buffer(std::shared_ptr<const Buffer> buffer);
 
 private:
+    void load_body_metadata(std::shared_ptr<const Buffer> buffer);
+
+private:
+    std::vector<BodyConstant> body;
+
     PathGroup trajectories;
     // Sphere         sphere;
     // ReferencePlane ref_plane;

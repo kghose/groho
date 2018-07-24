@@ -17,6 +17,8 @@ void OrbitView::draw(const Camera& camera)
     // sphere.draw(camera);
 }
 
+// TODO: rewrite buffer so we don't have to use lock/release - pass this
+// function through to buffer
 void OrbitView::load_new_simulation_from_buffer(
     std::shared_ptr<const Buffer> buffer)
 {
@@ -24,10 +26,26 @@ void OrbitView::load_new_simulation_from_buffer(
     trajectories.reload_from_buffer(buffer);
     simulation_serial = buffer->simulation_serial();
     point_count       = buffer->point_count();
+    load_body_metadata(buffer);
     buffer->release();
 }
 
-BodyTree OrbitView::get_body_tree() { return trajectories.get_body_tree(); }
+void OrbitView::load_body_metadata(std::shared_ptr<const Buffer> buffer)
+{
+    body.clear();
+    for (size_t i = 0; i < buffer->body_count(); i++) {
+        body.push_back(buffer->metadata(i).property);
+    }
+}
+
+BodyTree OrbitView::get_body_tree()
+{
+    std::unordered_set<spkid_t> bodies_present;
+    for (auto& b : body) {
+        bodies_present.insert({ b.code, b.name });
+    }
+    return BodyTree(bodies_present);
+}
 
 bool OrbitView::buffer_has_more_points_now(std::shared_ptr<const Buffer> buffer)
 {
