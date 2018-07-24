@@ -22,11 +22,12 @@ void OrbitView::load_new_simulation_from_buffer(
 {
     buffer->lock();
     trajectories.reload_from_buffer(buffer);
-    body_tree         = trajectories.get_body_tree();
     simulation_serial = buffer->simulation_serial();
     point_count       = buffer->point_count();
     buffer->release();
 }
+
+BodyTree OrbitView::get_body_tree() { return trajectories.get_body_tree(); }
 
 bool OrbitView::buffer_has_more_points_now(std::shared_ptr<const Buffer> buffer)
 {

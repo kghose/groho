@@ -36,19 +36,15 @@ void GrohoApp::drawEvent()
     overlay.jd     = s2jd(simulator.t_s);
 
     // JUST TESTING - TAKE THIS OUT
-    if (camera.center_id && buffer) {
-        if (camera.center_id->id == 0) {
-            camera.center         = { 0, 0, 0 };
-            overlay.camera_center = "SSB";
+    if (buffer) {
+        if (camera.center_id() == 0) {
+            camera.set_center({ 0, 0, 0 });
         } else {
-            auto idx = buffer->get_index(camera.center_id->id);
+            auto idx = buffer->get_index(camera.center_id());
             if (idx) {
                 if (buffer->get(*idx).sampled.size() > 2) {
-                    auto bs       = buffer->at(*idx, camera.current_s);
-                    camera.center = v2v(bs.pos);
-
-                    overlay.camera_center
-                        = buffer->metadata(*idx).property.name;
+                    auto bs = buffer->at(*idx, camera.current_s());
+                    camera.set_center(v2v(bs.pos));
                 }
             }
         }
@@ -81,10 +77,9 @@ void GrohoApp::tickEvent()
     if (simulation_has_been_restarted()) {
         buffer = simulator.get_buffer();
         orbit_view.load_new_simulation_from_buffer(buffer);
-        camera.current_s   = simulator.begin_s();
-        camera.sim_begin_s = simulator.begin_s();
-        camera.sim_end_s   = simulator.end_s();
-        redraw_required    = true;
+        camera.set_body_tree(orbit_view.get_body_tree());
+        camera.set_time_range(simulator.begin_s(), simulator.end_s());
+        redraw_required = true;
     }
 
     if (orbit_view.buffer_has_more_points_now(buffer)) {
@@ -141,8 +136,8 @@ void GrohoApp::mouseMoveEvent(MouseMoveEvent& event)
         * Vector2{ event.position() - _previousMousePosition }
         / Vector2{ GL::defaultFramebuffer.viewport().size() };
 
-    camera.az += Deg{ Rad{ delta.x() } };
-    camera.el += Deg{ Rad{ delta.y() } };
+    camera.increase_az_by(Deg{ Rad{ delta.x() } });
+    camera.increase_el_by(Deg{ Rad{ delta.y() } });
 
     _previousMousePosition = event.position();
     event.setAccepted();
@@ -157,18 +152,15 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
     if (event.modifiers() == InputEvent::Modifier::Alt) {
         // Scroll in time
         if (event.offset().y() > 0)
-            camera.current_s
-                = std::min(camera.sim_end_s, camera.current_s + camera.delta_s);
+            camera.step_forward_in_time();
         else
-            camera.current_s = std::max(
-                camera.sim_begin_s, camera.current_s - camera.delta_s);
-
+            camera.step_backward_in_time();
     } else {
         // Zoom in and out
         if (event.offset().y() > 0)
-            camera.scale *= 1.1;
+            camera.zoom_in();
         else
-            camera.scale /= 1.1;
+            camera.zoom_out();
     }
 
     event.setAccepted();
@@ -179,16 +171,16 @@ void GrohoApp::keyReleaseEvent(KeyEvent& event)
 {
     switch (event.key()) {
     case KeyEvent::Key::Left:
-        camera.center_id = orbit_view.body_tree.change_item(BodyTree::PREVBODY);
+        camera.prev_body();
         break;
     case KeyEvent::Key::Right:
-        camera.center_id = orbit_view.body_tree.change_item(BodyTree::NEXTBODY);
+        camera.next_body();
         break;
     case KeyEvent::Key::Up:
-        camera.center_id = orbit_view.body_tree.change_cat(BodyTree::PREVCAT);
+        camera.prev_category();
         break;
     case KeyEvent::Key::Down:
-        camera.center_id = orbit_view.body_tree.change_cat(BodyTree::NEXTCAT);
+        camera.next_category();
         break;
     default:
         break;

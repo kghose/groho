@@ -54,10 +54,7 @@ void Overlay::draw(const Camera& camera)
     status_label->set_text(status_string);
     status_label->draw(camera);
 
-    view_label->set_text(
-        "View: " + camera_center + ": " + std::to_string(s2jd(camera.current_s))
-        + " JD: (" + std::to_string((float)camera.az) + ", "
-        + std::to_string((float)camera.el) + ")");
+    view_label->set_text("View: " + camera.to_string());
     view_label->draw(camera);
 }
 }

@@ -39,7 +39,8 @@ public:
             p->copy_all(buffer->get(i));
             paths.push_back(p);
 
-            bodies_present.insert(buffer->metadata(i).property.code);
+            bodies_present.insert({ buffer->metadata(i).property.code,
+                                    buffer->metadata(i).property.name });
         }
     }
 
@@ -69,6 +70,6 @@ private:
     std::vector<std::shared_ptr<Path>> paths;
     Shaders::Flat3D                    _shader;
 
-    std::unordered_set<int> bodies_present;
+    std::unordered_set<spkid_t> bodies_present;
 };
 }
