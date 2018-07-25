@@ -54,6 +54,7 @@ cd examples/002.full-solar-system
 - [Related software](#related-software)
     - [NASA's GMAT](#nasas-gmat)
     - [NASA Ames Research Center Trajectory Browser](#nasa-ames-research-center-trajectory-browser)
+    - [Rebound by Hanno Rein](#rebound-by-hanno-rein)
     - [Orbiter by Martin Schweiger](#orbiter-by-martin-schweiger)
     - [Bussard by Phil Hagelberg](#bussard-by-phil-hagelberg)
     - [SolarSystemOrbiter](#solarsystemorbiter)
@@ -259,6 +260,16 @@ I ran into the [Trajectory Browser] while looking for what interplanetary
 mission programs look like. It's awesome. Give it a spin.
 
 [Trajectory Browser]: https://trajbrowser.arc.nasa.gov/traj_browser.php
+
+## Rebound by Hanno Rein
+
+[REBOUND] is an N-body integrator. Groho completely punts on this aspect of the
+simulation and relies on the NASA/JPL ephemeris kernels (which in turn are
+products of a constrained N-body simulation). The REBOUND code is a good place
+to explore different integrators and the rebound paper is a good place to
+readup about Symplectic integration. If you are into that kind of thing.
+
+[REBOUND]: https://github.com/hannorein/rebound
 
 ## Orbiter by Martin Schweiger
 
