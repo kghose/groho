@@ -192,8 +192,8 @@ the signal by that time.
 ## Orbit view interactions
 
 Dragging the mouse will orbit the camera. Scrolling will zoom in and out. 
-Pressing ALT while scrolling will move back and forth in time. The left/right 
-cursor keys cycle through the planets/asteroids/spacecraft and the up/down keys 
+Pressing ALT while scrolling will move back and forth in time. The up/down 
+cursor keys cycle through the planets/asteroids/spacecraft and the left/right keys 
 cycle through the satellites of said planets allowing us to center the camera on 
 different objects. 
 
@@ -257,7 +257,11 @@ so I stubbornly rolled my own to my own (much more limited) specifications.
 ## NASA Ames Research Center Trajectory Browser
 
 I ran into the [Trajectory Browser] while looking for what interplanetary
-mission programs look like. It's awesome. Give it a spin.
+mission programs look like. It's awesome. However
+> All trajectories are pre-computed and stored in a database that contains all the 
+solutions. In order to compute new trajectories to a non-existing object and/or 
+if you wish to add a particular object that is not currently available, please 
+contact us and we will have it included.
 
 [Trajectory Browser]: https://trajbrowser.arc.nasa.gov/traj_browser.php
 

@@ -156,7 +156,7 @@ EphShrPtr read_ephemeris(
     double         end_jd);
 
 //
-// Function defenitions follow /////////////////////////////////////////
+// Function definitions follow /////////////////////////////////////////
 //
 
 EphemerisVec
