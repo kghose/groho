@@ -17,7 +17,7 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
                                  .setWindowFlags(
                                      Platform::Sdl2Application::Configuration::
                                          WindowFlag::Resizable),
-                             GLConfiguration{}.setSampleCount(3) }
+                             GLConfiguration{}.setSampleCount(4) }
     , simulator(simulator)
 {
     Font::enable_blending();
@@ -35,25 +35,8 @@ void GrohoApp::drawEvent()
     overlay.status = simulator.status;
     overlay.jd     = s2jd(simulator.t_s);
 
-    // JUST TESTING - TAKE THIS OUT
-    if (buffer) {
-        if (camera.center_id() == 0) {
-            camera.set_center({ 0, 0, 0 });
-        } else {
-            auto idx = buffer->get_index(camera.center_id());
-            if (idx) {
-                if (buffer->get(*idx).sampled.size() > 2) {
-                    auto bs = buffer->at(*idx, camera.current_s());
-                    camera.set_center(v2v(bs.pos));
-                }
-            }
-        }
-    }
-
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
-    //_shader.setTransformationProjectionMatrix(_projection * _transformation);
-    // orrery.draw(_shader);
     orbit_view.draw(camera);
     overlay.draw(camera);
 
@@ -79,6 +62,8 @@ void GrohoApp::tickEvent()
         orbit_view.load_new_simulation_from_buffer(buffer);
         camera.set_body_tree(orbit_view.get_body_tree());
         camera.set_time_range(simulator.begin_s(), simulator.end_s());
+        orbit_view.set_body_state_at_time_cursor(camera, buffer);
+        orbit_view.set_camera_center_pos_from_body_state(camera);
         redraw_required = true;
     }
 
@@ -151,10 +136,13 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
 
     if (event.modifiers() == InputEvent::Modifier::Alt) {
         // Scroll in time
-        if (event.offset().y() > 0)
+        if (event.offset().y() > 0) {
             camera.step_forward_in_time();
-        else
+        } else {
             camera.step_backward_in_time();
+        }
+        orbit_view.set_body_state_at_time_cursor(camera, buffer);
+        orbit_view.set_camera_center_pos_from_body_state(camera);
     } else {
         // Zoom in and out
         if (event.offset().y() > 0)
@@ -185,6 +173,8 @@ void GrohoApp::keyReleaseEvent(KeyEvent& event)
     default:
         break;
     }
+
+    orbit_view.set_camera_center_pos_from_body_state(camera);
     redraw();
 }
 }

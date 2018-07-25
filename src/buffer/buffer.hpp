@@ -143,10 +143,6 @@ public:
         }
     };
 
-    // typedef std::
-    //     tuple<const std::vector<BodyState>&, const std::optional<BodyState>&>
-    //         data_t;
-
     data_t get(size_t i) const
     {
         return { sub_buffer[i].data, sub_buffer[i]._last_state };

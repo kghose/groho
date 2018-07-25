@@ -32,9 +32,14 @@ void OrbitView::load_new_simulation_from_buffer(
 
 void OrbitView::load_body_metadata(std::shared_ptr<const Buffer> buffer)
 {
+    id2idx.clear();
     body.clear();
+    body_state_at_time_cursor.clear();
     for (size_t i = 0; i < buffer->body_count(); i++) {
-        body.push_back(buffer->metadata(i).property);
+        auto& bc        = buffer->metadata(i).property;
+        id2idx[bc.code] = i;
+        body.push_back(bc);
+        body_state_at_time_cursor.push_back(buffer->metadata(i).state);
     }
 }
 
@@ -67,5 +72,36 @@ void OrbitView::update_simulation_from_buffer(
     trajectories.update(buffer);
     point_count = buffer->point_count();
     buffer->release();
+}
+
+void OrbitView::set_body_state_at_time_cursor(
+    const Camera& camera, std::shared_ptr<const Buffer> buffer)
+{
+    if (buffer == nullptr)
+        return;
+    for (size_t i = 0; i < body_state_at_time_cursor.size(); i++) {
+        if ((body[i].body_type != BARYCENTER)
+            && (buffer->get(i).sampled.size() > 0)) {
+            body_state_at_time_cursor[i] = buffer->at(i, camera.current_s());
+            // TODO: Improve how we get sampled data (interpolation project)
+            // Let's try an over all higher sampling rate. This is lowest
+            // complexity.
+            // Also, we should improve the buffer interface for getting back
+            // data
+            // 1. "at" should use spline interpolation
+            // 2. "at" should have a companion function that wraps
+            // buffer->get(i).sampled.size()
+        }
+    }
+}
+
+void OrbitView::set_camera_center_pos_from_body_state(Camera& camera)
+{
+    if (camera.center_id() == 0) {
+        camera.set_center({ 0, 0, 0 });
+    } else {
+        size_t i = id2idx[camera.center_id()];
+        camera.set_center(v2v(body_state_at_time_cursor[i].pos));
+    }
 }
 }
