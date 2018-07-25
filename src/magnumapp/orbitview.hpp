@@ -36,12 +36,12 @@ private:
     // bodyconstant or state
     std::unordered_map<int, size_t> id2idx;
 
-    // This is just useful to have. For example, we generate the body tree from
-    // this
-    std::vector<BodyConstant> body;
-
-    // We update this whenever our time cursor moves
-    std::vector<BodyState> body_state_at_time_cursor;
+    // This:
+    // 1. Serves as a master list of bodies we show from the simulation
+    //    e.g. We build the BodyTree for navigation from this
+    // 2. Carries the State vector for each body corresponding to the time
+    //    cursor
+    std::vector<Body> bodies;
 
     PathGroup trajectories;
 

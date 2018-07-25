@@ -33,21 +33,19 @@ void OrbitView::load_new_simulation_from_buffer(
 void OrbitView::load_body_metadata(std::shared_ptr<const Buffer> buffer)
 {
     id2idx.clear();
-    body.clear();
-    body_state_at_time_cursor.clear();
+    bodies.clear();
     for (size_t i = 0; i < buffer->body_count(); i++) {
-        auto& bc        = buffer->metadata(i).property;
-        id2idx[bc.code] = i;
-        body.push_back(bc);
-        body_state_at_time_cursor.push_back(buffer->metadata(i).state);
+        auto& bc = buffer->metadata(i);
+        bodies.push_back(bc);
+        id2idx[bc.property.code] = i;
     }
 }
 
 BodyTree OrbitView::get_body_tree()
 {
     std::unordered_set<spkid_t> bodies_present;
-    for (auto& b : body) {
-        bodies_present.insert({ b.code, b.name });
+    for (auto& b : bodies) {
+        bodies_present.insert({ b.property.code, b.property.name });
     }
     return BodyTree(bodies_present);
 }
@@ -79,10 +77,10 @@ void OrbitView::set_body_state_at_time_cursor(
 {
     if (buffer == nullptr)
         return;
-    for (size_t i = 0; i < body_state_at_time_cursor.size(); i++) {
-        if ((body[i].body_type != BARYCENTER)
+    for (size_t i = 0; i < bodies.size(); i++) {
+        if ((bodies[i].property.body_type != BARYCENTER)
             && (buffer->get(i).sampled.size() > 0)) {
-            body_state_at_time_cursor[i] = buffer->at(i, camera.current_s());
+            bodies[i].state = buffer->at(i, camera.current_s());
             // TODO: Improve how we get sampled data (interpolation project)
             // Let's try an over all higher sampling rate. This is lowest
             // complexity.
@@ -101,7 +99,7 @@ void OrbitView::set_camera_center_pos_from_body_state(Camera& camera)
         camera.set_center({ 0, 0, 0 });
     } else {
         size_t i = id2idx[camera.center_id()];
-        camera.set_center(v2v(body_state_at_time_cursor[i].pos));
+        camera.set_center(v2v(bodies[i].state.pos));
     }
 }
 }
