@@ -36,7 +36,7 @@ struct SubBuffer {
     SubBuffer(const Body body_)
     {
         body    = body_;
-        sampler = FractalDownsampler(1.001, 1e6);
+        sampler = FractalDownsampler(1.001, 1e3);
     }
 
     bool append(const BodyState& state)
