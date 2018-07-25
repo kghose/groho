@@ -14,8 +14,11 @@ object we are refering to. This determines which fields make sense to access.
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
+#include <vector>
 
+#include "spkid.hpp"
 #include "vector.hpp"
 
 namespace sim {
@@ -43,9 +46,9 @@ struct ShipCharacteristic {
 struct BodyState {
     double t;
 
-    sim::Vector pos; // Position referenced to solar system barycenter
-    sim::Vector vel; // Velocity
-    sim::Vector att; // Attitude
+    Vector pos; // Position referenced to solar system barycenter
+    Vector vel; // Velocity
+    Vector att; // Attitude
 
     float acc;  // Current acceleration km/s^2
     float fuel; // Current fuel reserve (U)
@@ -58,4 +61,15 @@ struct Body {
     ShipCharacteristic param;
     BodyState          state;
 };
+
+inline std::optional<size_t>
+body_index(const std::vector<Body>& bodies, spkid_t spkid)
+{
+    for (size_t i = 0; i < bodies.size(); i++) {
+        if (bodies[i].property.code == spkid.id) {
+            return i;
+        }
+    }
+    return {};
+}
 }

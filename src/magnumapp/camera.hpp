@@ -15,7 +15,7 @@ so that they know what camera model to use.
 #include <Magnum/Math/Matrix4.h>
 
 #include "bodytree.hpp"
-#include "groho.hpp"
+#include "groholib.hpp"
 
 namespace sim {
 
@@ -145,6 +145,15 @@ public:
             * Matrix4::translation(Vector3::zAxis(-10.0f))
             * Matrix4::rotationX(ecliptic_correction)
             * Matrix4::scaling(Vector3(space_cursor.scale))
+            * Matrix4::translation(-space_cursor.center);
+    }
+
+    Matrix4 get_fixed_scale_billboard_matrix() const
+    {
+        return Matrix4::perspectiveProjection(
+                   view.fov, view.aspect_ratio, view.front, view.back)
+            * Matrix4::translation(Vector3::zAxis(-10.0f))
+            * Matrix4::rotationX(ecliptic_correction)
             * Matrix4::translation(-space_cursor.center);
     }
 
