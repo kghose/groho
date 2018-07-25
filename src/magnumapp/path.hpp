@@ -13,11 +13,7 @@ Convenient container for managing data to display for a given object
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/Shaders/Flat.h>
 
-#include "body.hpp"
 #include "buffer.hpp"
-#include "groho.hpp"
-#include "vector.hpp"
-#include "vector2vector.hpp"
 
 namespace sim {
 

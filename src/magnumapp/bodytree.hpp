@@ -12,7 +12,6 @@ Organizes all the bodies (as ids) in a tree that reflects how we can select them
 #include <unordered_set>
 #include <vector>
 
-//#include "groho.hpp"
 #include "spkid.hpp"
 
 namespace sim {
