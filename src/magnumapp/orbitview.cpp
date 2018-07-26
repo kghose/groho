@@ -14,6 +14,7 @@ namespace sim {
 void OrbitView::draw(const Camera& camera)
 {
     trajectories.draw(camera.get_matrix());
+    markers.draw(bodies, camera);
     // ref_plane.draw(camera);
     // sphere.draw(camera);
 }
@@ -24,10 +25,10 @@ void OrbitView::load_new_simulation_from_buffer(
     std::shared_ptr<const Buffer> buffer)
 {
     buffer->lock();
+    load_body_metadata(buffer);
     trajectories.reload_from_buffer(buffer);
     simulation_serial = buffer->simulation_serial();
     point_count       = buffer->point_count();
-    load_body_metadata(buffer);
     buffer->release();
 }
 
@@ -35,9 +36,11 @@ void OrbitView::load_body_metadata(std::shared_ptr<const Buffer> buffer)
 {
     id2idx.clear();
     bodies.clear();
+    markers.clear();
     for (size_t i = 0; i < buffer->body_count(); i++) {
         auto& bc = buffer->metadata(i);
         bodies.push_back(bc);
+        markers.add(bc);
         id2idx[bc.property.code] = i;
     }
 }

@@ -8,11 +8,11 @@ the object trajectories (paths), object markers and annotations.
 
 #pragma once
 
+#include "bodymarkers.hpp"
 #include "bodytree.hpp"
 #include "buffer.hpp"
 #include "camera.hpp"
 #include "pathgroup.hpp"
-// #include "referenceplane.hpp"
 // #include "sphere.hpp"
 
 namespace sim {
@@ -43,7 +43,8 @@ private:
     //    cursor
     std::vector<Body> bodies;
 
-    PathGroup trajectories;
+    PathGroup   trajectories;
+    BodyMarkers markers;
 
     // Sphere         sphere;
     // ReferencePlane ref_plane;
