@@ -42,10 +42,17 @@ public:
 
     void set_pos(const Vector3& p) { pos = p; }
 
-    void draw(const Camera& camera)
+    void draw_scaled(const Camera& camera)
     {
         shader.setTransformationProjectionMatrix(
             camera.get_billboard_matrix(pos) * scaling);
+        mesh.draw(shader);
+    }
+
+    void draw_unscaled(const Camera& camera)
+    {
+        shader.setTransformationProjectionMatrix(
+            camera.get_unscaled_billboard_matrix(pos) * scaling);
         mesh.draw(shader);
     }
 
@@ -65,18 +72,41 @@ class BodyMarkers {
 public:
     BodyMarkers() = default;
     void clear() { markers.clear(); }
-    void add(const Body& body) { markers.push_back({ body.property.r }); }
+    void add(const Body& body, bool draw_scaled = true)
+    {
+        markers.push_back(
+            { body.property.r, draw_scaled, Color3(body.property.color) });
+    }
+    virtual void draw(const std::vector<Body>& bodies, const Camera& camera)
+        = 0;
+
+protected:
+    std::vector<BodyMarker> markers;
+};
+
+class ScaledBodyMarkers : public BodyMarkers {
+public:
     void draw(const std::vector<Body>& bodies, const Camera& camera)
     {
         for (size_t i = 0; i < markers.size(); i++) {
             if (bodies[i].property.body_type != BARYCENTER) {
                 markers[i].set_pos(v2v(bodies[i].state.pos));
-                markers[i].draw(camera);
+                markers[i].draw_scaled(camera);
             }
         }
     }
+};
 
-private:
-    std::vector<BodyMarker> markers;
+class UnscaledBodyMarkers : public BodyMarkers {
+public:
+    void draw(const std::vector<Body>& bodies, const Camera& camera)
+    {
+        for (size_t i = 0; i < markers.size(); i++) {
+            if (bodies[i].property.body_type != BARYCENTER) {
+                markers[i].set_pos(v2v(bodies[i].state.pos));
+                markers[i].draw_unscaled(camera);
+            }
+        }
+    }
 };
 }

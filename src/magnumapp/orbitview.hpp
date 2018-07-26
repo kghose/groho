@@ -28,6 +28,11 @@ public:
         const Camera& camera, std::shared_ptr<const Buffer> buffer);
     void set_camera_center_pos_from_body_state(Camera& camera);
 
+public:
+    bool show_trajectories     = true;
+    bool show_scaled_markers   = true;
+    bool show_unscaled_markers = true;
+
 private:
     void load_body_metadata(std::shared_ptr<const Buffer> buffer);
 
@@ -43,8 +48,9 @@ private:
     //    cursor
     std::vector<Body> bodies;
 
-    PathGroup   trajectories;
-    BodyMarkers markers;
+    PathGroup           trajectories;
+    ScaledBodyMarkers   scaled_markers;
+    UnscaledBodyMarkers unscaled_markers;
 
     // Sphere         sphere;
     // ReferencePlane ref_plane;

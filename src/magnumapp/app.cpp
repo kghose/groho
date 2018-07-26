@@ -155,6 +155,25 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
     redraw();
 }
 
+void GrohoApp::keyPressEvent(KeyEvent& event)
+{
+    switch (event.key()) {
+    case KeyEvent::Key::P:
+        orbit_view.show_trajectories ^= true;
+        break;
+    case KeyEvent::Key::M:
+        orbit_view.show_unscaled_markers ^= true;
+        break;
+    case KeyEvent::Key::B:
+        orbit_view.show_scaled_markers ^= true;
+        break;
+    default:
+        break;
+    }
+
+    redraw();
+}
+
 void GrohoApp::keyReleaseEvent(KeyEvent& event)
 {
     switch (event.key()) {

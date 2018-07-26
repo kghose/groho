@@ -13,10 +13,17 @@ namespace sim {
 
 void OrbitView::draw(const Camera& camera)
 {
-    trajectories.draw(camera.get_matrix());
-    markers.draw(bodies, camera);
-    // ref_plane.draw(camera);
-    // sphere.draw(camera);
+    if (show_trajectories) {
+        trajectories.draw(camera.get_matrix());
+    }
+
+    if (show_scaled_markers) {
+        scaled_markers.draw(bodies, camera);
+    }
+
+    if (show_unscaled_markers) {
+        unscaled_markers.draw(bodies, camera);
+    }
 }
 
 // TODO: rewrite buffer so we don't have to use lock/release - pass this
@@ -36,11 +43,13 @@ void OrbitView::load_body_metadata(std::shared_ptr<const Buffer> buffer)
 {
     id2idx.clear();
     bodies.clear();
-    markers.clear();
+    scaled_markers.clear();
+    unscaled_markers.clear();
     for (size_t i = 0; i < buffer->body_count(); i++) {
         auto& bc = buffer->metadata(i);
         bodies.push_back(bc);
-        markers.add(bc);
+        scaled_markers.add(bc, true);
+        unscaled_markers.add(bc, false);
         id2idx[bc.property.code] = i;
     }
 }
