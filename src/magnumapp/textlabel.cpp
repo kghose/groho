@@ -106,8 +106,8 @@ Billboard& Billboard::set_pos(const Vector3& p)
 
 void Billboard::draw(const Camera& camera)
 {
-    _shader.setTransformationProjectionMatrix(camera.get_billboard_matrix())
-        .setColor(_color);
-    _text->mesh().draw(_shader);
+    // _shader.setTransformationProjectionMatrix(camera.get_billboard_matrix())
+    //     .setColor(_color);
+    // _text->mesh().draw(_shader);
 }
 }
