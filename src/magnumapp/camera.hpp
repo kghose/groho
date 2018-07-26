@@ -138,23 +138,35 @@ public:
             * Matrix4::translation(-space_cursor.center);
     }
 
-    Matrix4 get_billboard_matrix() const
+    Matrix4 get_billboard_matrix(Vector3 pos) const
     {
+        Vector4 point = get_billboard_translation(pos);
+
         return Matrix4::perspectiveProjection(
                    view.fov, view.aspect_ratio, view.front, view.back)
             * Matrix4::translation(Vector3::zAxis(-10.0f))
-            * Matrix4::rotationX(ecliptic_correction)
-            * Matrix4::scaling(Vector3(space_cursor.scale))
-            * Matrix4::translation(-space_cursor.center);
+            * Matrix4::translation(Vector3(point.x(), point.y(), point.z()))
+            * Matrix4::scaling(Vector3(space_cursor.scale));
     }
 
-    Matrix4 get_fixed_scale_billboard_matrix() const
+    Matrix4 get_unscaled_billboard_matrix(Vector3 pos) const
     {
+        Vector4 point = get_billboard_translation(pos);
+
         return Matrix4::perspectiveProjection(
                    view.fov, view.aspect_ratio, view.front, view.back)
             * Matrix4::translation(Vector3::zAxis(-10.0f))
+            * Matrix4::translation(Vector3(point.x(), point.y(), point.z()));
+    }
+
+    Vector4 get_billboard_translation(Vector3 pos) const
+    {
+        return Matrix4::rotationX(space_cursor.el)
+            * Matrix4::rotationZ(space_cursor.az)
             * Matrix4::rotationX(ecliptic_correction)
-            * Matrix4::translation(-space_cursor.center);
+            * Matrix4::scaling(Vector3(space_cursor.scale))
+            * Matrix4::translation(-space_cursor.center)
+            * Vector4{ pos.x(), pos.y(), pos.z(), 1 };
     }
 
 private:
