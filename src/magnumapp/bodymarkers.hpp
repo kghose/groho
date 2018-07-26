@@ -9,7 +9,7 @@ This adds triangle markers to the location of various bodies
 
 #include <Magnum/GL/Buffer.h>
 #include <Magnum/GL/Mesh.h>
-#include <Magnum/Primitives/circle.h>
+#include <Magnum/Primitives/Circle.h>
 #include <Magnum/Shaders/Flat.h>
 #include <Magnum/Trade/MeshData3D.h>
 
