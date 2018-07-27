@@ -17,12 +17,12 @@ void OrbitView::draw(const Camera& camera)
         trajectories.draw(camera.get_matrix());
     }
 
-    if (show_scaled_markers) {
-        scaled_markers.draw(bodies, camera);
+    if (show_scale_models) {
+        scale_models.draw(camera);
     }
 
-    if (show_unscaled_markers) {
-        unscaled_markers.draw(bodies, camera);
+    if (show_body_markers) {
+        body_markers.draw(camera);
     }
 }
 
@@ -33,6 +33,8 @@ void OrbitView::load_new_simulation_from_buffer(
 {
     buffer->lock();
     load_body_metadata(buffer);
+    scale_models = ScaleModelGroup(bodies);
+    body_markers = BodyMarkers(bodies);
     trajectories.reload_from_buffer(buffer);
     simulation_serial = buffer->simulation_serial();
     point_count       = buffer->point_count();
@@ -43,13 +45,9 @@ void OrbitView::load_body_metadata(std::shared_ptr<const Buffer> buffer)
 {
     id2idx.clear();
     bodies.clear();
-    scaled_markers.clear();
-    unscaled_markers.clear();
     for (size_t i = 0; i < buffer->body_count(); i++) {
         auto& bc = buffer->metadata(i);
         bodies.push_back(bc);
-        scaled_markers.add(bc, true);
-        unscaled_markers.add(bc, false);
         id2idx[bc.property.code] = i;
     }
 }
@@ -104,6 +102,8 @@ void OrbitView::set_body_state_at_time_cursor(
             // buffer->get(i).sampled.size()
         }
     }
+    scale_models.set_data(bodies);
+    body_markers.set_data(bodies);
 }
 
 void OrbitView::set_camera_center_pos_from_body_state(Camera& camera)

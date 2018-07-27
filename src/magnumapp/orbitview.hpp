@@ -13,6 +13,7 @@ the object trajectories (paths), object markers and annotations.
 #include "buffer.hpp"
 #include "camera.hpp"
 #include "pathgroup.hpp"
+#include "scalemodelgroup.hpp"
 // #include "sphere.hpp"
 
 namespace sim {
@@ -29,9 +30,9 @@ public:
     void set_camera_center_pos_from_body_state(Camera& camera);
 
 public:
-    bool show_trajectories     = true;
-    bool show_scaled_markers   = true;
-    bool show_unscaled_markers = true;
+    bool show_trajectories = true;
+    bool show_scale_models = true;
+    bool show_body_markers = true;
 
 private:
     void load_body_metadata(std::shared_ptr<const Buffer> buffer);
@@ -48,12 +49,9 @@ private:
     //    cursor
     std::vector<Body> bodies;
 
-    PathGroup           trajectories;
-    ScaledBodyMarkers   scaled_markers;
-    UnscaledBodyMarkers unscaled_markers;
-
-    // Sphere         sphere;
-    // ReferencePlane ref_plane;
+    PathGroup       trajectories;
+    ScaleModelGroup scale_models;
+    BodyMarkers     body_markers;
 
     // Metadata to figure out if we should reload a buffer
     // TODO: use optional

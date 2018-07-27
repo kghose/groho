@@ -162,10 +162,10 @@ void GrohoApp::keyPressEvent(KeyEvent& event)
         orbit_view.show_trajectories ^= true;
         break;
     case KeyEvent::Key::M:
-        orbit_view.show_unscaled_markers ^= true;
+        orbit_view.show_body_markers ^= true;
         break;
     case KeyEvent::Key::B:
-        orbit_view.show_scaled_markers ^= true;
+        orbit_view.show_scale_models ^= true;
         break;
     default:
         break;
