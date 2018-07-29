@@ -25,7 +25,6 @@ should see if this is fast enough for us.
 
 #include "body.hpp"
 #include "fractaldownsampler.hpp"
-#include "groho.hpp"
 #include "scenario.hpp"
 #include "vector.hpp"
 
@@ -36,7 +35,7 @@ struct SubBuffer {
     SubBuffer(const Body body_)
     {
         body    = body_;
-        sampler = FractalDownsampler(1.001, 1e3);
+        sampler = FractalDownsampler(1.001, 1e6);
     }
 
     bool append(const BodyState& state)

@@ -13,10 +13,11 @@ This draws scalled, billboard circles to mimic the planetary bodies
 #include <Magnum/Shaders/Flat.h>
 #include <Magnum/Trade/MeshData3D.h>
 
+#include "applib.hpp"
 #include "body.hpp"
 #include "camera.hpp"
+#include "style.hpp"
 #include "vector.hpp"
-#include "vector2vector.hpp"
 
 namespace sim {
 
@@ -28,10 +29,11 @@ class ScaleModel {
 public:
     ScaleModel(const Body& body)
         : body_type(body.property.body_type)
-        , color(Color3(body.property.color))
-        , scaling(Matrix4::scaling(Vector3(body.property.r / globals::scale)))
+        , color(from_rgb(body.property.color))
+        , scaling(Matrix4::scaling(Vector3(body.property.r / style::scale)))
     {
         const Trade::MeshData3D circle = Primitives::circle3DWireframe(15);
+        // const Trade::MeshData3D circle = Primitives::circle3DSolid(15);
 
         vertexBuffer.setData(circle.positions(0), GL::BufferUsage::StaticDraw);
 

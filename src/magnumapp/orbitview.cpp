@@ -7,7 +7,6 @@ the object trajectories (paths), object markers and annotations.
 */
 
 #include "orbitview.hpp"
-#include "vector2vector.hpp"
 
 namespace sim {
 

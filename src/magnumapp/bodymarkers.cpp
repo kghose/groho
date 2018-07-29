@@ -6,6 +6,7 @@ This adds point markers to the location of various bodies
 */
 
 #include "bodymarkers.hpp"
+#include "applib.hpp"
 #include "style.hpp"
 
 namespace sim {

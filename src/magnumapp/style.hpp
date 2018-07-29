@@ -16,5 +16,7 @@ using namespace Magnum;
 
 const Color3 body_marker_color = Color3::yellow();
 const Color3 trajectory_color  = Color3(0.3, 0.3, 0.8);
+
+const double scale = 10 * 149'597'870.700; // 10 AU
 }
 }

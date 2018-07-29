@@ -14,8 +14,6 @@ This adds point markers to the location of various bodies
 
 #include "body.hpp"
 #include "camera.hpp"
-#include "vector.hpp"
-#include "vector2vector.hpp"
 
 namespace sim {
 

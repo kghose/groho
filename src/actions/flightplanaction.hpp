@@ -14,7 +14,6 @@ Base action class and base parser for flight plan actions
 #include <unordered_map>
 
 #include "body.hpp"
-#include "groho.hpp"
 #include "state.hpp"
 
 #define LOGURU_WITH_STREAMS 1

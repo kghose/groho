@@ -6,7 +6,6 @@ Magnum App to handle windowing and display
 */
 
 #include "app.hpp"
-#include "vector2vector.hpp"
 
 namespace sim {
 
