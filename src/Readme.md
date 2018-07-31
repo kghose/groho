@@ -3,14 +3,7 @@ Developer notes
 
 <!-- TOC -->
 
-- [Code organization](#code-organization)
-- [Loading planetary kernels](#loading-planetary-kernels)
-- [Storing and displaying data](#storing-and-displaying-data)
-    - [Large scales and huge dynamic ranges (The LOD problem)](#large-scales-and-huge-dynamic-ranges-the-lod-problem)
-        - [Viewing the data](#viewing-the-data)
-        - [More power is not the answer](#more-power-is-not-the-answer)
-        - [Cubic interpolation](#cubic-interpolation)
-- [C++ Language features](#c-language-features)
+- [Notes on C++](#notes-on-c)
     - [Order matters](#order-matters)
     - [Instrumentation/profiling/debugging](#instrumentationprofilingdebugging)
         - [`-fsanitize=address`](#-fsanitizeaddress)
@@ -37,10 +30,17 @@ Developer notes
     - [Misc](#misc)
     - [Passing member function pointers to callbacks](#passing-member-function-pointers-to-callbacks)
     - [The use of "f" in code using OpenGL](#the-use-of-f-in-code-using-opengl)
-- [Code design considerations](#code-design-considerations)
+- [Some notes on implementation](#some-notes-on-implementation)
+    - [Loading planetary kernels](#loading-planetary-kernels)
+    - [The LOD problem](#the-lod-problem)
+        - [Option: Store all the data](#option-store-all-the-data)
+        - [Option: Adaptive downsampling](#option-adaptive-downsampling)
+        - [The LOD problem](#the-lod-problem-1)
+            - [More power is not the answer](#more-power-is-not-the-answer)
+        - [Adaptive sampling + interpolation](#adaptive-sampling--interpolation)
     - [Sharing a data buffer between writer and reader](#sharing-a-data-buffer-between-writer-and-reader)
     - [Flightplans](#flightplans)
-        - [Code organization](#code-organization-1)
+        - [Code organization](#code-organization)
     - [Who does what?](#who-does-what)
 - [Displaying the simulation](#displaying-the-simulation)
     - [Fractal downsampler](#fractal-downsampler)
@@ -68,135 +68,7 @@ Developer notes
 
 <!-- /TOC -->
 
-# Code organization
-
-Once the I/O system (Configuration) has loaded in the scenario
-
-
-simulator(state) -> state
-buffer(state) -> state_history
-display(state_history) -> display
-
-
-
-
-* Orrery - Orrery models (NASA/JPL SPK files) loading and computation
-* Configuraton - collection of scenario information and files 
-* Scenario - Instantiation (loading) of scenario information in a Configuration
-    - Orrery
-    - Bodies (ships)
-    - Actions  (State) -> (State)
-* State
-    - Bodies (orrery)
-    - Bodies (ships)
-* Simulator
-    - Buffer
-    - Scenario -> State
-* Magnumapp
-    - 
-
-
-
-
-* scenario - Scenario and flightplan loading and parsing
-* simulation
-    - trajectorydata
-    - annotationdata
-* display
-    - trajectoryview
-    - annotationview
-* external - external libraries, currently just loguru
-
-* buffer - code to handle data storage and sharing
-* magnumapp - Visualization window based on Magnum/Corrade
-
-
-# Loading planetary kernels
-
-It was a good decision to use the authoritative ephemeris from NASA/JPL for the 
-orrery - there is a wealth of accurate data available is the SPK format and it
-was entertaining (to an extent) and satisfying to analyze the data structure and 
-then implement a reader for it. It was especially satisfying to see the complex
-non-planar orbits of the moons of the gas giants and a lot of fun to load up the
-SPK file carrying those 343 asteroids and see them swirl around the sun.
-
-# Storing and displaying data
-
-## Large scales and huge dynamic ranges (The LOD problem)
-This was always going to be a fun challenge in this project because of the
-enormous scales and large dynamic ranges involved for both space and time. My
-goal is to be able to run the following simulation:
-
-**Simulation: 60 bodies (full solar-system, no asteroids/comets) + 20 spaceships, 
-for a time span 100 years**
-
-On my current laptop:
-
-**Machine specs: 16GB, 2.7 GHz Intel Core i5 (2 cores)**
-
-The raw compute is not so much of an issue, especially given that it's not an
-interactive simulation. What is challenging is the sheer size of the data
-produced.
-
-### Viewing the data
-I developed an adaptive downsampler that samples points more densely in regions
-of higher curvature. This can be tuned to give a density of sampling such that,
-at a scale where the whole, or substantial parts of, the solar system are visible, 
-the trajectories are visually pleasant to look at even with just linear interpolation.
-
-When you zoom in however, say to look at Mars and it's moons, downsampled data 
-with linear interpolation looks very annoying. A smooth trajectory like mars
-has sampling intervals that are large compared to the tight motions its moons
-make, resulting in a very glitchy and inaccurate rendering with linear interpolation.
-
-> ### Mars, Phobos and Deimos
-> The orbits of Phobos and Deimos are particularly challenging - they are both
-strikingly close to Mars and their orbits correspondingly have tight curvatures.
-Visually, aggressive downsampling works for most of the planets/moons but not for the Martian system.
-
-### More power is not the answer
-I tried cranking down the tolerances on the adaptive sampler but the problem
-is that to get dense enough sampling for the Martian system we start to flood
-with data. With the default tolerances, for a 100 year full solar system simulation
-we end up with about 2.6 million points. This can skyrocket to 31 million points
-and we still have glitchy visuals.
-
-It's possible to set the tolerances differently for the different planets, since
-only the Martian system has such a tight scale, but we're just kicking the can
-down the road and we're going to run into again, for example, when we'll be
-looping a spacecraft through the Jovian system and wonder why everything looks
-so funny. The easiest solution is higher order interpolation.
-
-### Cubic interpolation
-I'll start with the simplest solution I can think of: 
-- The interpolation is driven by the camera and it's target (center) body
-- When the camera zooms close enough to a center body, we will fill in, with 
-  cubic interpolation, the data for a certain range forward and backward along
-  the path.
-- This same interpolation will also be done for any bodies within a certain
-  range of the center.
-
-This scheme has the following limitations that we will see if we can live with
-- We can position the camera such that there are objects and paths very close
-  to the camera, but far from the central body. No interpolation will be triggered
-  for these close bodies
-- We can have a path pass by our neighborhood but the object on that path is
-  far away for the given time cursor. This can look visually ugly
-- Such paths include previous orbits of a planet/moon  
-
-We can generate a slightly more expensive solution as follows 
-- We only ever show one orbit of any body around the sun. We can do this by
-  walking backwards from the current time cursor and stopping plotting when
-  we describe an angle of 2pi 
-- For every visible orbit segment we compute (at some expense) what parts
-  intersect a sphere or box around the camera ("the neighborhood") and 
-  interpolate all of those parts.
-
-This is more fun to come up with an algorithm for and may be visually more
-attractive. 
-
-
-# C++ Language features
+# Notes on C++
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
@@ -647,7 +519,110 @@ which explains that C++ templates are strict and since
 the underlying functions operate of floats, passing a number like 2.0 
 
 
-# Code design considerations 
+# Some notes on implementation
+
+## Loading planetary kernels
+
+It was a good decision to use the authoritative ephemeris from NASA/JPL for the 
+orrery - there is a wealth of accurate data available is the SPK format and it
+was entertaining (to an extent) and satisfying to analyze the data structure and 
+then implement a reader for it. It was especially satisfying to see the complex
+non-planar orbits of the moons of the gas giants and a lot of fun to load up the
+SPK file carrying those 343 asteroids and see them swirl around the sun.
+
+## The LOD problem
+
+My goal is to be able to run the following simulation:
+
+**Simulation: 60 bodies (full solar-system, no asteroids/comets) + 20 spaceships, 
+for a time span 100 years**
+
+On my current laptop:
+
+**Machine specs: 16GB, 2.7 GHz Intel Core i5 (2 cores)**
+
+The raw compute is not so much of an issue, especially given that it's not an
+interactive simulation. What is challenging is the sheer size of the data
+produced which is unwieldy to store and display.
+
+### Option: Store all the data
+
+Assuming a simulation time step of 1 minute a 100 year simulation will result in
+100 * 365.25 * 24 * 60 = 52.6 million data points per trajectory. If we store 
+just the position and we stpre this as floats, this is 52.6e6 * 3 * 4 = 631 MB
+of data per trajectory. For our full-solar stsem simulation this is 12.6 GB for 
+the 20 spaceships alone. 
+
+### Option: Adaptive downsampling
+
+A 1 minute interval, possibly essential for numerical stability, is probably
+way more dense than necessary for display purposes. Downsampling the data allows
+us to maintain visual fidelity. For reasons detailed in this 
+[IPython notebook][downsampler] a decent solution is an adpative downsampler
+that samples tighter curvatures more densely. 
+
+This can be tuned to give a density of sampling such that,
+at a scale where the whole, or substantial parts of, the solar system are visible, 
+the trajectories are visually pleasant to look at even with just linear interpolation.
+This allows us, in practice, to reduce a 100 year, full solar system simulation
+to around 2-3 million points.
+
+### The LOD problem
+
+Solving this problem graduates us to the next level of problem: The Level of Detail
+issue. When you zoom in however, say to look at Mars and it's moons, downsampled data 
+with linear interpolation looks very annoying. A smooth trajectory like mars
+has sampling intervals that are large compared to the tight motions its moons
+make, resulting in a very glitchy and inaccurate rendering with linear interpolation.
+
+> ### Mars, Phobos and Deimos
+> The orbits of Phobos and Deimos are particularly challenging - they are both
+strikingly close to Mars and their orbits correspondingly have tight curvatures.
+Visually, aggressive downsampling works for most of the planets/moons but not for the Martian system.
+
+#### More power is not the answer
+I tried cranking down the tolerances on the adaptive sampler but the problem
+is that to get dense enough sampling for the Martian system we start to flood
+with data. With the default tolerances, for a 100 year full solar system simulation
+we end up with about 2.6 million points. This can skyrocket to 31 million points
+and we still have glitchy visuals.
+
+It's possible to set the tolerances differently for the different planets, since
+only the Martian system has such a tight scale, but we're just kicking the can
+down the road and we're going to run into again, for example, when we'll be
+looping a spacecraft through the Jovian system and wonder why everything looks
+so funny. 
+
+### Adaptive sampling + interpolation
+
+The LOD problem hits us when we zoom in to take a closer look at a region of
+space. One way to mitigate this is to adaptively sample the simulation to reduce
+the data volume and then interpolate (upsample) dynamically, as needed, those
+parts of the traces that we are looking closely at. The scheme is as follows:
+
+- Use adaptive sampling to reduce data volume
+- Define a volume around the camera target center called the neighborhood. When 
+  the camera gets within this neightborhood, interpolate.
+- For a given camera distance sample all trajectories at a certain density and
+  upto a certain spatial extent within the neighborhood
+- The Orrery is recomputed (I'm assuming that, since this is already an interpolation
+  this will be as fast (or faster that) cubic interpolation)
+- The space craft trajectories are interpolated using a cubic spline 
+- Show at most one orbit of any body around the sun/SSB at any given time. 
+  This is because showing multiple orbits clutters up the display unnecessarily.
+  We can do this by walking backwards from the current time cursor and stopping 
+  plotting when we describe an angle of 2pi
+- The interpolation should run in a separate thread, triggered by camera movement
+- We should optimize for the case where the user zooms in and then moves forward/backward
+  in time - so we should be smart and not recompute overlapping sections
+- It should be possible to cancel the interpolation computation and restart -
+  for the case where the user changes the camera target
+
+This scheme has the following limitations that we will see if we can live with
+- We can position the camera such that there are objects and paths very close
+  to the camera, but far from the central body. No interpolation will be triggered
+  for these close bodies
+
 
 
 ## Sharing a data buffer between writer and reader
