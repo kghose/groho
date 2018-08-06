@@ -11,51 +11,41 @@ Type for NAIF IDs
 
 namespace sim {
 
-struct NAIFcode {
-    int value;
-    explicit NAIFcode(int a) { value = a; }
-    constexpr explicit operator int() const { return value; }
-};
-
 struct NAIFbody {
-    NAIFcode    code;
+    int         code;
     std::string name;
-    NAIFbody(NAIFcode a = NAIFcode(0), std::string _name = "SSB")
-        : code(a)
-    {
-        name = _name;
-    }
-    bool is_barycenter() { return (0 <= int(code)) && (int(code) < 10); }
-    bool is_ship() { return int(code) < 0; }
-    bool is_planet()
-    {
-        return (int(code) > 10) && (int(code) < 1000)
-            && ((int(code) % 100) == 99);
-    }
-    bool is_satellite()
-    {
-        return (int(code) > 10) && (int(code) < 1000)
-            && ((int(code) % 100) != 99);
-    }
-    bool is_asteroid() { return (int(code) > 2000000); }
-    bool is_comet() { return (int(code) > 1000000) && (int(code) <= 2000000); }
 
-    bool operator<(const NAIFbody& s) const
+    NAIFbody(int a = 0, std::string _name = "undefined")
+        : code(a)
+        , name(_name)
     {
-        return (int(code) < int(s.code));
     }
-    bool operator==(const NAIFbody& s) const
+
+    constexpr explicit operator int() const { return code; }
+
+    bool is_barycenter() const { return (0 <= code) && (code < 10); }
+    bool is_ship() const { return code < 0; }
+    bool is_planet() const
     {
-        return (int(code) == int(s.code));
+        return (code > 10) && (code < 1000) && ((code % 100) == 99);
     }
+    bool is_satellite() const
+    {
+        return (code > 10) && (code < 1000) && ((code % 100) != 99);
+    }
+    bool is_asteroid() const { return (code > 2000000); }
+    bool is_comet() const { return (code > 1000000) && (code <= 2000000); }
+
+    bool operator<(const NAIFbody& s) const { return (code < (int)s); }
+    bool operator==(const NAIFbody& s) const { return (code == (int)s); }
 };
 }
 
 namespace std {
 template <> struct hash<sim::NAIFbody> {
-    size_t operator()(const sim::NAIFbody& obj) const
+    size_t operator()(const sim::NAIFbody& body) const
     {
-        return hash<int>()(int(obj.code));
+        return hash<int>()((int)body);
     }
 };
 }
