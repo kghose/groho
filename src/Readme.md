@@ -4,6 +4,7 @@ Developer notes
 <!-- TOC -->
 
 - [Notes on C++](#notes-on-c)
+    - [Template template arguments](#template-template-arguments)
     - [Order matters](#order-matters)
     - [Instrumentation/profiling/debugging](#instrumentationprofilingdebugging)
         - [`-fsanitize=address`](#-fsanitizeaddress)
@@ -77,6 +78,45 @@ Developer notes
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## Template template arguments
+
+(https://en.cppreference.com/w/cpp/language/template_parameters)
+```
+template <typename T> struct Simulation {
+    T::Property         property;
+    SubBuffer<T::State> history;
+};
+
+template <typename T> struct SnapShot {
+    T::Property property;
+    T::State    state;
+};
+
+template <template <typename> class T> struct Objects {
+    std::vector<T<RockLike>> system;
+    std::vector<T<ShipLike>> fleet;
+};
+
+...
+
+Objects<Simulation> simulation;
+```
+
+where
+
+```
+struct RockLike {
+    struct Property { ... };
+    struct State { ...};
+};
+
+struct ShipLike {
+    struct Property { ... };
+    struct State { ... };
+};
+```
+
 
 ## Order matters
 
