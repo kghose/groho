@@ -20,7 +20,7 @@ are described as separate classes of objects with some elements in common
 
 namespace sim {
 
-struct Rock {
+struct RockLike {
 
     struct Property {
         NAIFbody naif;
@@ -29,16 +29,16 @@ struct Rock {
         float r;  // Radius of body (for collision tests)
 
         uint32_t color; // For display purposes
-    } property;
+    };
 
     struct State {
         Vector pos; // Position referenced to solar system barycenter
         Vector vel; // Velocity
         double t_s;
-    } state;
+    };
 };
 
-struct Ship {
+struct ShipLike {
 
     struct Property {
         NAIFbody naif;
@@ -48,7 +48,7 @@ struct Ship {
         float burn_rate; // Fuel consumption rate (U/ (m/s^2))
 
         uint32_t color; // For display purposes
-    } property;
+    };
 
     struct State {
         Vector pos;  // Position referenced to solar system barycenter
@@ -57,7 +57,17 @@ struct Ship {
         float  fuel; // Current fuel reserve (U)
         float  acc;  // Current acceleration km/s^2
         double t_s;
-    } state;
+    };
+};
+
+template <typename T> struct SnapShot {
+    T::Property property;
+    T::State    state;
+};
+
+template <template <typename> class T> struct Objects {
+    std::vector<T<RockLike>> system;
+    std::vector<T<ShipLike>> fleet;
 };
 
 template <typename T>
@@ -65,7 +75,7 @@ inline std::optional<size_t>
 find(const std::vector<T>& bodies, const NAIFbody& naif)
 {
     for (size_t i = 0; i < bodies.size(); i++) {
-        if (bodies[i].naif == naif) {
+        if (bodies[i].property.naif == naif) {
             return i;
         }
     }
