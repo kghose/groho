@@ -38,6 +38,11 @@ Developer notes
         - [The LOD problem](#the-lod-problem-1)
             - [More power is not the answer](#more-power-is-not-the-answer)
         - [Adaptive sampling + interpolation](#adaptive-sampling--interpolation)
+        - [Loss of fidelity](#loss-of-fidelity)
+    - [Restarts](#restarts)
+        - [Composing simulations](#composing-simulations)
+        - [Restarts and flightplans](#restarts-and-flightplans)
+    - [Do we need restarts?](#do-we-need-restarts)
     - [Sharing a data buffer between writer and reader](#sharing-a-data-buffer-between-writer-and-reader)
     - [Flightplans](#flightplans)
         - [Code organization](#code-organization)
@@ -171,6 +176,42 @@ good - I used Instruments -> Time Profiler to find code chokepoints and Leaks
 for memory issues.
 
 ## Warnings, Warnings
+
+```
+warning: all paths through this function will call itself [-Winfinite-recursion]
+```
+Rather, this taught me about the `::` for global scope. I had code that basically
+looks like this:
+
+```
+#include <iostream>
+
+void foo() { std::cout << "::foo"; }
+
+struct A {
+    void foo()
+    {
+        std::cout << "A::foo";
+        foo(); // <-- !!!!
+    }
+};
+
+int main() { return 1; }
+```
+
+`foo()` in the member function refers to the member function (hence the 
+recursion warning). What is needed is:
+
+```
+    void foo()
+    {
+        std::cout << "A::foo";
+        ::foo();
+    }
+```
+to indicate global scope
+
+https://stackoverflow.com/questions/7149922/calling-a-global-function-with-a-class-method-with-the-same-declaration
 
 ```
 warning: unused parameter 'X' [-Wunused-parameter]
@@ -623,7 +664,57 @@ This scheme has the following limitations that we will see if we can live with
   to the camera, but far from the central body. No interpolation will be triggered
   for these close bodies
 
+### Loss of fidelity
 
+We have to accept that for annotation purposes the spacecraft component of
+positions and velocities will be approximate, given that they are interpolations.
+However, for the purposes of what we use them for - designing flightplans and
+gaining intuitions of spaceflight, it should be fine. Also, precise annotations,
+like marking maximum distance, or maximum closing velocity will be marked from
+the actual data, as the event happens, so these will be exact.  
+
+## Restarts
+
+In the distant future we have some notion that we would like to do restarts.
+Either we want to be able to inspect and edited scenario and determine if we can
+reuse previous computations, or we want to load a saved simulation and extend it.
+Right now (2018) this is beyond the scope of a 18.12 release but we perhaps we
+can plan ahead.
+
+An important thing with restarts is what exactly can we restart? A restart
+requires us to save the state history upto a point in time, and then continue
+the simulation from that point. But important parts of the simulation need to be
+identical.
+
+### Composing simulations
+- Run simulations of two ships separately and then combine them together as one
+  - It would be nice to save on the computations, but how?
+- Run simulations upto a point in time, then extend these simulations to later
+  epochs without changing events earlier in time. How do we determine this?
+  - Initial conditions have to be identical
+  - Actions can only change after a ceratain point in time
+
+It sounds like restarts are going to be complex because we anticipate changing
+parts of the simulation. What we will restrict ourselves to here is designing
+the flightplan in a way that will enable restarts in the future, even though
+we anticipate this being very hard to do re: figuring out what we can restart
+given a changed scenario.
+
+### Restarts and flightplans
+
+For restarts to work, we need flight plans to be either stateless or we should 
+have well defined state vectors for the flight plans that can be saved. A 
+convenient thing may be to collect any state variables
+into a class specific struct (say `State`). Down the road we might be able to
+serialize the flight plan by writing out this `State` in an orderly fashion.
+Currently we remove flightplans that are done, so presumably we'll need to
+preface each state save with a serial number and type of the flightplan, so
+we can reconstitute it when we load it back.
+
+## Do we need restarts?
+
+We are talking about caching computations here, and the question is whether we
+really need it?
 
 ## Sharing a data buffer between writer and reader
 
