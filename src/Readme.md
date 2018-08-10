@@ -18,6 +18,7 @@ Developer notes
     - [Optional](#optional)
     - [Switch-board (Pythonic C++)](#switch-board-pythonic-c)
     - [Building](#building)
+        - [Compile an individual file](#compile-an-individual-file)
     - [Template class derived from a template class](#template-class-derived-from-a-template-class)
     - [Template classes must be defined in the header file](#template-classes-must-be-defined-in-the-header-file)
     - [Units (user defined literals)](#units-user-defined-literals)
@@ -416,6 +417,25 @@ bool set_key_value(std::optional<KeyValue> kv)
 ## Building
 
 - [Creating your own Cmake find module script for a library](https://cmake.org/Wiki/CMake:How_To_Find_Libraries)
+
+### Compile an individual file
+
+Find the internal make file CMake generates
+```
+cd build_directory
+grep "my_file" *
+```
+
+Then inspect it to find the correct target and then you will end up doing something
+like
+```
+make -f CMakeFiles/groho.dir/build.make CMakeFiles/groho.dir/src/orrery/spkorrery.cpp.o
+```
+
+This is useful for major refactors when everything is flux and it's more manageable
+to compile one file at a time and go that way.
+
+The other useful thing is not to do a major refactor ...
 
 
 ## Template class derived from a template class
