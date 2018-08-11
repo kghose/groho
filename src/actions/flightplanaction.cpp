@@ -61,7 +61,8 @@ fpap_t parse_line_into_action(
     size_t                   ship_idx,
     std::string              fname,
     size_t                   line_no,
-    std::vector<std::string> tokens)
+    std::vector<std::string> tokens,
+    ShipLike::Property       property)
 {
     double jd = do_this_first;
     if (tokens[0] != "-") {
@@ -79,7 +80,8 @@ fpap_t parse_line_into_action(
         }
 
         return available_actions[tokens[1]](
-            FPAmeta{ ship_idx, fname, line_no, tokens[1], jd2s(jd) }, params);
+            FPAmeta{ ship_idx, fname, line_no, tokens[1], property, jd2s(jd) },
+            params);
 
     } else {
         LOG_S(ERROR) << fname << ": " << line_no

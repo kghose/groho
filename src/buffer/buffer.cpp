@@ -12,18 +12,18 @@ produced by a simulation)
 namespace sim {
 
 // For now, just interpolate position
-BodyState
-interpolate(const BodyState& state0, const BodyState& state1, double t_s)
+template <typename T>
+T interpolate(const T& state0, const T& state1, double t_s)
 {
-    BodyState state = state0;
-    state.pos       = state0.pos
+    T state   = state0;
+    state.pos = state0.pos
         + (state1.pos - state0.pos)
             * ((t_s - state0.t) / (state1.t - state0.t));
     return state;
 }
 
 // Don't do this on an empty vector
-BodyState SubBuffer::at(double t_s) const
+template <typename T> T SubBuffer<T>::at(double t_s) const
 {
     double t0 = data[0].t, t1 = data[data.size() - 1].t;
     if (t_s < t0) {

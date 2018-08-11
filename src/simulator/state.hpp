@@ -16,19 +16,20 @@ namespace sim {
 
 class State {
 public:
-    State(size_t system_size, size_t fleet_size)
+    State(const Objects<SnapShot> snapshot)
     {
-        _rocks[0].resize(system_size);
-        _rocks[1].resize(system_size);
-        _ships.resize(fleet_size);
+        _rocks[0] = snapshot.system;
+        _rocks[1] = snapshot.system;
+        _ships    = snapshot.fleet;
     }
 
     void compute_rock_vels()
     {
         const double delta_t_s = _t_s[N] - _t_s[1 - N];
         for (size_t i = 0; i < _rocks[N].size(); i++) {
-            _rocks[N][i].vel
-                = (_rocks[N][i].pos - _rocks[1 - N][i].pos) / delta_t_s;
+            _rocks[N][i].state.vel
+                = (_rocks[N][i].state.pos - _rocks[1 - N][i].state.pos)
+                / delta_t_s;
         }
     }
 
@@ -42,22 +43,22 @@ public:
     }
 
     // TODO: rename this to "solar_system" and "fleet"
-    std::vector<RockLike::State>& system() { return _rocks[N]; }
-    std::vector<ShipLike::State>& fleet() { return _ships; }
+    std::vector<SnapShot<RockLike>>& system() { return _rocks[N]; }
+    std::vector<SnapShot<ShipLike>>& fleet() { return _ships; }
 
-    constexpr const std::vector<RockLike::State>& system() const
+    constexpr const std::vector<SnapShot<RockLike>>& system() const
     {
         return _rocks[N];
     }
-    constexpr const std::vector<ShipLike::State>& fleet() const
+    constexpr const std::vector<SnapShot<ShipLike>>& fleet() const
     {
         return _ships;
     }
 
 private:
-    std::vector<RockLike::State> _rocks[2];
-    double                       _t_s[2];
-    std::vector<ShipLike::State> _ships;
+    std::vector<SnapShot<RockLike>> _rocks[2];
+    double                          _t_s[2];
+    std::vector<SnapShot<ShipLike>> _ships;
 
     int N;
 };

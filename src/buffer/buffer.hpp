@@ -75,7 +75,7 @@ template <typename T> struct SubBuffer {
     std::optional<T>      unsampled() { return _last_state; }
     size_t effective_size() { return data.size() + (_last_state ? 1 : 0); }
 
-    // BodyState at(double t_s) const;
+    T at(double t_s) const;
 
     FractalDownsampler sampler;
     std::vector<T>     data;

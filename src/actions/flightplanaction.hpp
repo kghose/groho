@@ -42,6 +42,8 @@ struct FPAmeta {
     size_t line_no;
     str_t  command_string;
 
+    ShipLike::Property property;
+
     double t_s; // This is data. You say tomato, I say tomato
 };
 
@@ -99,5 +101,6 @@ fpap_t parse_line_into_action(
     size_t                   ship_idx,
     std::string              fname,
     size_t                   line_no,
-    std::vector<std::string> tokens);
+    std::vector<std::string> tokens,
+    ShipLike::Property       property);
 }

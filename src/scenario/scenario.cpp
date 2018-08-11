@@ -69,7 +69,8 @@ parse_ship_properties(std::string fname, int ship_idx)
     return ship;
 }
 
-fpapl_t parse_ship_actions(std::string fname, size_t ship_idx)
+fpapl_t parse_ship_actions(
+    std::string fname, size_t ship_idx, ShipLike::Property property)
 {
     auto flt_plan_file = ScenarioFile::open(fname);
     if (!flt_plan_file) {
@@ -89,7 +90,7 @@ fpapl_t parse_ship_actions(std::string fname, size_t ship_idx)
         }
 
         actions.push_back(parse_line_into_action(
-            ship_idx, fname, flt_plan_file->line_no, tokens));
+            ship_idx, fname, flt_plan_file->line_no, tokens, property));
     }
 
     actions.remove_if([](fpap_t& p) { return p == nullptr; });
@@ -135,7 +136,8 @@ Scenario::Scenario(
                 = _simulation.fleet.size() - 1;
             _actions.splice(
                 _actions.end(),
-                parse_ship_actions(fp_name, _simulation.fleet.size() - 1));
+                parse_ship_actions(
+                    fp_name, _simulation.fleet.size() - 1, ship));
         }
     }
     _actions.sort(fpa_order);
