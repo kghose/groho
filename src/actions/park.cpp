@@ -24,8 +24,8 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
 
     std::optional<double> last_t_s;
 
-    spkid_t target;
-    size_t  target_idx;
+    NAIFbody target;
+    size_t   target_idx;
 
     bool parking_maneuver_started = false;
 
@@ -34,50 +34,46 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
     {
     }
 
-    void setup(State& state)
-    {
-        if (!set_body_idx(state.orrery, target, target_idx)) {
-            done = true;
-            return;
-        }
-    }
+    void setup(State& state) { target_idx = find2(state.system(), target); }
 
     ShipCommand execute(const State& state)
     {
-        auto const& ob   = state.orrery[target_idx];
-        auto const& ship = state.ships[meta.ship_idx];
+        auto const& target_body = state.system()[target_idx];
+        auto const& ship        = state.fleet()[meta.ship_idx];
 
         // If this is the first time we call this we need to gather more state
         // information
         if (!last_t_s) {
-            last_t_s = ship.state.t;
+            last_t_s = ship.state.t_s;
             return { {}, {} };
         }
 
-        Vector R = ship.state.pos - ob.state.pos;
+        Vector R = ship.state.pos - target_body.state.pos;
         if (R.norm() > R_capture) {
             return { {}, {} };
         }
 
         if (!parking_maneuver_started) {
             DLOG_S(INFO) << meta.fname << ": Line " << meta.line_no
-                         << ": Starting to park " << ship.property.name
-                         << " -> " << ob.property.name;
+                         << ": Starting to park " << ship.property.naif.name
+                         << " -> " << target_body.property.naif.name;
             parking_maneuver_started = true;
         }
 
         Vector deltaV = parking_deltaV(
-            ob.property.GM, ship.state.pos - ob.state.pos, ship.state.vel);
+            target_body.property.GM,
+            ship.state.pos - target_body.state.pos,
+            ship.state.vel);
 
         ShipCommand cmd;
         cmd.att = deltaV.normed();
         // deltaV = 0.5 * A * Tstep^2
-        double Tstep = state.t_s - *last_t_s;
-        *last_t_s    = state.t_s;
+        double Tstep = state.t_s() - *last_t_s;
+        *last_t_s    = state.t_s();
         double acc   = deltaV.norm() / (0.5 * Tstep * Tstep);
 
-        if (acc > ship.param.max_acc) {
-            cmd.acc = ship.param.max_acc;
+        if (acc > ship.property.max_acc) {
+            cmd.acc = ship.property.max_acc;
             LOG_S(WARNING)
                 << meta.fname << ": Line " << meta.line_no
                 << ": acceleration required for parking exceeds max_acc";
@@ -88,8 +84,9 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
         if (deltaV.norm() < epsilon) {
             done = true;
             LOG_S(INFO) << meta.fname << ": Line " << meta.line_no << ": Ship "
-                        << ship.property.name << " successfully parked around "
-                        << ob.property.name;
+                        << ship.property.naif.name
+                        << " successfully parked around "
+                        << target_body.property.naif.name;
         }
 
         return cmd;

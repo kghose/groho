@@ -14,45 +14,31 @@ This defines some functions for the simulation scenario data structure
 
 namespace sim {
 
-bool time_range_extended(
-    const orrery::SpkOrrery& orrery, const Configuration& config)
+std::optional<SnapShot<ShipLike>>
+parse_ship_properties(std::string fname, int ship_idx)
 {
-    return (config.begin_s < orrery.begin_s) || (orrery.end_s < config.end_s);
-}
+    SnapShot<ShipLike> ship;
 
-bool orrery_changed(const Configuration& a, const Configuration& b)
-{
-    return (a.orrery_fnames != b.orrery_fnames);
-}
-
-std::optional<Body> parse_ship_properties(std::string fname, int ship_idx)
-{
-    BodyConstant       p;
-    ShipCharacteristic ch;
-    BodyState          s;
-
-    p.code = ship_idx;
+    ship.property.naif = { ship_idx, std::to_string(ship_idx) };
 
     typedef std::string sst;
 
     std::unordered_map<sst, std::function<void(sst)>> keyword_map{
 
-        { "name", [&](sst v) { p.name   = v; } },
-        { "color", [&](sst v) { p.color = stoul(v, nullptr, 16); } },
-        { "max-acceleration", [&](sst v) { ch.max_acc  = stof(v); } },
-        { "max-fuel", [&](sst v) { ch.max_fuel         = stof(v); } },
-        { "burn-rate", [&](sst v) { ch.burn_rate       = stof(v); } },
-        { "flight-state",
-          [&]([[maybe_unused]] sst v) { s.flight_state = FALLING; } },
+        { "name", [&](sst v) { ship.property.naif.name = v; } },
+        { "color",
+          [&](sst v) { ship.property.color = stoul(v, nullptr, 16); } },
+        { "max-acceleration", [&](sst v) { ship.property.max_acc = stof(v); } },
+        { "max-fuel", [&](sst v) { ship.property.max_fuel        = stof(v); } },
+        { "burn-rate", [&](sst v) { ship.property.burn_rate      = stof(v); } },
 
-        // TODO: handle landed state
-        { "position", [&](sst v) { s.pos = stoV(v); } },
-        { "velocity", [&](sst v) { s.vel = stoV(v); } },
-        { "attitude", [&](sst v) { s.att = stoV(v); } },
-        //
-        { "fuel", [&](sst v) { s.fuel    = stof(v); } },
-        { "acc", [&](sst v) { s.acc      = stof(v); } },
-
+        // It's much too random to try and place a spacecraft absolutely in the
+        // solar system but we let you do it
+        { "position", [&](sst v) { ship.state.pos = stoV(v); } },
+        { "velocity", [&](sst v) { ship.state.vel = stoV(v); } },
+        { "attitude", [&](sst v) { ship.state.att = stoV(v); } },
+        { "acc", [&](sst v) { ship.state.acc      = stof(v); } },
+        { "fuel", [&](sst v) { ship.state.fuel    = stof(v); } },
     };
 
     auto flt_plan_file = ScenarioFile::open(fname);
@@ -80,7 +66,7 @@ std::optional<Body> parse_ship_properties(std::string fname, int ship_idx)
         }
     }
 
-    return Body{ p, ch, s };
+    return ship;
 }
 
 fpapl_t parse_ship_actions(std::string fname, size_t ship_idx)
@@ -113,34 +99,75 @@ fpapl_t parse_ship_actions(std::string fname, size_t ship_idx)
     return actions;
 }
 
-void Scenario::from(const Configuration& new_config)
+Scenario::Scenario(
+    const Configuration& new_config, std::shared_ptr<Scenario> old_scenario)
 {
-    bool reload_orrery = (config.orrery_fnames != new_config.orrery_fnames)
-        || ((new_config.begin_s < orrery.begin_s)
-            || (orrery.end_s < new_config.end_s));
+    _simulation.simulation_serial = old_scenario->simulation_serial() + 1;
+
+    // Right now, we only do Orrery caching. In more sophisticated
+    // implementations we would compare the configurations and retain components
+    // of the old simulation too ...
+
+    bool reload_orrery = (_orrery == nullptr)
+        || (_config.orrery_fnames != new_config.orrery_fnames)
+        || ((new_config.begin_s < _orrery->begin_s)
+            || (_orrery->end_s < new_config.end_s));
 
     if (reload_orrery) {
-        orrery = orrery::SpkOrrery(
-            new_config.orrery_fnames, new_config.begin_s, new_config.end_s);
+        _orrery = std::shared_ptr<SpkOrrery>(new SpkOrrery(
+            new_config.orrery_fnames, new_config.begin_s, new_config.end_s));
+    } else {
+        _orrery = old_scenario->orrery();
     }
 
-    ships.clear();
-    actions.clear();
+    for (auto& o : _orrery->get_bodies()) {
+        _simulation.system.push_back({ o, {} });
+        _simulation.lookup_system[o.naif] = _simulation.system.size() - 1;
+    }
+
     int default_ship_code = -1000;
     // https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#Spacecraft
     for (auto& fp_name : new_config.flightplan_fnames) {
         auto ship = parse_ship_properties(fp_name, --default_ship_code);
         if (ship) {
-            ships.push_back(*ship);
-            actions.splice(
-                actions.end(), parse_ship_actions(fp_name, ships.size() - 1));
+            _simulation.fleet.push_back({ ship->property, {} });
+            _simulation.lookup_fleet[ship->property.naif]
+                = _simulation.fleet.size() - 1;
+            _actions.splice(
+                _actions.end(),
+                parse_ship_actions(fp_name, _simulation.fleet.size() - 1));
         }
     }
-    actions.sort(fpa_order);
-    LOG_S(INFO) << "Loaded " << actions.size() << " actions";
+    _actions.sort(fpa_order);
 
-    config = new_config;
-    valid  = true;
+    LOG_S(INFO) << _simulation.system.size() << " rocks in simulation.";
+    LOG_S(INFO) << _simulation.fleet.size() << " spaceships in simulation.";
+    LOG_S(INFO) << "Loaded " << _actions.size() << " actions";
+
+    _config = new_config;
+    _valid  = true;
+}
+
+// Gives the properties and state of the entire simulation at a given time
+// point. This is expensive because of the interpolation and copying
+void Scenario::get_snapshot_at(double t_s, Objects<SnapShot>&) const { ; }
+
+// The passed in function has the opportunity to copy over the simulation
+void Scenario::mirror(
+    const std::vector<SimulationSegment>&,
+    std::function<void(const Simulation&)>)
+{
+    ;
+}
+
+// Possibly very expensive operation. A display element can ask for a
+// simulation object that only consists of parts of the simulation and that
+// has been interpolated
+void Scenario::interpolate(
+    const std::vector<SimulationSegment>&,
+    std::function<void(const Simulation&)>)
+{
+    ;
 }
 
 } // namespace sim

@@ -38,27 +38,18 @@ public:
     double begin_s() const;
     double end_s() const;
 
-    std::shared_ptr<const Buffer> get_buffer() const;
+    std::shared_ptr<const Scenario> get_scenario() const { return scenario; }
 
 public:
     enum Status { WAITING, LOADING, RUNNING };
     std::atomic<Status> status;
 
-    // TODO: this is used by display to find latest time cursor
-    // this is in-elegant. Let's change this to a better mechanism
-    double t_s;
+    std::shared_ptr<Scenario> scenario;
 
 private:
-    Scenario scenario;
-
-    std::shared_ptr<Buffer>   buffer;
-    std::atomic<unsigned int> _simulation_serial = 0;
+    size_t simulation_serial = 0;
 
     std::atomic<bool> running;
-
-    // double step_s;
-    // double begin_s;
-    // double end_s;
 
     std::thread compute_thread;
     // The simulation loop runs in this thread

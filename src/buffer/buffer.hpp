@@ -25,20 +25,29 @@ should see if this is fast enough for us.
 
 #include "body.hpp"
 #include "fractaldownsampler.hpp"
-#include "scenario.hpp"
 #include "vector.hpp"
 
 namespace sim {
 
-struct SubBuffer {
+// template <typename T> struct data_t {
+//     const std::vector<BodyState>&   sampled;
+//     const std::optional<BodyState>& unsampled;
 
-    SubBuffer(const Body body_)
-    {
-        body    = body_;
-        sampler = FractalDownsampler(1.001, 1e6);
-    }
+//     size_t required_size()
+//     {
+//         size_t size = sampled.size();
+//         if (unsampled) {
+//             size += 1;
+//         }
+//         return size;
+//     }
+// };
 
-    bool append(const BodyState& state)
+template <typename T> struct SubBuffer {
+
+    SubBuffer() { sampler = FractalDownsampler(1.001, 1e6); }
+
+    bool append(const T& state)
     {
         if (sampler(state.pos)) {
             data.push_back(state);
@@ -62,105 +71,51 @@ struct SubBuffer {
         }
     }
 
-    BodyState at(double t_s) const;
+    const std::vector<T>& sampled() { return data; }
+    std::optional<T>      unsampled() { return _last_state; }
+    size_t effective_size() { return data.size() + (_last_state ? 1 : 0); }
 
-    const Body& get_metadata() const { return body; }
+    // BodyState at(double t_s) const;
 
-    Body                   body;
-    FractalDownsampler     sampler;
-    std::vector<BodyState> data;
+    FractalDownsampler sampler;
+    std::vector<T>     data;
 
     // This is the last point we passed to the sampler that wasn't saved
-    // We use this when we flush the buffer
-    std::optional<BodyState> _last_state;
+    // We use this when we flush the buffer or pass it to readers
+    std::optional<T> _last_state;
 };
 
-class Buffer {
-public:
-    Buffer(const Scenario&, unsigned int);
+// struct SimulationSegment {
+//     NAIFbody naif;
+//     double   start_ts;
+//     double   end_ts;
+// };
 
-    size_t      body_count() const { return sub_buffer.size(); }
-    const Body& metadata(size_t i) const
-    {
-        return sub_buffer[i].get_metadata();
-    }
+// template <typename T> struct Record {
+//     typename T::Property         property;
+//     SubBuffer<typename T::State> history;
+// };
 
-    void set_simulation_serial(unsigned int _s) { _simulation_serial = _s; }
-    unsigned int simulation_serial() const { return _simulation_serial; }
-    size_t       point_count() const { return _point_count; }
+// struct Simulation : public Objects<Record> {
 
-    // Add another body to the buffer
-    void add_body(const Body body, size_t idx);
+//     //
+//     void append(const State&);
 
-    void lock() const { buffer_mutex.lock(); }
-    void release() const { buffer_mutex.unlock(); }
+//     // Add any unsampled data into the history
+//     bool flush();
 
-    void append(const State&);
+//     // We'll be writing to this and people will be clamoring to read from
+//     this
+//     // and we must have order!
+//     mutable std::mutex buffer_mutex;
 
-    void append(size_t i, const BodyState& state)
-    {
-        if (sub_buffer[i].append(state))
-            _point_count++;
-    }
+//     // This allows a reader to figure out if the simulation has been
+//     restarted
+//     // since their last read
+//     std::atomic<size_t> simulation_serial = 0;
 
-    bool flush()
-    {
-        std::lock_guard<std::mutex> lock(buffer_mutex);
-
-        bool flushed = false;
-        for (auto& b : sub_buffer) {
-            if (b.flush()) {
-                flushed = true;
-                _point_count++;
-            }
-        }
-        return flushed;
-    }
-
-    // TODO: migrate this to spkid_t
-    std::optional<size_t> get_index(int spkid) const
-    {
-        auto result = id_to_index.find(spkid);
-        if (result != id_to_index.end()) {
-            return result->second;
-        } else {
-            return {};
-        }
-    }
-
-    struct data_t {
-        const std::vector<BodyState>&   sampled;
-        const std::optional<BodyState>& unsampled;
-
-        size_t required_size()
-        {
-            size_t size = sampled.size();
-            if (unsampled) {
-                size += 1;
-            }
-            return size;
-        }
-    };
-
-    data_t get(size_t i) const
-    {
-        return { sub_buffer[i].data, sub_buffer[i]._last_state };
-    }
-
-    BodyState at(size_t i, double t_s) const;
-
-private:
-    // This allows a reader to figure out if the buffer has changed since their
-    // last read
-    std::atomic<size_t>       _point_count = 0;
-    std::atomic<unsigned int> _simulation_serial;
-
-    // This allows us to find a buffer based on spkid
-    // TODO: migrate this to spkid_t
-    std::unordered_map<int, size_t> id_to_index;
-
-    //
-    std::vector<SubBuffer> sub_buffer;
-    mutable std::mutex     buffer_mutex;
-};
+//     // This allows a reader to figure out if the data has changed since their
+//     // last read
+//     std::atomic<size_t> point_count = 0;
+// };
 }

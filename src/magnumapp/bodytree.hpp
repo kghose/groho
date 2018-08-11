@@ -12,7 +12,7 @@ Organizes all the bodies (as ids) in a tree that reflects how we can select them
 #include <unordered_set>
 #include <vector>
 
-#include "spkid.hpp"
+#include "naifbody.hpp"
 
 namespace sim {
 
@@ -21,7 +21,6 @@ namespace sim {
 // are added to the buffer.
 struct BodyTree {
 
-    enum BodyCategory { SHIP, BARYCENTER, PLANET, ASTEROID, COMET };
     static const int NEXTCAT  = +1;
     static const int PREVCAT  = -1;
     static const int NEXTBODY = +1;
@@ -34,24 +33,24 @@ struct BodyTree {
         body_id = 0;
     }
 
-    BodyTree(const std::unordered_set<spkid_t>& bodies_present)
+    BodyTree(const std::unordered_set<NAIFbody>& bodies_present)
     {
-        std::vector<spkid_t> ships;
+        std::vector<NAIFbody> ships;
         for (auto b : bodies_present) {
-            if (get_category(b) == SHIP) {
+            if (b.is_ship()) {
                 ships.push_back(b);
             }
         }
         tree.push_back(ships);
 
-        tree.push_back({ 0 }); // SSB
+        tree.push_back({ { 0, "SSB" } });
         cat_id  = 1;
         body_id = 0;
 
         // mercury, venus, earth, mars, jupiter, saturn, nepture,
         // uranus, pluto
         for (size_t _id = 1; _id < 10; _id++) {
-            std::vector<spkid_t> this_planet; // yes, Pluto too ...
+            std::vector<NAIFbody> this_planet; // yes, Pluto too ...
 
             int  planet_id = _id * 100 + 99;
             auto idx       = bodies_present.find(planet_id);
@@ -67,61 +66,45 @@ struct BodyTree {
             tree.push_back(this_planet);
         }
 
-        std::vector<spkid_t> asteroids;
+        std::vector<NAIFbody> asteroids;
         for (auto b : bodies_present) {
-            if (get_category(b) == ASTEROID) {
+            if (b.is_asteroid()) {
                 asteroids.push_back(b);
             }
         }
         tree.push_back(asteroids);
 
-        std::vector<spkid_t> comets;
+        std::vector<NAIFbody> comets;
         for (auto b : bodies_present) {
-            if (get_category(b) == COMET) {
+            if (b.is_comet()) {
                 comets.push_back(b);
             }
         }
         tree.push_back(comets);
     }
 
-    static BodyCategory get_category(spkid_t sid)
-    {
-        int id = sid.id;
-
-        if (id < 0)
-            return SHIP;
-        else if ((0 <= id) && (id <= 10))
-            return BARYCENTER;
-        else if ((100 < id) && (id < 1000)) {
-            return PLANET;
-        } else if (2000000 <= id)
-            return ASTEROID;
-        else
-            return COMET;
-    }
-
-    spkid_t change_cat(int sign)
+    NAIFbody change_cat(int sign)
     {
         while (true) {
             cat_id = (tree.size() + cat_id + sign) % tree.size();
             if (tree[cat_id].size() > 0) {
                 body_id = 0;
-                return get_body_id();
+                return get_body();
             }
         }
     }
 
-    spkid_t change_item(int sign)
+    NAIFbody change_item(int sign)
     {
         size_t item_cnt = tree[cat_id].size();
 
         body_id = (item_cnt + *body_id + sign) % item_cnt;
-        return get_body_id();
+        return get_body();
     }
 
-    spkid_t get_body_id() { return tree[cat_id][*body_id]; }
+    NAIFbody get_body() { return tree[cat_id][*body_id]; }
 
-    std::vector<std::vector<spkid_t>> tree;
+    std::vector<std::vector<NAIFbody>> tree;
 
     size_t                cat_id = 0;
     std::optional<size_t> body_id;

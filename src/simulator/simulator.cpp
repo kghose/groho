@@ -24,16 +24,10 @@ void Simulator::stop()
 void Simulator::restart_with(const Configuration& config)
 {
     stop();
-    status = LOADING;
-    scenario.from(config);
-    if (!scenario.valid)
+    status   = LOADING;
+    scenario = std::shared_ptr<Scenario>(new Scenario(config, scenario));
+    if (!scenario->is_valid())
         return;
-
-    // TODO: move this into scenario loading ...
-    LOG_S(INFO) << scenario.ships.size() << " spaceships in simulation.";
-
-    buffer
-        = std::shared_ptr<Buffer>(new Buffer(scenario, ++_simulation_serial));
 
     running = true;
 
@@ -42,34 +36,30 @@ void Simulator::restart_with(const Configuration& config)
 }
 
 // TODO: Use leap frog integration
-void update_ship(Body& ship, const std::vector<Body>& orrery, double step_s)
+void update_ship(
+    Ship::State& ship, const std::vector<Rock>& rocks, double step_s)
 {
     Vector gravity{ 0, 0, 0 };
 
-    for (auto& o : orrery) {
-
-        if (o.property.body_type == BARYCENTER) {
+    for (auto& rock : rocks) {
+        if (rock.property.naif.is_barycenter()) {
             continue;
         }
 
-        auto r = o.state.pos - ship.state.pos;
-        auto f = o.property.GM / r.norm_sq();
+        auto r = rock.state.pos - ship.pos;
+        auto f = rock.property.GM / r.norm_sq();
         gravity += r.normed() * f;
     }
 
-    ship.state.vel += ((ship.state.acc * ship.state.att) + gravity) * step_s;
-    ship.state.pos += ship.state.vel * step_s;
+    ship.vel += ((ship.acc * ship.att) + gravity) * step_s;
+    ship.pos += ship.vel * step_s;
 }
 
-void update_ships(
-    std::vector<Body>&       ships,
-    const std::vector<Body>& orrery,
-    double                   t_s,
-    double                   step_s)
+void update_ships(State& state, double t_s, double step_s)
 {
-    for (auto& ship : ships) {
-        update_ship(ship, orrery, step_s);
-        ship.state.t = t_s;
+    for (auto& ship : state.ships) {
+        update_ship(ship.state, state.rocks, step_s);
+        ship.state.t_s = t_s;
     }
 }
 
@@ -105,9 +95,9 @@ void cleanup_actions(fpapl_t& actions)
     });
 }
 
-double Simulator::begin_s() const { return scenario.config.begin_s; }
+double Simulator::begin_s() const { return scenario->config.begin_s; }
 
-double Simulator::end_s() const { return scenario.config.end_s; }
+double Simulator::end_s() const { return scenario->config.end_s; }
 
 void Simulator::run()
 {
@@ -116,30 +106,31 @@ void Simulator::run()
 
     LOG_S(INFO) << "Starting simulation";
 
-    // TODO: deprecate this with a new mechanism for giving display a time
-    // cursor
-    t_s = scenario.config.begin_s;
-    // The first run may involve actions that require the Orrery vel vectors
-    // to be filled out
-    State state(
-        scenario.config.begin_s, scenario.orrery.get_orrery(), scenario.ships);
+    int   N = 0; // oscillates between 0 and 1
+    State state{ scenario->rocks, scenario->ships };
 
-    scenario.orrery.set_orrery_with_vel_to(state.t_s);
-    setup_actions(scenario.actions, state);
-    cleanup_actions(scenario.actions);
+    // Prime the velocity computation
+    state.t_s() = scenario->config.begin_s - scenario->config.step_s;
+    scenario->orrery->set_body_positions(state.t_s(), state.rocks());
+    state.advance_t_s(scenario->config.step_s);
+    scenario->orrery->set_body_positions(state.t_s(), state.rocks());
+    state.compute_rock_vels();
+
+    setup_actions(scenario->actions, state);
+    cleanup_actions(scenario->actions);
 
     status = RUNNING;
-    while (running && (state.t_s < scenario.config.end_s)) {
-        scenario.orrery.set_orrery_to(state.t_s);
+    while (running && (state.t_s() < scenario->config.end_s)) {
 
-        update_ships(
-            state.ships, state.orrery, state.t_s, scenario.config.step_s);
-        execute_actions(scenario.actions, state);
-        cleanup_actions(scenario.actions);
-        buffer->append(state);
+        scenario->orrery->set_body_positions(state.t_s(), state.rocks());
+        state.compute_rock_vels();
 
-        state.t_s += scenario.config.step_s;
-        t_s = state.t_s; // TODO: better mech for giving display a time cursor
+        update_ships(state, state.t_s(), scenario->config.step_s);
+        execute_actions(scenario->actions, state);
+        cleanup_actions(scenario->actions);
+        // buffer->append(state);
+
+        state.advance_t_s(scenario->config.step_s);
     }
     buffer->flush();
     running = false;
@@ -148,7 +139,5 @@ void Simulator::run()
     LOG_S(INFO) << "Saved " << buffer->point_count() << " state vectors";
     LOG_S(INFO) << "Stopping simulation";
 }
-
-std::shared_ptr<const Buffer> Simulator::get_buffer() const { return buffer; }
 
 } // namespace sim

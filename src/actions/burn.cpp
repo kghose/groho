@@ -17,28 +17,28 @@ struct BURN : public FlightPlanAction {
     {
     }
 
-    void setup(State& state) { FlightPlanAction::setup(state); }
+    void setup(State& state) { ; }
 
     ShipCommand execute(const State& state)
     {
+        auto const& ship = state.fleet()[meta.ship_idx];
+
         if (!burning) {
             burning    = true;
             float _acc = acc;
-            if (_acc > ship_characteristic.max_acc) {
-                _acc = ship_characteristic.max_acc;
+            if (_acc > ship.property.max_acc) {
+                _acc = ship.property.max_acc;
                 LOG_S(WARNING) << meta.line_no << ": SET_ACCEL for "
-                               << state.ships[meta.ship_idx].property.name
-                               << " exceeds max_acc";
+                               << ship.property.naif.name << " exceeds max_acc";
             }
 
-            DLOG_S(INFO) << state.ships[meta.ship_idx].property.name
-                         << " acceleration set";
+            DLOG_S(INFO) << ship.property.naif.name << " acceleration set";
 
             return { _acc, {} };
 
         } else {
 
-            if (state.t_s < burn_end_time) {
+            if (state.t_s() < burn_end_time) {
                 return {};
 
             } else {

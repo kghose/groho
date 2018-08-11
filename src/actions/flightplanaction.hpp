@@ -41,6 +41,7 @@ struct FPAmeta {
     str_t  fname;
     size_t line_no;
     str_t  command_string;
+
     double t_s; // This is data. You say tomato, I say tomato
 };
 
@@ -63,7 +64,7 @@ struct FlightPlanAction {
     // Any setup that has to be done at start of simulation. This typically
     // involves resolving indexes into the orrery and ship list that can only
     // be known after the whole scenario has been loaded
-    virtual void setup(State&);
+    virtual void setup(State&) = 0;
 
     // Given the state of the universe, do any computations we need and then
     // update the ship's acceleration and attitude as needed
@@ -71,12 +72,15 @@ struct FlightPlanAction {
 
     // We have to convert an id to an index into a list of bodies very often
     // If we fail, we have to disable the action and warn the user. It is
-    // pleasant to put this into a member function
-    bool set_body_idx(const std::vector<Body>&, spkid_t, size_t&);
+    // pleasant to wrap the usual find function with all this.
+    template <typename T> size_t find2(const std::vector<T>&, const NAIFbody&);
+    // TODO: figure out why naming this "find" causes a compiler problems.
+    // It identifies "find" as the member function but when I try
+    // using global scope but it refuses to recognize. Could not replicate in
+    // isolation. For some reason the templated "find" in body.hpp causes
+    // problems
 
     const FPAmeta meta;
-
-    ShipCharacteristic ship_characteristic;
 
     // Set this flag once the action is completely done and can be discarded
     bool done = false;

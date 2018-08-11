@@ -50,7 +50,7 @@ private:
     const sim::Simulator& simulator;
 
     // TODO: make this a rolling buffer for overlaying multiple sims
-    std::shared_ptr<const Buffer> buffer;
+    std::shared_ptr<const Scenario> scenario;
 
     Camera    camera;
     OrbitView orbit_view;

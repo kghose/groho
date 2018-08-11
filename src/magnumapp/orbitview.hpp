@@ -38,24 +38,16 @@ private:
     void load_body_metadata(std::shared_ptr<const Buffer> buffer);
 
 private:
-    // Maps a NAIF code to an index for quickly finding a particular
-    // bodyconstant or state
-    std::unordered_map<int, size_t> id2idx;
+    // This is the scenario we are displaying.
+    std::shared_ptr<const Scenario> scenario;
 
-    // This:
-    // 1. Serves as a master list of bodies we show from the simulation
-    //    e.g. We build the BodyTree for navigation from this
-    // 2. Carries the State vector for each body corresponding to the time
-    //    cursor
-    std::vector<Body> bodies;
-
+    // Display components
     PathGroup       trajectories;
     ScaleModelGroup scale_models;
     BodyMarkers     body_markers;
 
     // Metadata to figure out if we should reload a buffer
-    // TODO: use optional
-    unsigned int simulation_serial = -1;
-    size_t       point_count       = 0;
+    std::optional<size_t> simulation_serial;
+    std::optional<size_t> point_count;
 };
 }

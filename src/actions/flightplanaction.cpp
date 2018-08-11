@@ -19,7 +19,7 @@ Base action class and base parser for flight plan actions
 #include "body.hpp"
 #include "flightplanaction.hpp"
 #include "groholib.hpp"
-#include "orrery.hpp"
+//#include "orrery.hpp"
 #include "scenariolib.hpp"
 #include "state.hpp"
 #include "vector.hpp"
@@ -27,22 +27,19 @@ Base action class and base parser for flight plan actions
 namespace sim {
 
 // Utility functions /////////////////////////////////////////////////////////
-void FlightPlanAction::setup(State& state)
-{
-    ship_characteristic = state.ships[meta.ship_idx].param;
-}
 
-bool FlightPlanAction::set_body_idx(
-    const std::vector<Body>& bodies, spkid_t spkid, size_t& idx)
+template <typename T>
+size_t
+FlightPlanAction::find2(const std::vector<T>& bodies, const NAIFbody& body)
 {
-    auto _idx = body_index(bodies, spkid);
+    auto _idx = find(bodies, body);
     if (!_idx) {
-        LOG_S(ERROR) << meta.fname << ":" << meta.line_no << ": "
-                     << meta.command_string << ": Can't find " << spkid.id;
-        return false;
+        std::string msg = meta.fname + ":" + std::to_string(meta.line_no) + ": "
+            + meta.command_string + ": Can't find "
+            + std::to_string((int)body.code);
+        throw std::runtime_error(msg);
     }
-    idx = *_idx;
-    return true;
+    return *_idx;
 }
 
 ///////////////////////////////

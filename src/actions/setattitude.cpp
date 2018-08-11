@@ -16,11 +16,11 @@ struct SET_ATTITUDE : public FlightPlanAction {
     {
     }
 
-    void setup(State& state) { FlightPlanAction::setup(state); }
+    void setup(State& state) { ; }
 
     ShipCommand execute(const State& state)
     {
-        DLOG_S(INFO) << state.ships[meta.ship_idx].property.name
+        DLOG_S(INFO) << state.fleet()[meta.ship_idx].property.naif.name
                      << " attitude set";
 
         done = true;

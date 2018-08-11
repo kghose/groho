@@ -13,6 +13,7 @@ are described as separate classes of objects with some elements in common
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "naifbody.hpp"
@@ -61,13 +62,16 @@ struct ShipLike {
 };
 
 template <typename T> struct SnapShot {
-    T::Property property;
-    T::State    state;
+    typename T::Property property;
+    typename T::State    state;
 };
 
 template <template <typename> class T> struct Objects {
     std::vector<T<RockLike>> system;
     std::vector<T<ShipLike>> fleet;
+
+    std::unordered_map<NAIFbody, size_t> lookup_system;
+    std::unordered_map<NAIFbody, size_t> lookup_fleet;
 };
 
 template <typename T>

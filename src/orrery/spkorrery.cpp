@@ -15,7 +15,7 @@ at given times.
 #include "solar_system.hpp"
 #include "spkorrery.hpp"
 
-namespace orrery {
+namespace sim {
 
 EphemerisVec combine_ephemerides(
     const EphemerisVec& old_ephemera, const EphemerisVec& new_ephemera)
@@ -95,33 +95,9 @@ std::vector<size_t> create_center_indexes(const EphemerisVec& srt)
     return ci;
 }
 
-// For every body in the SPK file create a mirror OrreryBody to store the
-// computed position information and some planetary constants. It is important
-// to note that this list contains barycenters which are dynamical (virtual)
-// points and not for display or gravitational computation.
-OrreryBodyVec create_bodies(const EphemerisVec& ephemera)
-{
-    OrreryBodyVec bodies;
-    for (auto e : ephemera) {
-        OrreryBody ob;
-        if (body_library.count(e->target_code)) {
-            ob.property = body_library[e->target_code];
-        } else {
-            ob.property
-                = { ROCK, e->target_code, std::to_string(e->target_code),
-                    0,    1.000,          0xFFFF00 };
-            LOG_S(WARNING) << e->target_code
-                           << " not found in solar system library";
-        }
-        bodies.push_back(ob);
-    }
-    return bodies;
-}
-
 SpkOrrery::SpkOrrery(std::set<std::string> fnames, double begin_s, double end_s)
     : begin_s(begin_s)
     , end_s(end_s)
-    , Orrery()
 {
     for (auto& orrery_name : fnames) {
         size_t body_count = ephemera.size();
@@ -133,7 +109,7 @@ SpkOrrery::SpkOrrery(std::set<std::string> fnames, double begin_s, double end_s)
 
     ephemera   = sort_ephemerides(ephemera);
     center_idx = create_center_indexes(ephemera);
-    bodies     = create_bodies(ephemera);
+    // bodies     = create_bodies(ephemera);
 }
 
 bool SpkOrrery::load_orrery_model(
@@ -143,15 +119,26 @@ bool SpkOrrery::load_orrery_model(
 
     if (!nasa_spk_file) {
         LOG_S(ERROR) << "Could not open " << fname;
-        ok = false;
         return false;
     }
 
     ephemera = combine_ephemerides(
         ephemera, load_spk(nasa_spk_file, begin_s, end_s));
 
-    ok = true;
-    return ok;
+    return true;
+}
+
+// For every body in the SPK file create a mirror OrreryBody to store the
+// computed position information and some planetary constants. It is important
+// to note that this list contains barycenters which are dynamical (virtual)
+// points and not for display or gravitational computation.
+std::vector<RockLike::Property> SpkOrrery::get_bodies() const
+{
+    std::vector<RockLike::Property> bodies;
+    for (auto e : ephemera) {
+        bodies.push_back(construct_orrery_body(e->target_code));
+    }
+    return bodies;
 }
 
 void set_pos(double s, const Ephemeris& eph, sim::Vector& pos)
@@ -164,38 +151,18 @@ void set_pos(double s, const Ephemeris& eph, sim::Vector& pos)
 }
 
 // Fill out the (x, y, z) of each Orrery body
-void SpkOrrery::set_orrery_to(double s)
+void SpkOrrery::set_body_positions(
+    double s, std::vector<RockLike::State>& rocks) const
 {
     for (size_t i = 0; i < ephemera.size(); i++) {
-        set_pos(s, *ephemera[i], bodies[i].state.pos);
-        bodies[i].state.t = s;
+        set_pos(s, *ephemera[i], rocks[i].pos);
+        rocks[i].t_s = s;
     }
 
     for (size_t i = 0; i < ephemera.size(); i++) {
         if (ephemera[i]->center_code != 0) {
-            bodies[i].state.pos += bodies[center_idx[i]].state.pos;
+            rocks[i].pos += rocks[center_idx[i]].pos;
         }
-    }
-}
-
-// Fill out the (x, y, z) of each Orrery body and return us an immutable
-// vector containing this information.
-const OrreryBodyVec& SpkOrrery::get_orrery_at(double s)
-{
-    set_orrery_to(s);
-    return bodies;
-}
-
-// This is a little expensive because we have to copy over the first set of
-// computations
-void SpkOrrery::set_orrery_with_vel_to(double s, double delta_s)
-{
-    OrreryBodyVec bodies_plus_delta = get_orrery_at(s + delta_s);
-    set_orrery_to(s);
-
-    for (size_t i = 0; i < bodies.size(); i++) {
-        bodies[i].state.vel
-            = (bodies_plus_delta[i].state.pos - bodies[i].state.pos) / delta_s;
     }
 }
 }

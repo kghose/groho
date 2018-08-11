@@ -85,13 +85,13 @@ notes are here.
 (https://en.cppreference.com/w/cpp/language/template_parameters)
 ```
 template <typename T> struct Simulation {
-    T::Property         property;
-    SubBuffer<T::State> history;
+    typename T::Property         property;
+    SubBuffer<typename T::State> history;
 };
 
 template <typename T> struct SnapShot {
-    T::Property property;
-    T::State    state;
+    typename T::Property property;
+    typename T::State    state;
 };
 
 template <template <typename> class T> struct Objects {
@@ -118,6 +118,11 @@ struct ShipLike {
 };
 ```
 
+Very impressively clang's error message is very useful
+```
+error: template argument for template
+      type parameter must be a type; did you forget 'typename'?
+```
 
 ## Order matters
 
@@ -420,6 +425,7 @@ bool set_key_value(std::optional<KeyValue> kv)
 
 ### Compile an individual file
 
+(https://stackoverflow.com/a/41262107)
 Find the internal make file CMake generates
 ```
 cd build_directory

@@ -14,8 +14,7 @@ chebyshev coefficients stored in the SPK/DAF file to compute vector positions
 #include <memory>
 #include <stdlib.h>
 #include <string>
-
-#include "orrery.hpp"
+#include <vector>
 
 namespace daffile {
 
