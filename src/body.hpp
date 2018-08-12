@@ -96,7 +96,7 @@ struct RockSnapShotWithVel {
 
     constexpr Vector&       pos() { return _state[_N].pos; }
     constexpr const Vector& pos() const { return _state[_N].pos; }
-    constexpr Vector        vel() const
+    Vector                  vel() const
     {
         return (_state[_N].pos - _state[1 - _N].pos)
             / (_state[_N].t_s - _state[1 - _N].t_s);

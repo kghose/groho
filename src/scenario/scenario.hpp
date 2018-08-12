@@ -65,17 +65,14 @@ public:
 
     // This allows a reader to figure out if the simulation has been restarted
     // since their last read
-    constexpr size_t simulation_serial() const
-    {
-        return _simulation.simulation_serial;
-    }
+    size_t simulation_serial() const { return _simulation.simulation_serial; }
 
     constexpr Simulation&       simulation() { return _simulation; }
     constexpr const Simulation& simulation() const { return _simulation; }
 
     // This allows a reader to figure out if the data has changed since their
     // last read
-    constexpr size_t point_count() const { return _simulation.point_count; }
+    size_t point_count() const { return _simulation.point_count; }
 
     constexpr const Configuration& config() const { return _config; }
 
