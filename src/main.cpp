@@ -11,7 +11,10 @@ Entry point function for command line program
 #include <stdlib.h>
 #include <thread>
 
+#ifndef NOGUI
 #include "app.hpp"
+#endif
+
 #include "buffer.hpp"
 #include "scenario.hpp"
 #include "simulator.hpp"
@@ -130,11 +133,14 @@ int main(int argc, char* argv[])
         simulator_loop, std::ref(simulator), options, interval_ms);
 
     int ret_val = 0;
+
+#ifndef NOGUI
     if (options.interactive) {
         sim::GrohoApp app({ argc, argv }, simulator);
         ret_val      = app.exec();
         keep_running = false;
     }
+#endif
 
     if (simulator_thread.joinable()) {
         simulator_thread.join();
