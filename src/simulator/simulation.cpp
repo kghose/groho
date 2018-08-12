@@ -25,12 +25,12 @@ void Simulation::append(const State& state)
 
     for (size_t i = 0; i < system.size(); i++) {
         if (!system[i].property.naif.is_barycenter()) {
-            system[i].history.append(state.system()[i]);
+            system[i].history.append(state.system[i].state());
         }
     }
 
     for (size_t i = 0; i < state.fleet.size(); i++) {
-        fleet[i].history.append(state.fleet()[i]);
+        fleet[i].history.append(state.fleet[i].state);
     }
 }
 
@@ -40,13 +40,13 @@ bool Simulation::flush()
     std::lock_guard<std::mutex> lock(buffer_mutex);
 
     bool flushed = false;
-    for (auto& r : system) {
+    for (auto& r : system.bodies) {
         if (r.history.flush()) {
             flushed = true;
             point_count++;
         }
     }
-    for (auto& s : fleet) {
+    for (auto& s : fleet.bodies) {
         if (s.history.flush()) {
             flushed = true;
             point_count++;
@@ -54,6 +54,24 @@ bool Simulation::flush()
     }
 
     return flushed;
+}
+
+const std::vector<RockLike::Property> Simulation::system_proprty() const
+{
+    std::vector<RockLike::Property> _p;
+    for (auto const& r : system.bodies) {
+        _p.push_back(r.property);
+    }
+    return _p;
+}
+
+const std::vector<ShipLike::Property> Simulation::fleet_property() const
+{
+    std::vector<ShipLike::Property> _p;
+    for (auto const& s : fleet.bodies) {
+        _p.push_back(s.property);
+    }
+    return _p;
 }
 
 // BodyState Buffer::at(size_t i, double t_s) const

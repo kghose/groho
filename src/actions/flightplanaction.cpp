@@ -28,19 +28,20 @@ namespace sim {
 
 // Utility functions /////////////////////////////////////////////////////////
 
-template <typename T>
-size_t
-FlightPlanAction::find2(const std::vector<T>& bodies, const NAIFbody& body)
-{
-    auto _idx = find(bodies, body);
-    if (!_idx) {
-        std::string msg = meta.fname + ":" + std::to_string(meta.line_no) + ": "
-            + meta.command_string + ": Can't find "
-            + std::to_string((int)body.code);
-        throw std::runtime_error(msg);
-    }
-    return *_idx;
-}
+// template <typename T>
+// size_t
+// FlightPlanAction::find2(const std::vector<T>& bodies, const NAIFbody& body)
+// {
+//     auto _idx = find(bodies, body);
+//     if (!_idx) {
+//         std::string msg = meta.fname + ":" + std::to_string(meta.line_no) +
+//         ": "
+//             + meta.command_string + ": Can't find "
+//             + std::to_string((int)body.code);
+//         throw std::runtime_error(msg);
+//     }
+//     return *_idx;
+// }
 
 ///////////////////////////////
 // AVAILABLE ACTIONS (VERBS) //

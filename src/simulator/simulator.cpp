@@ -36,17 +36,16 @@ void Simulator::restart_with(const Configuration& config)
 }
 
 // TODO: Use leap frog integration
-void update_ship(
-    Ship::State& ship, const std::vector<Rock>& rocks, double step_s)
+void update_ship(ShipLike::State& ship, const State& state, double step_s)
 {
     Vector gravity{ 0, 0, 0 };
 
-    for (auto& rock : rocks) {
+    for (auto& rock : state.system.bodies) {
         if (rock.property.naif.is_barycenter()) {
             continue;
         }
 
-        auto r = rock.state.pos - ship.pos;
+        auto r = rock.pos() - ship.pos;
         auto f = rock.property.GM / r.norm_sq();
         gravity += r.normed() * f;
     }
@@ -57,8 +56,8 @@ void update_ship(
 
 void update_ships(State& state, double t_s, double step_s)
 {
-    for (auto& ship : state.ships) {
-        update_ship(ship.state, state.rocks, step_s);
+    for (auto& ship : state.fleet.bodies) {
+        update_ship(ship.state, state, step_s);
         ship.state.t_s = t_s;
     }
 }
@@ -73,15 +72,15 @@ void setup_actions(fpapl_t& actions, State& state)
 void execute_actions(fpapl_t& actions, State& state)
 {
     for (auto& action : actions) {
-        if (state.t_s < action->meta.t_s)
+        if (state.t_s() < action->meta.t_s)
             continue;
 
         ShipCommand cmd = action->execute(state);
         if (cmd.acc) {
-            state.ships[action->meta.ship_idx].state.acc = *(cmd.acc);
+            state.fleet[action->meta.ship_idx].state.acc = *(cmd.acc);
         }
         if (cmd.att) {
-            state.ships[action->meta.ship_idx].state.att = *(cmd.att);
+            state.fleet[action->meta.ship_idx].state.att = *(cmd.att);
         }
     }
 }
@@ -95,9 +94,9 @@ void cleanup_actions(fpapl_t& actions)
     });
 }
 
-double Simulator::begin_s() const { return scenario->config.begin_s; }
+double Simulator::begin_s() const { return scenario->begin_s(); }
 
-double Simulator::end_s() const { return scenario->config.end_s; }
+double Simulator::end_s() const { return scenario->end_s(); }
 
 void Simulator::run()
 {
@@ -107,36 +106,39 @@ void Simulator::run()
     LOG_S(INFO) << "Starting simulation";
 
     int   N = 0; // oscillates between 0 and 1
-    State state{ scenario->rocks, scenario->ships };
+    State state(
+        scenario->simulation().system_proprty(),
+        scenario->simulation().fleet_property());
 
     // Prime the velocity computation
-    state.t_s() = scenario->config.begin_s - scenario->config.step_s;
-    scenario->orrery->set_body_positions(state.t_s(), state.rocks());
-    state.advance_t_s(scenario->config.step_s);
-    scenario->orrery->set_body_positions(state.t_s(), state.rocks());
-    state.compute_rock_vels();
+    state.t_s() = scenario->begin_s() - scenario->step_s();
+    scenario->orrery()->set_body_positions(state.t_s(), state.system);
+    state.advance_t_s(scenario->step_s());
+    scenario->orrery()->set_body_positions(state.t_s(), state.system);
 
     setup_actions(scenario->actions, state);
     cleanup_actions(scenario->actions);
 
     status = RUNNING;
-    while (running && (state.t_s() < scenario->config.end_s)) {
+    while (running && (state.t_s() < scenario->end_s())) {
+        scenario->orrery()->set_body_positions(state.t_s(), state.system);
 
-        scenario->orrery->set_body_positions(state.t_s(), state.rocks());
-        state.compute_rock_vels();
-
-        update_ships(state, state.t_s(), scenario->config.step_s);
+        update_ships(state, state.t_s(), scenario->step_s());
         execute_actions(scenario->actions, state);
         cleanup_actions(scenario->actions);
+
+        scenario->simulation().append(state);
+
         // buffer->append(state);
 
-        state.advance_t_s(scenario->config.step_s);
+        state.advance_t_s(scenario->step_s());
     }
-    buffer->flush();
+    scenario->simulation().flush();
     running = false;
     status  = WAITING;
 
-    LOG_S(INFO) << "Saved " << buffer->point_count() << " state vectors";
+    LOG_S(INFO) << "Saved " << scenario->simulation().point_count
+                << " state vectors";
     LOG_S(INFO) << "Stopping simulation";
 }
 

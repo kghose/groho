@@ -75,7 +75,19 @@ struct FlightPlanAction {
     // We have to convert an id to an index into a list of bodies very often
     // If we fail, we have to disable the action and warn the user. It is
     // pleasant to wrap the usual find function with all this.
-    template <typename T> size_t find2(const std::vector<T>&, const NAIFbody&);
+    template <typename T>
+    size_t find2(const std::vector<T>& bodies, const NAIFbody& body)
+    {
+        auto _idx = find(bodies, body);
+        if (!_idx) {
+            std::string msg = meta.fname + ":" + std::to_string(meta.line_no)
+                + ": " + meta.command_string + ": Can't find "
+                + std::to_string((int)body.code);
+            throw std::runtime_error(msg);
+        }
+        return *_idx;
+    }
+
     // TODO: figure out why naming this "find" causes a compiler problems.
     // It identifies "find" as the member function but when I try
     // using global scope but it refuses to recognize. Could not replicate in

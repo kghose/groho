@@ -123,7 +123,6 @@ Scenario::Scenario(
 
     for (auto& o : _orrery->get_bodies()) {
         _simulation.system.push_back({ o, {} });
-        _simulation.lookup_system[o.naif] = _simulation.system.size() - 1;
     }
 
     int default_ship_code = -1000;
@@ -132,19 +131,17 @@ Scenario::Scenario(
         auto ship = parse_ship_properties(fp_name, --default_ship_code);
         if (ship) {
             _simulation.fleet.push_back({ ship->property, {} });
-            _simulation.lookup_fleet[ship->property.naif]
-                = _simulation.fleet.size() - 1;
-            _actions.splice(
-                _actions.end(),
+            actions.splice(
+                actions.end(),
                 parse_ship_actions(
-                    fp_name, _simulation.fleet.size() - 1, ship));
+                    fp_name, _simulation.fleet.size() - 1, ship->property));
         }
     }
-    _actions.sort(fpa_order);
+    actions.sort(fpa_order);
 
     LOG_S(INFO) << _simulation.system.size() << " rocks in simulation.";
     LOG_S(INFO) << _simulation.fleet.size() << " spaceships in simulation.";
-    LOG_S(INFO) << "Loaded " << _actions.size() << " actions";
+    LOG_S(INFO) << "Loaded " << actions.size() << " actions";
 
     _config = new_config;
     _valid  = true;

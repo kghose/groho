@@ -10,6 +10,10 @@ Developer notes
         - [`-fsanitize=address`](#-fsanitizeaddress)
         - [Profiling on mac](#profiling-on-mac)
     - [Warnings, Warnings](#warnings-warnings)
+        - [hides overloaded virtual function [-Woverloaded-virtual]](#hides-overloaded-virtual-function--woverloaded-virtual)
+        - [warning: all paths through this function will call itself [-Winfinite-recursion]](#warning-all-paths-through-this-function-will-call-itself--winfinite-recursion)
+        - [warning: unused parameter 'X' [-Wunused-parameter]](#warning-unused-parameter-x--wunused-parameter)
+        - [warning: catching polymorphic type 'class std::exception' by value [-Wcatch-value=]](#warning-catching-polymorphic-type-class-stdexception-by-value--wcatch-value)
         - [Everything](#everything)
     - [std::unique_ptr with forward declared type](#stdunique_ptr-with-forward-declared-type)
     - [Abstract class with non-virtual destructor](#abstract-class-with-non-virtual-destructor)
@@ -223,9 +227,31 @@ for memory issues.
 
 ## Warnings, Warnings
 
+
+### hides overloaded virtual function [-Woverloaded-virtual]
+
+(from https://stackoverflow.com/questions/18515183/c-overloaded-virtual-function-warning-by-clang)
+This warning is there to prevent accidental hiding of overloads when overriding is intended. 
+
+Another way of disabling the warning keeping the struct public interface intact would be:
 ```
-warning: all paths through this function will call itself [-Winfinite-recursion]
+struct Derived: public Base
+{
+    virtual void * get(char* e, int index);
+private:
+    using Base::get;
+};
 ```
+This disallows a consumer of Derived to call Derived::get(char* e) while silencing the warning:
+
+```
+Derived der;
+der.get("", 0); //Allowed
+der.get("");    //Compilation error
+```
+
+### warning: all paths through this function will call itself [-Winfinite-recursion]
+
 Rather, this taught me about the `::` for global scope. I had code that basically
 looks like this:
 
@@ -259,15 +285,14 @@ to indicate global scope
 
 https://stackoverflow.com/questions/7149922/calling-a-global-function-with-a-class-method-with-the-same-declaration
 
-```
-warning: unused parameter 'X' [-Wunused-parameter]
-```
+
+### warning: unused parameter 'X' [-Wunused-parameter]
+
 Turns out you can put `[[maybe_unused]]` in front of the variable and this
 reassures the compiler that you know what you are doing ...
 
-```
-warning: catching polymorphic type 'class std::exception' by value [-Wcatch-value=]
-```
+### warning: catching polymorphic type 'class std::exception' by value [-Wcatch-value=]
+
 From https://stackoverflow.com/a/6756040/2512851
 "The reason for using & with exceptions is not so much polymorphism as avoiding slicing. If you were to not use &, C++ would attempt to copy the thrown exception into a newly created  std::exception, potentially losing information in the process."
 

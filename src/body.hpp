@@ -102,12 +102,16 @@ struct RockSnapShotWithVel {
             / (_state[_N].t_s - _state[1 - _N].t_s);
     }
 
+    constexpr const RockLike::State& state() const { return _state[_N]; }
+
     int& _N;
 };
 
-template <typename T> struct Collection {
+template <typename T> struct BaseCollection {
     std::vector<T>                       bodies;
     std::unordered_map<NAIFbody, size_t> lookup;
+
+    constexpr size_t size() const { return bodies.size(); }
 
     constexpr T& operator[](size_t idx) { return bodies[idx]; }
     constexpr T& operator[](const NAIFbody& id) { return bodies[lookup[id]]; }
@@ -122,39 +126,30 @@ template <typename T> struct Collection {
     //     lookup = _collection.lookup;
     // }
 
-    void push_back(const T& body)
+    virtual void push_back(const T& body)
     {
         bodies.push_back(body);
         lookup[body.property.naif] = bodies.size() - 1;
     }
 };
 
-template <> struct Collection<RockSnapShotWithVel> {
-    std::vector<RockSnapShotWithVel>     bodies;
-    std::unordered_map<NAIFbody, size_t> lookup;
+template <typename T> struct Collection : public BaseCollection<T> {
+};
+
+template <>
+struct Collection<RockSnapShotWithVel>
+    : public BaseCollection<RockSnapShotWithVel> {
 
     int N = 0;
-
-    constexpr RockSnapShotWithVel& operator[](size_t idx)
-    {
-        return bodies[idx];
-    }
-
-    constexpr const RockSnapShotWithVel& operator[](size_t idx) const
-    {
-        return bodies[idx];
-    }
-
-    constexpr RockSnapShotWithVel& operator[](const NAIFbody& id)
-    {
-        return bodies[lookup[id]];
-    }
 
     void push_back(const RockLike::Property& property)
     {
         bodies.push_back({ N, property });
         lookup[property.naif] = bodies.size() - 1;
     }
+
+private:
+    using BaseCollection<RockSnapShotWithVel>::push_back;
 };
 
 template <template <typename> class T> struct RocksAndShips {

@@ -55,6 +55,9 @@ struct Simulation : public RocksAndShips<Record> {
     // This allows a reader to figure out if the data has changed since their
     // last read
     std::atomic<size_t> point_count = 0;
+
+    const std::vector<RockLike::Property> system_proprty() const;
+    const std::vector<ShipLike::Property> fleet_property() const;
 };
 
 } // sim

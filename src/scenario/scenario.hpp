@@ -70,7 +70,8 @@ public:
         return _simulation.simulation_serial;
     }
 
-    constexpr const Simulation& simulation() { return _simulation; }
+    constexpr Simulation&       simulation() { return _simulation; }
+    constexpr const Simulation& simulation() const { return _simulation; }
 
     // This allows a reader to figure out if the data has changed since their
     // last read
@@ -80,6 +81,12 @@ public:
 
     std::shared_ptr<const SpkOrrery> orrery() const { return _orrery; }
 
+    constexpr double begin_s() const { return _config.begin_s; }
+    constexpr double end_s() const { return _config.end_s; }
+    constexpr double step_s() const { return _config.step_s; }
+
+    fpapl_t actions;
+
 private:
     // We want to construct a scenario and then have the simulator iterate on it
     // While it is cheap to load configurations and flightplans, orreries can
@@ -88,7 +95,6 @@ private:
     std::shared_ptr<const SpkOrrery> _orrery;
 
     Simulation _simulation;
-    fpapl_t    _actions;
 
     Configuration _config;
 
