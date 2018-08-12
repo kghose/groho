@@ -34,7 +34,6 @@ struct RockLike {
 
     struct State {
         Vector pos; // Position referenced to solar system barycenter
-        Vector vel; // Velocity
         double t_s;
     };
 };
@@ -66,6 +65,114 @@ template <typename T> struct SnapShot {
     typename T::State    state;
 };
 
+// This allows us to do lazy computation of rock velocities.
+// Time will tell if we were too clever here
+struct RockSnapShotWithVel {
+
+    RockSnapShotWithVel(int& N)
+        : _N(N)
+    {
+    }
+
+    RockSnapShotWithVel(const RockSnapShotWithVel& _ssv)
+        : _N(_ssv._N)
+    {
+        property  = _ssv.property;
+        _state[0] = _ssv._state[0];
+        _state[1] = _ssv._state[1];
+    }
+
+    RockSnapShotWithVel(int& N, RockLike::Property _property)
+        : _N(N)
+    {
+        property = _property;
+    }
+
+    RockLike::Property property;
+    RockLike::State    _state[2];
+
+    constexpr double& t_s() { return _state[_N].t_s; }
+    constexpr double  t_s() const { return _state[_N].t_s; }
+
+    constexpr Vector&       pos() { return _state[_N].pos; }
+    constexpr const Vector& pos() const { return _state[_N].pos; }
+    constexpr Vector        vel() const
+    {
+        return (_state[_N].pos - _state[1 - _N].pos)
+            / (_state[_N].t_s - _state[1 - _N].t_s);
+    }
+
+    int& _N;
+};
+
+template <typename T> struct Collection {
+    std::vector<T>                       bodies;
+    std::unordered_map<NAIFbody, size_t> lookup;
+
+    constexpr T& operator[](size_t idx) { return bodies[idx]; }
+    constexpr T& operator[](const NAIFbody& id) { return bodies[lookup[id]]; }
+
+    constexpr const T& operator[](size_t idx) const { return bodies[idx]; }
+
+    // Collection(const Collection<T>& _collection) = default;
+
+    // template <typename T2> Collection(const Collection<T2>& _collection)
+    // {
+    //     bodies = _collection.bodies;
+    //     lookup = _collection.lookup;
+    // }
+
+    void push_back(const T& body)
+    {
+        bodies.push_back(body);
+        lookup[body.property.naif] = bodies.size() - 1;
+    }
+};
+
+template <> struct Collection<RockSnapShotWithVel> {
+    std::vector<RockSnapShotWithVel>     bodies;
+    std::unordered_map<NAIFbody, size_t> lookup;
+
+    int N = 0;
+
+    constexpr RockSnapShotWithVel& operator[](size_t idx)
+    {
+        return bodies[idx];
+    }
+
+    constexpr const RockSnapShotWithVel& operator[](size_t idx) const
+    {
+        return bodies[idx];
+    }
+
+    constexpr RockSnapShotWithVel& operator[](const NAIFbody& id)
+    {
+        return bodies[lookup[id]];
+    }
+
+    void push_back(const RockLike::Property& property)
+    {
+        bodies.push_back({ N, property });
+        lookup[property.naif] = bodies.size() - 1;
+    }
+};
+
+template <template <typename> class T> struct RocksAndShips {
+    Collection<T<RockLike>> system;
+    Collection<T<ShipLike>> fleet;
+};
+
+// struct RocksAndShipsSnapShotWithVel {
+
+//     int N = 0;
+
+//     Collection<RockSnapShotWithVel> system;
+//     Collection<SnapShot<ShipLike>>  fleet;
+
+//     RocksAndShipsSnapShotWithVel() = default;
+// };
+
+// TODO: DEPRECATE THIS
 template <template <typename> class T> struct Objects {
     std::vector<T<RockLike>> system;
     std::vector<T<ShipLike>> fleet;

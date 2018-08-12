@@ -27,10 +27,9 @@ using namespace Corrade;
 // A billboard circle that fakes a body
 class ScaleModel {
 public:
-    ScaleModel(const Body& body)
-        : body_type(body.property.body_type)
-        , color(from_rgb(body.property.color))
-        , scaling(Matrix4::scaling(Vector3(body.property.r / style::scale)))
+    ScaleModel(unsigned int _color, float r)
+        : color(from_rgb(_color))
+        , scaling(Matrix4::scaling(Vector3(r / style::scale)))
     {
         const Trade::MeshData3D circle = Primitives::circle3DWireframe(15);
         // const Trade::MeshData3D circle = Primitives::circle3DSolid(15);
@@ -52,9 +51,6 @@ public:
         mesh.draw(shader);
     }
 
-public:
-    const BodyType body_type;
-
 private:
     GL::Buffer      vertexBuffer;
     GL::Mesh        mesh;
@@ -63,14 +59,16 @@ private:
     Vector3       pos;
     const Color3  color;
     const Matrix4 scaling;
+
+    bool visible = false;
 };
 
 class ScaleModelGroup {
 public:
     ScaleModelGroup() = default;
-    ScaleModelGroup(const std::vector<Body>& bodies)
+    ScaleModelGroup(const Objects<SnapShot>& snap_shot)
     {
-        for (auto& b : bodies) {
+        for (const auto& b : snap_shot.system) {
             models.push_back({ b });
         }
     }

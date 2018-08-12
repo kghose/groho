@@ -152,16 +152,16 @@ void set_pos(double s, const Ephemeris& eph, sim::Vector& pos)
 
 // Fill out the (x, y, z) of each Orrery body
 void SpkOrrery::set_body_positions(
-    double s, std::vector<RockLike::State>& rocks) const
+    double s, Collection<RockSnapShotWithVel>& rocks) const
 {
     for (size_t i = 0; i < ephemera.size(); i++) {
-        set_pos(s, *ephemera[i], rocks[i].pos);
-        rocks[i].t_s = s;
+        set_pos(s, *ephemera[i], rocks[i].pos());
+        rocks[i].t_s() = s;
     }
 
     for (size_t i = 0; i < ephemera.size(); i++) {
         if (ephemera[i]->center_code != 0) {
-            rocks[i].pos += rocks[center_idx[i]].pos;
+            rocks[i].pos() += rocks[center_idx[i]].pos();
         }
     }
 }

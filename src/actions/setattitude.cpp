@@ -20,7 +20,7 @@ struct SET_ATTITUDE : public FlightPlanAction {
 
     ShipCommand execute(const State& state)
     {
-        DLOG_S(INFO) << state.fleet()[meta.ship_idx].property.naif.name
+        DLOG_S(INFO) << state.fleet[meta.ship_idx].property.naif.name
                      << " attitude set";
 
         done = true;

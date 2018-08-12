@@ -18,18 +18,18 @@ struct INITIAL_ORBIT : public FlightPlanAction {
 
     void setup(State& state)
     {
-        auto target_idx = find2(state.system(), target);
+        auto target_idx = find2(state.system.bodies, target);
 
-        const auto& target_body = state.system()[target_idx];
-        auto&       ship        = state.fleet()[meta.ship_idx];
+        const auto& target_body = state.system[target_idx];
+        auto&       ship        = state.fleet[meta.ship_idx];
 
         double A       = alt;
         double r       = target_body.property.r;
-        Vector Rsun    = target_body.state.pos;
-        Vector Vbody   = target_body.state.vel;
+        Vector Rsun    = target_body.pos();
+        Vector Vbody   = target_body.vel();
         Vector U_hat   = cross(Vbody, Rsun * -1).normed();
         Vector V_hat   = cross(Rsun * -1, U_hat).normed();
-        ship.state.pos = target_body.state.pos + (Rsun.normed() * (A + r));
+        ship.state.pos = target_body.pos() + (Rsun.normed() * (A + r));
         ship.state.vel
             = (V_hat * std::sqrt(target_body.property.GM / (A + r))) + Vbody;
         ship.state.att = V_hat; // Nice to set this too

@@ -32,7 +32,7 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
 void GrohoApp::drawEvent()
 {
     overlay.status = simulator.status;
-    overlay.jd     = s2jd(simulator.t_s);
+    overlay.jd     = s2jd(simulator.t_s());
 
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
@@ -56,9 +56,19 @@ void GrohoApp::tickEvent()
 {
     bool redraw_required = false;
 
+    std::shared_ptr<const Scenario> new_scenario = simulator.get_scenario();
+
+    if (scenario != new_scenario) {
+        scenario = new_scenario;
+        reload();
+        redraw_required = true;
+    } else {
+        if (scenario == nullptr)
+            return;
+    }
+
     if (simulation_has_been_restarted()) {
-        buffer = simulator.get_buffer();
-        orbit_view.load_new_simulation_from_buffer(buffer);
+        // scenario = simulator.get_scenario();
         camera.set_body_tree(orbit_view.get_body_tree());
         camera.set_time_range(simulator.begin_s(), simulator.end_s());
         orbit_view.set_body_state_at_time_cursor(camera, buffer);
@@ -76,20 +86,33 @@ void GrohoApp::tickEvent()
     }
 }
 
+void GrohoApp::reload()
+{
+    scenario->read(
+        {},
+        std::bind(&OrbitView::load_from, &orbit_view, std::placeholders::_1));
+
+    camera.set_body_tree(orbit_view.get_body_tree());
+    camera.set_time_range(simulator.begin_s(), simulator.end_s());
+    orbit_view.set_body_state_at_time_cursor(camera, buffer);
+    orbit_view.set_camera_center_pos_from_body_state(camera);
+}
+
 // The simulator has been restarted with a new simulation
 bool GrohoApp::simulation_has_been_restarted()
 {
-    std::shared_ptr<const Buffer> sim_buffer = simulator.get_buffer();
+    std::shared_ptr<const Scenario> new_scenario = simulator.get_scenario();
 
     // We can probably achieve this whole effect by comparing pointers
     // but this code shows our real intent explicitly
 
-    if (sim_buffer == nullptr) {
+    if (new_scenario == nullptr) {
         return false;
     }
 
-    if ((buffer != nullptr)
-        && (buffer->simulation_serial() == sim_buffer->simulation_serial())) {
+    if ((scenario != nullptr)
+        && (scenario->simulation_serial()
+            == new_scenario->simulation_serial())) {
         return false;
     }
 

@@ -36,6 +36,9 @@ private:
     void viewportEvent(const Vector2i& size) override;
     void tickEvent() override;
 
+    // If the simulation has been (re)started reload it
+    void reload();
+
     bool simulation_has_been_restarted();
 
     void mousePressEvent(MouseEvent& event) override;
@@ -47,7 +50,7 @@ private:
     void keyReleaseEvent(KeyEvent& event) override;
 
 private:
-    const sim::Simulator& simulator;
+    const Simulator& simulator;
 
     // TODO: make this a rolling buffer for overlaying multiple sims
     std::shared_ptr<const Scenario> scenario;

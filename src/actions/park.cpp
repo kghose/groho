@@ -34,12 +34,15 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
     {
     }
 
-    void setup(State& state) { target_idx = find2(state.system(), target); }
+    void setup(State& state)
+    {
+        target_idx = find2(state.system.bodies, target);
+    }
 
     ShipCommand execute(const State& state)
     {
-        auto const& target_body = state.system()[target_idx];
-        auto const& ship        = state.fleet()[meta.ship_idx];
+        auto const& target_body = state.system[target_idx];
+        auto const& ship        = state.fleet[meta.ship_idx];
 
         // If this is the first time we call this we need to gather more state
         // information
@@ -48,7 +51,7 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
             return { {}, {} };
         }
 
-        Vector R = ship.state.pos - target_body.state.pos;
+        Vector R = ship.state.pos - target_body.pos();
         if (R.norm() > R_capture) {
             return { {}, {} };
         }
@@ -62,7 +65,7 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
 
         Vector deltaV = parking_deltaV(
             target_body.property.GM,
-            ship.state.pos - target_body.state.pos,
+            ship.state.pos - target_body.pos(),
             ship.state.vel);
 
         ShipCommand cmd;

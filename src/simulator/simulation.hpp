@@ -36,7 +36,7 @@ template <typename T> struct Record {
     SubBuffer<typename T::State> history;
 };
 
-struct Simulation : public Objects<Record> {
+struct Simulation : public RocksAndShips<Record> {
 
     //
     void append(const State&);

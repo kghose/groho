@@ -27,17 +27,14 @@ void OrbitView::draw(const Camera& camera)
 
 // TODO: rewrite buffer so we don't have to use lock/release - pass this
 // function through to buffer
-void OrbitView::load_new_simulation_from_buffer(
-    std::shared_ptr<const Buffer> buffer)
+void OrbitView::load_from(const Simulation& simulation)
 {
-    buffer->lock();
     load_body_metadata(buffer);
     scale_models = ScaleModelGroup(bodies);
     body_markers = BodyMarkers(bodies);
     trajectories.reload_from_buffer(buffer);
     simulation_serial = buffer->simulation_serial();
     point_count       = buffer->point_count();
-    buffer->release();
 }
 
 void OrbitView::load_body_metadata(std::shared_ptr<const Buffer> buffer)
@@ -82,27 +79,12 @@ void OrbitView::update_simulation_from_buffer(
     buffer->release();
 }
 
-void OrbitView::set_body_state_at_time_cursor(
-    const Camera& camera, std::shared_ptr<const Buffer> buffer)
+void OrbitView::set_snapshot(
+    double t_s, std::shared_ptr<const Scenario> scenario)
 {
-    if (buffer == nullptr)
-        return;
-    for (size_t i = 0; i < bodies.size(); i++) {
-        if ((bodies[i].property.body_type != BARYCENTER)
-            && (buffer->get(i).sampled.size() > 0)) {
-            bodies[i].state = buffer->at(i, camera.current_s());
-            // TODO: Improve how we get sampled data (interpolation project)
-            // Let's try an over all higher sampling rate. This is lowest
-            // complexity.
-            // Also, we should improve the buffer interface for getting back
-            // data
-            // 1. "at" should use spline interpolation
-            // 2. "at" should have a companion function that wraps
-            // buffer->get(i).sampled.size()
-        }
-    }
-    scale_models.set_data(bodies);
-    body_markers.set_data(bodies);
+    scenario->get_snapshot_at(t_s, snapshot);
+    scale_models.set_data(snapshot);
+    body_markers.set_data(snapshot);
 }
 
 void OrbitView::set_camera_center_pos_from_body_state(Camera& camera)

@@ -21,7 +21,7 @@ struct BURN : public FlightPlanAction {
 
     ShipCommand execute(const State& state)
     {
-        auto const& ship = state.fleet()[meta.ship_idx];
+        auto const& ship = state.fleet[meta.ship_idx];
 
         if (!burning) {
             burning    = true;

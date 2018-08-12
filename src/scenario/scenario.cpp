@@ -155,21 +155,23 @@ Scenario::Scenario(
 void Scenario::get_snapshot_at(double t_s, Objects<SnapShot>&) const { ; }
 
 // The passed in function has the opportunity to copy over the simulation
-void Scenario::mirror(
-    const std::vector<SimulationSegment>&,
-    std::function<void(const Simulation&)>)
+void Scenario::read(
+    const std::vector<SimulationSegment>&  ss,
+    std::function<void(const Simulation&)> f) const
 {
-    ;
+    std::lock_guard<std::mutex> lock(_simulation.buffer_mutex);
+    f(_simulation);
 }
 
 // Possibly very expensive operation. A display element can ask for a
 // simulation object that only consists of parts of the simulation and that
 // has been interpolated
 void Scenario::interpolate(
-    const std::vector<SimulationSegment>&,
-    std::function<void(const Simulation&)>)
+    const std::vector<SimulationSegment>&  ss,
+    std::function<void(const Simulation&)> f)
 {
-    ;
+    std::lock_guard<std::mutex> lock(_simulation.buffer_mutex);
+    f(_simulation);
 }
 
 } // namespace sim

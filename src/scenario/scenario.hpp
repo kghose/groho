@@ -52,9 +52,9 @@ public:
     void get_snapshot_at(double t_s, Objects<SnapShot>&) const;
 
     // The passed in function has the opportunity to copy over the simulation
-    void mirror(
+    void read(
         const std::vector<SimulationSegment>&,
-        std::function<void(const Simulation&)>);
+        std::function<void(const Simulation&)>) const;
 
     // Possibly very expensive operation. A display element can ask for a
     // simulation object that only consists of parts of the simulation and that

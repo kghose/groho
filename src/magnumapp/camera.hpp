@@ -16,6 +16,7 @@ so that they know what camera model to use.
 
 #include "bodytree.hpp"
 #include "groholib.hpp"
+#include "naifbody.hpp"
 
 namespace sim {
 
@@ -44,8 +45,8 @@ struct SpaceCursor {
     Deg   az    = 0.0_degf;
     Deg   el    = 0.0_degf;
 
-    spkid_t center_id = spkid_t(0, "SSB");
-    Vector3 center    = { 0, 0, 0 };
+    NAIFbody center_id = { 0, "SSB" };
+    Vector3  center    = { 0, 0, 0 };
 };
 
 struct View {
@@ -110,11 +111,11 @@ public:
     void zoom_in() { space_cursor.scale *= 1.1; }
     void zoom_out() { space_cursor.scale /= 1.1; }
 
-    void set_center_id(const spkid_t cid) { space_cursor.center_id = cid; }
+    void set_center_id(const NAIFbody cid) { space_cursor.center_id = cid; }
     void set_center(const Vector3& p) { space_cursor.center = p; }
 
-    int    center_id() const { return space_cursor.center_id.id; }
-    double current_s() const { return time_cursor.current_s; }
+    NAIFbody center_id() const { return space_cursor.center_id; }
+    double   current_s() const { return time_cursor.current_s; }
 
     const View& get_view() const { return view; }
 

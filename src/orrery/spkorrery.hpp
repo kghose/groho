@@ -34,7 +34,7 @@ public:
     std::vector<RockLike::Property> get_bodies() const;
 
     // Fill out the (x, y, z) of each Orrery body
-    void set_body_positions(double t_s, std::vector<RockLike::State>&) const;
+    void set_body_positions(double t_s, Collection<RockSnapShotWithVel>&) const;
 
     double begin_s;
     double end_s;

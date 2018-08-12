@@ -10,24 +10,23 @@ the object trajectories (paths), object markers and annotations.
 
 #include "bodymarkers.hpp"
 #include "bodytree.hpp"
-#include "buffer.hpp"
 #include "camera.hpp"
 #include "pathgroup.hpp"
 #include "scalemodelgroup.hpp"
+#include "scenario.hpp"
 // #include "sphere.hpp"
 
 namespace sim {
 
 class OrbitView {
 public:
-    void draw(const Camera& camera);
-    void load_new_simulation_from_buffer(std::shared_ptr<const Buffer> buffer);
+    void     draw(const Camera& camera);
+    void     load_from(const Simulation&);
     BodyTree get_body_tree();
     bool     buffer_has_more_points_now(std::shared_ptr<const Buffer> buffer);
-    void update_simulation_from_buffer(std::shared_ptr<const Buffer> buffer);
-    void set_body_state_at_time_cursor(
-        const Camera& camera, std::shared_ptr<const Buffer> buffer);
-    void set_camera_center_pos_from_body_state(Camera& camera);
+    void     update_from(const Simulation&);
+    void     set_snapshot(double, std::shared_ptr<const Scenario>);
+    void     set_camera_center_pos_from_body_state(Camera& camera);
 
 public:
     bool show_trajectories = true;
@@ -38,8 +37,8 @@ private:
     void load_body_metadata(std::shared_ptr<const Buffer> buffer);
 
 private:
-    // This is the scenario we are displaying.
-    std::shared_ptr<const Scenario> scenario;
+    // The object state at some point in time. This is used to set the markers
+    Objects<SnapShot> snapshot;
 
     // Display components
     PathGroup       trajectories;
