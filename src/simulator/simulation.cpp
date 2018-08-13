@@ -25,12 +25,15 @@ void Simulation::append(const State& state)
 
     for (size_t i = 0; i < system.size(); i++) {
         if (!system[i].property.naif.is_barycenter()) {
-            system[i].history.append(state.system[i].state());
+            if (system[i].history.append(state.system[i].state())) {
+                point_count++;
+            }
         }
     }
-
     for (size_t i = 0; i < state.fleet.size(); i++) {
-        fleet[i].history.append(state.fleet[i].state);
+        if (fleet[i].history.append(state.fleet[i].state)) {
+            point_count++;
+        }
     }
 }
 

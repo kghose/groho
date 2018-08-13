@@ -107,11 +107,11 @@ void Simulator::run()
 
     int   N = 0; // oscillates between 0 and 1
     State state(
+        scenario->begin_s() - scenario->step_s(),
         scenario->simulation().system_proprty(),
         scenario->simulation().fleet_property());
 
     // Prime the velocity computation
-    state.t_s() = scenario->begin_s() - scenario->step_s();
     scenario->orrery()->set_body_positions(state.t_s(), state.system);
     state.advance_t_s(scenario->step_s());
     scenario->orrery()->set_body_positions(state.t_s(), state.system);

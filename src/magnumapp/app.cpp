@@ -94,7 +94,11 @@ void GrohoApp::reload()
 
     camera.set_body_tree(orbit_view.get_body_tree());
     camera.set_time_range(simulator.begin_s(), simulator.end_s());
-    orbit_view.set_body_state_at_time_cursor(camera, buffer);
+
+    orbit_view
+        .
+
+        orbit_view.set_body_state_at_time_cursor(camera, buffer);
     orbit_view.set_camera_center_pos_from_body_state(camera);
 }
 

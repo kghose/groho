@@ -103,7 +103,11 @@ fpapl_t parse_ship_actions(
 Scenario::Scenario(
     const Configuration& new_config, std::shared_ptr<Scenario> old_scenario)
 {
-    _simulation.simulation_serial = old_scenario->simulation_serial() + 1;
+    if (old_scenario == nullptr) {
+        _simulation.simulation_serial = 1;
+    } else {
+        _simulation.simulation_serial = old_scenario->simulation_serial() + 1;
+    }
 
     // Right now, we only do Orrery caching. In more sophisticated
     // implementations we would compare the configurations and retain components
@@ -116,7 +120,9 @@ Scenario::Scenario(
 
     if (reload_orrery) {
         _orrery = std::shared_ptr<SpkOrrery>(new SpkOrrery(
-            new_config.orrery_fnames, new_config.begin_s, new_config.end_s));
+            new_config.orrery_fnames,
+            new_config.begin_s - new_config.step_s,
+            new_config.end_s));
     } else {
         _orrery = old_scenario->orrery();
     }

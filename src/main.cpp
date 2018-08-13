@@ -84,6 +84,8 @@ struct Options {
         std::cout << "\nUsage:\n"
                   << "groho <scenario file> [annotation file] [--no-gui]"
                   << std::endl;
+
+        exit(0);
     }
 };
 

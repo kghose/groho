@@ -17,9 +17,13 @@ namespace sim {
 class State {
 public:
     State(
+        double                                t_s,
         const std::vector<RockLike::Property> _rocks,
         const std::vector<ShipLike::Property> _ships)
     {
+        _t_s[0] = t_s;
+        _t_s[1] = t_s;
+
         for (const auto& r : _rocks) {
             system.push_back(r);
         }
@@ -34,8 +38,8 @@ public:
 
     void advance_t_s(double d_t_s)
     {
-        system.N = 1 - system.N;
-        _t_s[system.N] += d_t_s;
+        system.N       = 1 - system.N;
+        _t_s[system.N] = _t_s[1 - system.N] + d_t_s;
     }
 
     // TODO: rename this to "solar_system" and "fleet"

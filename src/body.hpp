@@ -91,12 +91,12 @@ struct RockSnapShotWithVel {
     RockLike::Property property;
     RockLike::State    _state[2];
 
-    constexpr double& t_s() { return _state[_N].t_s; }
-    constexpr double  t_s() const { return _state[_N].t_s; }
+    double& t_s() { return _state[_N].t_s; }
+    double  t_s() const { return _state[_N].t_s; }
 
-    constexpr Vector&       pos() { return _state[_N].pos; }
-    constexpr const Vector& pos() const { return _state[_N].pos; }
-    Vector                  vel() const
+    Vector&       pos() { return _state[_N].pos; }
+    const Vector& pos() const { return _state[_N].pos; }
+    Vector        vel() const
     {
         return (_state[_N].pos - _state[1 - _N].pos)
             / (_state[_N].t_s - _state[1 - _N].t_s);
