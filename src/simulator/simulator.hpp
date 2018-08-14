@@ -47,8 +47,6 @@ public:
     std::shared_ptr<Scenario> scenario;
 
 private:
-    size_t simulation_serial = 0;
-
     std::atomic<bool> running;
 
     std::thread compute_thread;

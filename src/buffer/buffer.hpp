@@ -71,9 +71,12 @@ template <typename T> struct SubBuffer {
         }
     }
 
-    const std::vector<T>& sampled() { return data; }
-    std::optional<T>      unsampled() { return _last_state; }
-    size_t effective_size() { return data.size() + (_last_state ? 1 : 0); }
+    const std::vector<T>& sampled() const { return data; }
+    std::optional<T>      unsampled() const { return _last_state; }
+    size_t                effective_size() const
+    {
+        return data.size() + (_last_state ? 1 : 0);
+    }
 
     T at(double t_s) const;
 

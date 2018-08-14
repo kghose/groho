@@ -13,7 +13,7 @@ namespace sim {
 // This copies over all the data
 template <typename T> void Path::copy_all(const SubBuffer<T>& buf_data)
 {
-    if (buf_data.required_size() > 0) {
+    if (buf_data.effective_size() > 0) {
         map(buf_data, ALL);
         _mesh.setPrimitive(GL::MeshPrimitive::LineStrip)
             .setCount(current_size)
@@ -24,8 +24,8 @@ template <typename T> void Path::copy_all(const SubBuffer<T>& buf_data)
 // This copies just the new elements
 template <typename T> void Path::copy_new(const SubBuffer<T>& buf_data)
 {
-    if (buf_data.required_size() > 0) {
-        size_t new_size = buf_data.required_size();
+    if (buf_data.effective_size() > 0) {
+        size_t new_size = buf_data.effective_size();
         if (allocated_size < new_size) {
             return copy_all(buf_data);
         }
@@ -47,7 +47,7 @@ void Path::reallocate(size_t new_size)
 
 template <typename T> void Path::map(const SubBuffer<T>& buf_data, Mode mode)
 {
-    size_t new_size = buf_data.required_size();
+    size_t new_size = buf_data.effective_size();
 
     size_t offset = 0;
     if (mode == JUST_NEW) {
@@ -68,12 +68,13 @@ template <typename T> void Path::map(const SubBuffer<T>& buf_data, Mode mode)
 
     CORRADE_INTERNAL_ASSERT(data);
 
-    size_t i = offset;
-    for (; i < buf_data.sampled.size(); i++) {
-        data[i - offset] = v2v(buf_data.sampled[i].pos);
+    size_t      i  = offset;
+    const auto& _p = buf_data.sampled();
+    for (; i < _p.size(); i++) {
+        data[i - offset] = v2v(_p[i].pos);
     }
-    if (buf_data.unsampled) {
-        data[i - offset]          = v2v(buf_data.unsampled->pos);
+    if (buf_data.unsampled()) {
+        data[i - offset]          = v2v(buf_data.unsampled()->pos);
         last_point_is_provisional = true;
     } else {
         last_point_is_provisional = false;
@@ -87,4 +88,18 @@ template <typename T> void Path::map(const SubBuffer<T>& buf_data, Mode mode)
 
     CORRADE_INTERNAL_ASSERT_OUTPUT(_buffer.unmap());
 }
+
+template void
+Path::copy_all<RockLike::State>(const SubBuffer<RockLike::State>& buf_data);
+template void
+              Path::copy_new<RockLike::State>(const SubBuffer<RockLike::State>& buf_data);
+template void Path::map<RockLike::State>(
+    const SubBuffer<RockLike::State>& buf_data, Mode mode);
+
+template void
+Path::copy_all<ShipLike::State>(const SubBuffer<ShipLike::State>& buf_data);
+template void
+              Path::copy_new<ShipLike::State>(const SubBuffer<ShipLike::State>& buf_data);
+template void Path::map<ShipLike::State>(
+    const SubBuffer<ShipLike::State>& buf_data, Mode mode);
 }

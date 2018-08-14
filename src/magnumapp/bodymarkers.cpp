@@ -11,11 +11,11 @@ This adds point markers to the location of various bodies
 
 namespace sim {
 
-BodyMarkers::BodyMarkers(const std::vector<Body>& bodies) { set_data(bodies); }
+// BodyMarkers::BodyMarkers(const std::vector<Vector>& pos) { set_data(pos); }
 
-void BodyMarkers::set_data(const std::vector<Body>& bodies)
+void BodyMarkers::set_data(const RocksAndShips<SnapShot>& snapshot)
 {
-    size_t size = bodies.size();
+    size_t size = snapshot.system.size() + snapshot.fleet.size();
 
     // If we try to map zero points we get a runtime error ...
     if (size == 0) {
@@ -33,18 +33,21 @@ void BodyMarkers::set_data(const std::vector<Body>& bodies)
 
     CORRADE_INTERNAL_ASSERT(data);
 
-    size_t j = 0;
-    for (size_t i = 0; i < size; i++) {
-        if (bodies[i].property.body_type != BARYCENTER) {
-            data[j++] = v2v(bodies[i].state.pos);
-        }
+    size = 0;
+    for (const auto& b : snapshot.system.bodies) {
+        if (b.property.naif.is_barycenter())
+            continue;
+        data[size++] = v2v(b.state.pos);
+    }
+    for (const auto& b : snapshot.fleet.bodies) {
+        data[size++] = v2v(b.state.pos);
     }
 
     CORRADE_INTERNAL_ASSERT_OUTPUT(buffer.unmap());
 
     shader.setColor(style::body_marker_color);
     mesh.setPrimitive(GL::MeshPrimitive::Points)
-        .setCount(j)
+        .setCount(size)
         .addVertexBuffer(buffer, 0, Shaders::Flat3D::Position{});
 }
 

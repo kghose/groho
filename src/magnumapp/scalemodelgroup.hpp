@@ -27,9 +27,10 @@ using namespace Corrade;
 // A billboard circle that fakes a body
 class ScaleModel {
 public:
-    ScaleModel(unsigned int _color, float r)
+    ScaleModel(unsigned int _color, float r, bool _vis)
         : color(from_rgb(_color))
         , scaling(Matrix4::scaling(Vector3(r / style::scale)))
+        , visible(_vis)
     {
         const Trade::MeshData3D circle = Primitives::circle3DWireframe(15);
         // const Trade::MeshData3D circle = Primitives::circle3DSolid(15);
@@ -46,9 +47,11 @@ public:
 
     void draw(const Camera& camera)
     {
-        shader.setTransformationProjectionMatrix(
-            camera.get_billboard_matrix(pos) * scaling);
-        mesh.draw(shader);
+        if (visible) {
+            shader.setTransformationProjectionMatrix(
+                camera.get_billboard_matrix(pos) * scaling);
+            mesh.draw(shader);
+        }
     }
 
 private:
@@ -60,7 +63,7 @@ private:
     const Color3  color;
     const Matrix4 scaling;
 
-    bool visible = false;
+    const bool visible = false;
 };
 
 class ScaleModelGroup {
@@ -69,25 +72,23 @@ public:
     ScaleModelGroup(const Objects<SnapShot>& snap_shot)
     {
         for (const auto& b : snap_shot.system) {
-            models.push_back({ b });
+            models.push_back({ b.property.color,
+                               b.property.r,
+                               !b.property.naif.is_barycenter() });
         }
     }
 
-    void set_data(const std::vector<Body>& bodies)
+    void set_data(const Objects<SnapShot>& snapshot)
     {
         for (size_t i = 0; i < models.size(); i++) {
-            if (bodies[i].property.body_type != BARYCENTER) {
-                models[i].set_pos(v2v(bodies[i].state.pos));
-            }
+            models[i].set_pos(v2v(snapshot.system[i].state.pos));
         }
     }
 
     void draw(const Camera& camera)
     {
         for (auto& m : models) {
-            if (m.body_type != BARYCENTER) {
-                m.draw(camera);
-            }
+            m.draw(camera);
         }
     }
 

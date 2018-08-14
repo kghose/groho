@@ -69,19 +69,6 @@ template <typename T> struct SnapShot {
 // Time will tell if we were too clever here
 struct RockSnapShotWithVel {
 
-    RockSnapShotWithVel(int& N)
-        : _N(N)
-    {
-    }
-
-    RockSnapShotWithVel(const RockSnapShotWithVel& _ssv)
-        : _N(_ssv._N)
-    {
-        property  = _ssv.property;
-        _state[0] = _ssv._state[0];
-        _state[1] = _ssv._state[1];
-    }
-
     RockSnapShotWithVel(int& N, RockLike::Property _property)
         : _N(N)
     {
@@ -117,14 +104,6 @@ template <typename T> struct BaseCollection {
     constexpr T& operator[](const NAIFbody& id) { return bodies[lookup[id]]; }
 
     constexpr const T& operator[](size_t idx) const { return bodies[idx]; }
-
-    // Collection(const Collection<T>& _collection) = default;
-
-    // template <typename T2> Collection(const Collection<T2>& _collection)
-    // {
-    //     bodies = _collection.bodies;
-    //     lookup = _collection.lookup;
-    // }
 
     virtual void push_back(const T& body)
     {

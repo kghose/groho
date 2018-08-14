@@ -16,9 +16,11 @@ Magnum App to handle windowing and display
 #include <Magnum/Platform/Sdl2Application.h>
 #include <Magnum/Shaders/Flat.h>
 
+#include "bodymarkers.hpp"
 #include "camera.hpp"
-#include "orbitview.hpp"
 #include "overlay.hpp"
+#include "pathgroup.hpp"
+#include "scalemodelgroup.hpp"
 #include "simulator.hpp"
 
 namespace sim {
@@ -36,10 +38,12 @@ private:
     void viewportEvent(const Vector2i& size) override;
     void tickEvent() override;
 
-    // If the simulation has been (re)started reload it
-    void reload();
+    // This (re)loads all the data, erasing any previous information and
+    // recreating any visualizations and control objects
+    void load_from(const Simulation&);
 
-    bool simulation_has_been_restarted();
+    // This updates only the added new bits of the simulation
+    void update_from(const Simulation&);
 
     void mousePressEvent(MouseEvent& event) override;
     void mouseReleaseEvent(MouseEvent& event) override;
@@ -55,9 +59,24 @@ private:
     // TODO: make this a rolling buffer for overlaying multiple sims
     std::shared_ptr<const Scenario> scenario;
 
-    Camera    camera;
-    OrbitView orbit_view;
-    Overlay   overlay;
+    size_t point_count = 0;
+
+    struct Show {
+        bool overlay      = true;
+        bool trajectories = true;
+        bool scale_models = true;
+        bool body_markers = true;
+    } show;
+
+    // The object state at some point in time. This is used to set the markers
+    RocksAndShips<SnapShot> snapshot;
+
+    // Display components
+    Camera          camera;
+    Overlay         overlay;
+    PathGroup       trajectories;
+    ScaleModelGroup scale_models;
+    BodyMarkers     body_markers;
 
     Shaders::Flat3D _shader;
 

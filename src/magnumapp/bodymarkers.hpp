@@ -21,9 +21,7 @@ using namespace Magnum;
 
 class BodyMarkers {
 public:
-    BodyMarkers() = default;
-    BodyMarkers(const std::vector<Body>& bodies);
-    void set_data(const std::vector<Body>& bodies);
+    void set_data(const RocksAndShips<SnapShot>&);
     void draw(const Camera& camera);
 
 private:

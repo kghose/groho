@@ -31,13 +31,27 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
 
 void GrohoApp::drawEvent()
 {
-    overlay.status = simulator.status;
-    overlay.jd     = s2jd(simulator.t_s());
-
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
-    orbit_view.draw(camera);
-    overlay.draw(camera);
+    if (show.trajectories) {
+        trajectories.draw(camera.get_matrix());
+    }
+
+    if (show.scale_models) {
+        scale_models.draw(camera);
+    }
+
+    if (show.body_markers) {
+        body_markers.draw(camera);
+    }
+
+    if (show.overlay) {
+        overlay.status = simulator.status;
+        // overlay.jd     = s2jd(simulator.t_s());
+        overlay.draw(camera);
+    }
+
+    // orbit_view.draw(camera);
 
     swapBuffers();
 }
@@ -59,68 +73,57 @@ void GrohoApp::tickEvent()
     std::shared_ptr<const Scenario> new_scenario = simulator.get_scenario();
 
     if (scenario != new_scenario) {
+        // In the future we may want to keep a pair of scenarios, or a rolling
+        // buffer
         scenario = new_scenario;
-        reload();
+        scenario->read(
+            {}, std::bind(&GrohoApp::load_from, this, std::placeholders::_1));
         redraw_required = true;
     } else {
-        if (scenario == nullptr)
+        if (scenario == nullptr) {
             return;
+        } else {
+            if (scenario->point_count() > point_count) {
+                scenario->read(
+                    {},
+                    std::bind(
+                        &GrohoApp::update_from, this, std::placeholders::_1));
+                redraw_required = true;
+            }
+        }
     }
 
-    if (simulation_has_been_restarted()) {
-        // scenario = simulator.get_scenario();
-        camera.set_body_tree(orbit_view.get_body_tree());
-        camera.set_time_range(simulator.begin_s(), simulator.end_s());
-        orbit_view.set_body_state_at_time_cursor(camera, buffer);
-        orbit_view.set_camera_center_pos_from_body_state(camera);
-        redraw_required = true;
-    }
+    // if (simulation_has_been_restarted()) {
+    //     // scenario = simulator.get_scenario();
+    //     camera.set_body_tree(orbit_view.get_body_tree());
+    //     camera.set_time_range(simulator.begin_s(), simulator.end_s());
+    //     orbit_view.set_body_state_at_time_cursor(camera, buffer);
+    //     orbit_view.set_camera_center_pos_from_body_state(camera);
+    //     redraw_required = true;
+    // }
 
-    if (orbit_view.buffer_has_more_points_now(buffer)) {
-        orbit_view.update_simulation_from_buffer(buffer);
-        redraw_required = true;
-    }
+    // if (orbit_view.buffer_has_more_points_now(buffer)) {
+    //     orbit_view.update_simulation_from_buffer(buffer);
+    //     redraw_required = true;
+    // }
 
     if (redraw_required) {
         redraw();
     }
 }
 
-void GrohoApp::reload()
+void GrohoApp::load_from(const Simulation& simulation)
 {
-    scenario->read(
-        {},
-        std::bind(&OrbitView::load_from, &orbit_view, std::placeholders::_1));
-
-    camera.set_body_tree(orbit_view.get_body_tree());
-    camera.set_time_range(simulator.begin_s(), simulator.end_s());
-
-    orbit_view
-        .
-
-        orbit_view.set_body_state_at_time_cursor(camera, buffer);
-    orbit_view.set_camera_center_pos_from_body_state(camera);
+    trajectories.load_from(simulation);
+    // camera.set_body_tree(orbit_view.get_body_tree());
+    // camera.set_time_range(simulator.begin_s(), simulator.end_s());
+    // orbit_view.set_body_state_at_time_cursor(camera, buffer);
+    // orbit_view.set_camera_center_pos_from_body_state(camera);
 }
 
-// The simulator has been restarted with a new simulation
-bool GrohoApp::simulation_has_been_restarted()
+void GrohoApp::update_from(const Simulation& simulation)
 {
-    std::shared_ptr<const Scenario> new_scenario = simulator.get_scenario();
-
-    // We can probably achieve this whole effect by comparing pointers
-    // but this code shows our real intent explicitly
-
-    if (new_scenario == nullptr) {
-        return false;
-    }
-
-    if ((scenario != nullptr)
-        && (scenario->simulation_serial()
-            == new_scenario->simulation_serial())) {
-        return false;
-    }
-
-    return true;
+    trajectories.update_from(simulation);
 }
 
 void GrohoApp::mousePressEvent(MouseEvent& event)
@@ -167,8 +170,8 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
         } else {
             camera.step_backward_in_time();
         }
-        orbit_view.set_body_state_at_time_cursor(camera, buffer);
-        orbit_view.set_camera_center_pos_from_body_state(camera);
+        // orbit_view.set_body_state_at_time_cursor(camera, buffer);
+        // orbit_view.set_camera_center_pos_from_body_state(camera);
     } else {
         // Zoom in and out
         if (event.offset().y() > 0)
@@ -184,14 +187,17 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
 void GrohoApp::keyPressEvent(KeyEvent& event)
 {
     switch (event.key()) {
+    case KeyEvent::Key::O:
+        show.overlay ^= true;
+        break;
     case KeyEvent::Key::P:
-        orbit_view.show_trajectories ^= true;
+        show.trajectories ^= true;
         break;
     case KeyEvent::Key::M:
-        orbit_view.show_body_markers ^= true;
+        show.body_markers ^= true;
         break;
     case KeyEvent::Key::B:
-        orbit_view.show_scale_models ^= true;
+        show.scale_models ^= true;
         break;
     default:
         break;
@@ -219,7 +225,7 @@ void GrohoApp::keyReleaseEvent(KeyEvent& event)
         break;
     }
 
-    orbit_view.set_camera_center_pos_from_body_state(camera);
+    // orbit_view.set_camera_center_pos_from_body_state(camera);
     redraw();
 }
 }
