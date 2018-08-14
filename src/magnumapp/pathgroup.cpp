@@ -10,26 +10,39 @@ Convenient container for managing a group of trajectories for display
 
 namespace sim {
 
-void PathGroup::reload_from_buffer(std::shared_ptr<const Buffer> buffer)
+void PathGroup::load_from(const Simulation& simulation)
 {
     paths.clear();
-    for (size_t i = 0; i < buffer->body_count(); i++) {
+    for (const auto& b : simulation.system.bodies) {
+        if (b.property.naif.is_barycenter())
+            continue;
+
         auto p = std::shared_ptr<Path>(new Path);
-        // p->set_color(Color3(buffer->metadata(i).property.color));
         p->set_color(style::trajectory_color);
-        if (buffer->metadata(i).property.body_type != BARYCENTER) {
-            p->copy_all(buffer->get(i));
-        }
+        p->copy_all(b.history);
+        paths.push_back(p);
+    }
+
+    for (const auto& b : simulation.fleet.bodies) {
+        auto p = std::shared_ptr<Path>(new Path);
+        p->set_color(style::trajectory_color);
+        p->copy_all(b.history);
         paths.push_back(p);
     }
 }
 
-void PathGroup::update(std::shared_ptr<const Buffer> buffer)
+void PathGroup::update_from(const Simulation& simulation)
 {
-    for (size_t i = 0; i < buffer->body_count(); i++) {
-        if (buffer->metadata(i).property.body_type != BARYCENTER) {
-            paths[i]->copy_new(buffer->get(i));
-        }
+    size_t j = 0;
+    for (const auto& b : simulation.system.bodies) {
+        if (b.property.naif.is_barycenter())
+            continue;
+        paths[j]->copy_new(b.history);
+        j++;
+    }
+    for (const auto& b : simulation.fleet.bodies) {
+        paths[j]->copy_new(b.history);
+        j++;
     }
 }
 

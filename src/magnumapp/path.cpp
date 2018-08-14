@@ -11,7 +11,7 @@ Convenient container for managing data to display for a given object
 namespace sim {
 
 // This copies over all the data
-void Path::copy_all(Buffer::data_t buf_data)
+template <typename T> void Path::copy_all(const SubBuffer<T>& buf_data)
 {
     if (buf_data.required_size() > 0) {
         map(buf_data, ALL);
@@ -22,7 +22,7 @@ void Path::copy_all(Buffer::data_t buf_data)
 }
 
 // This copies just the new elements
-void Path::copy_new(Buffer::data_t buf_data)
+template <typename T> void Path::copy_new(const SubBuffer<T>& buf_data)
 {
     if (buf_data.required_size() > 0) {
         size_t new_size = buf_data.required_size();
@@ -45,7 +45,7 @@ void Path::reallocate(size_t new_size)
         GL::BufferUsage::StaticDraw);
 }
 
-void Path::map(Buffer::data_t buf_data, Mode mode)
+template <typename T> void Path::map(const SubBuffer<T>& buf_data, Mode mode)
 {
     size_t new_size = buf_data.required_size();
 

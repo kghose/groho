@@ -26,10 +26,10 @@ public:
     void set_color(Color3 color) { _color = color; }
 
     // This copies over all the data
-    void copy_all(Buffer::data_t);
+    template <typename T> void copy_all(const SubBuffer<T>&);
 
     // This copies just the new elements
-    void copy_new(Buffer::data_t);
+    template <typename T> void copy_new(const SubBuffer<T>&);
 
     void draw(Shaders::Flat3D& shader)
     {
@@ -44,7 +44,7 @@ private:
 
     enum Mode { ALL, JUST_NEW };
 
-    void map(Buffer::data_t buf_data, Mode mode);
+    template <typename T> void map(const SubBuffer<T>& buf_data, Mode mode);
 
     GL::Buffer _buffer;
     size_t     allocated_size = 0;

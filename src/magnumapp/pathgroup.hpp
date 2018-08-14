@@ -13,8 +13,8 @@ Convenient container for managing a group of trajectories for display
 
 #include <Magnum/Shaders/Flat.h>
 
-#include "buffer.hpp"
 #include "path.hpp"
+#include "simulation.hpp"
 
 namespace sim {
 
@@ -23,8 +23,8 @@ using namespace Magnum;
 class PathGroup {
 
 public:
-    void reload_from_buffer(std::shared_ptr<const Buffer> buffer);
-    void update(std::shared_ptr<const Buffer> buffer);
+    void load_from(const Simulation&);
+    void update_from(const Simulation&);
     void draw(const Matrix4& projection_matrix);
 
 private:
