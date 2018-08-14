@@ -4,6 +4,7 @@ Developer notes
 <!-- TOC -->
 
 - [Notes on C++](#notes-on-c)
+    - [Explicit template instantiation](#explicit-template-instantiation)
     - [Template template arguments](#template-template-arguments)
     - [Order matters](#order-matters)
     - [Instrumentation/profiling/debugging](#instrumentationprofilingdebugging)
@@ -83,6 +84,52 @@ Developer notes
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## Explicit template instantiation
+
+A common refrain on the internet is that you must put template class/function 
+implementations in the header file itself ([e.g.][so-tplt-hdr]).
+
+This is of course annoying but there is a way to get around this, that is not so
+bad and it is called [explicit template instantiation][cpp-tplt-hdr]. You split
+your class/function template into header and implementation as you normally would.
+Then, after all the functions have been implemented, in the implementation file
+you create a list of explicit instantiations of the template with all the template
+type arguments you will need. In my case, I had a class with templated member
+functions, and at the end of my implementation file I had:
+
+```
+template void
+Path::copy_all<RockLike::State>(const SubBuffer<RockLike::State>& buf_data);
+template void
+              Path::copy_new<RockLike::State>(const SubBuffer<RockLike::State>& buf_data);
+template void Path::map<RockLike::State>(
+    const SubBuffer<RockLike::State>& buf_data, Mode mode);
+
+template void
+Path::copy_all<ShipLike::State>(const SubBuffer<ShipLike::State>& buf_data);
+template void
+              Path::copy_new<ShipLike::State>(const SubBuffer<ShipLike::State>& buf_data);
+template void Path::map<ShipLike::State>(
+    const SubBuffer<ShipLike::State>& buf_data, Mode mode);
+```
+
+Dr. Dobb's [article][dobbs-tplt-hdr] has a good discussion on the merits and de-merits
+of this approach.
+
+What was very interesting was to learn of the ill-fated c++ keyword: `export`.
+[This paper][export-pdf] is racy reading (for a standards group document) and
+this [SO thread][so-export] is also informative.
+
+From advice in a Dr. Dobb's [article][dobbs-tplt-hdr] and the [cppreference][cpp-tplt-hdr]
+
+[so-tplt-hdr]: https://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
+[dobbs-tplt-hdr]: http://www.drdobbs.com/moving-templates-out-of-header-files/184403420
+[cpp-tplt-hdr]: https://en.cppreference.com/w/cpp/language/class_template
+
+[export-pdf]: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2003/n1426.pdf
+[so-export]: https://stackoverflow.com/questions/279404/what-is-the-best-explanation-for-the-export-keyword-in-the-c0x-standard
+
 
 ## Template template arguments
 
@@ -501,6 +548,8 @@ deferred until the template parameter is known.
 ## Template classes must be defined in the header file
 
 This was mildly annoying to find out. https://www.codeproject.com/Articles/48575/How-to-define-a-template-class-in-a-h-file-and-imp
+
+But [see this](#explicit-template-instantiation)
 
 
 ## Units (user defined literals)
