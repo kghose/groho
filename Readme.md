@@ -198,8 +198,9 @@ cycle through the satellites of said planets allowing us to center the camera on
 different objects. 
 
 Pressing `p` will toggle display of body paths, `m` will toggle display of the
-fixed size markers, and `b` will toggle display of the scaled circles that
-represent the actual size of the bodies. 
+fixed size markers, `b` will toggle display of the scaled circles that
+represent the actual size of the bodies, and `o` will toggle the information
+overlay.
 
 Once you have sufficient objects in the simulation, it becomes hard to find things. 
 Whatever view you can get to using the mouse/keyboard, you can also get to using
