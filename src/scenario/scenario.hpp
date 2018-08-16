@@ -67,8 +67,8 @@ public:
     // since their last read
     size_t simulation_serial() const { return _simulation.simulation_serial; }
 
-    constexpr Simulation&       simulation() { return _simulation; }
-    constexpr const Simulation& simulation() const { return _simulation; }
+    Simulation&       simulation() { return _simulation; }
+    const Simulation& simulation() const { return _simulation; }
 
     // This allows a reader to figure out if the data has changed since their
     // last read

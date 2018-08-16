@@ -91,15 +91,19 @@ template <typename T> void Path::map(const SubBuffer<T>& buf_data, Mode mode)
 
 template void
 Path::copy_all<RockLike::State>(const SubBuffer<RockLike::State>& buf_data);
+
 template void
-              Path::copy_new<RockLike::State>(const SubBuffer<RockLike::State>& buf_data);
+Path::copy_new<RockLike::State>(const SubBuffer<RockLike::State>& buf_data);
+
 template void Path::map<RockLike::State>(
     const SubBuffer<RockLike::State>& buf_data, Mode mode);
 
 template void
 Path::copy_all<ShipLike::State>(const SubBuffer<ShipLike::State>& buf_data);
+
 template void
-              Path::copy_new<ShipLike::State>(const SubBuffer<ShipLike::State>& buf_data);
+Path::copy_new<ShipLike::State>(const SubBuffer<ShipLike::State>& buf_data);
+
 template void Path::map<ShipLike::State>(
     const SubBuffer<ShipLike::State>& buf_data, Mode mode);
 }

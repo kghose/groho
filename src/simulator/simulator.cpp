@@ -24,6 +24,7 @@ void Simulator::stop()
 void Simulator::restart_with(const Configuration& config)
 {
     stop();
+
     status   = LOADING;
     scenario = std::shared_ptr<Scenario>(new Scenario(config, scenario));
     if (!scenario->is_valid())
@@ -94,10 +95,6 @@ void cleanup_actions(fpapl_t& actions)
     });
 }
 
-double Simulator::begin_s() const { return scenario->begin_s(); }
-
-double Simulator::end_s() const { return scenario->end_s(); }
-
 void Simulator::run()
 {
     if (!running)
@@ -105,7 +102,6 @@ void Simulator::run()
 
     LOG_S(INFO) << "Starting simulation";
 
-    int   N = 0; // oscillates between 0 and 1
     State state(
         scenario->begin_s() - scenario->step_s(),
         scenario->simulation().system_proprty(),
@@ -121,6 +117,8 @@ void Simulator::run()
 
     status = RUNNING;
     while (running && (state.t_s() < scenario->end_s())) {
+        _done_s = state.t_s();
+
         scenario->orrery()->set_body_positions(state.t_s(), state.system);
 
         update_ships(state, state.t_s(), scenario->step_s());
@@ -128,8 +126,6 @@ void Simulator::run()
         cleanup_actions(scenario->actions);
 
         scenario->simulation().append(state);
-
-        // buffer->append(state);
 
         state.advance_t_s(scenario->step_s());
     }
