@@ -35,24 +35,21 @@ public:
     void run();
     void stop();
 
-    double begin_s() const { return scenario->begin_s(); }
-    double end_s() const { return scenario->end_s(); }
-    double done_s() const { return _done_s; }
-
-    std::shared_ptr<const Scenario> get_scenario() const { return scenario; }
+    std::shared_ptr<const Simulation> get_simulation() const
+    {
+        return simulation;
+    }
 
 public:
     enum Status { WAITING, LOADING, RUNNING };
     std::atomic<Status> status;
 
 private:
-    std::shared_ptr<Scenario> scenario;
+    std::shared_ptr<Simulation> simulation;
 
     std::atomic<bool> running;
 
     std::thread compute_thread;
     // The simulation loop runs in this thread
-
-    double _done_s;
 };
 }

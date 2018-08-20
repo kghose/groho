@@ -21,6 +21,9 @@ It's important functions are:
 #include <memory>
 
 #include "buffer.hpp"
+#include "configuration.hpp"
+#include "flightplanaction.hpp"
+#include "spkorrery.hpp"
 #include "state.hpp"
 
 namespace sim {
@@ -36,17 +39,24 @@ template <typename T> struct Record {
     SubBuffer<typename T::State> history;
 };
 
-struct Simulation : public RocksAndShips<Record> {
+class Simulation {
+public:
+    // We use the old Simulation in order to do any caching that we can
+    Simulation(const Configuration&, std::shared_ptr<Simulation>);
 
-    //
+    State get_state_template(double);
+
+    // Add the current snapshot of simulation to the history
     void append(const State&);
 
     // Add any unsampled data into the history
     bool flush();
 
-    // We'll be writing to this and people will be clamoring to read from this
-    // and we must have order!
-    mutable std::mutex buffer_mutex;
+    // The passed in function has the opportunity to read from the simulation in
+    // a thread-safe manner
+    void read_record(
+        const std::vector<SimulationSegment>&,
+        std::function<void(const RocksAndShips<Record, Record>&)>) const;
 
     // This allows a reader to figure out if the simulation has been restarted
     // since their last read
@@ -56,8 +66,25 @@ struct Simulation : public RocksAndShips<Record> {
     // last read
     std::atomic<size_t> point_count = 0;
 
-    const std::vector<RockLike::Property> system_proprty() const;
-    const std::vector<ShipLike::Property> fleet_property() const;
+    Configuration config;
+
+    // We want to construct a scenario and then have the simulator iterate on it
+    // While it is cheap to load configurations and flightplans, orreries can
+    // be expensive to both load and keep around, so we do a form of caching by
+    // using shared pointers
+    std::shared_ptr<const SpkOrrery> orrery;
+
+    // The data store!
+    RocksAndShips<Record, Record> record;
+
+    // What have we simulated up to
+    std::atomic<double> progress_s;
+
+    fpapl_t actions;
+
+    // We'll be writing to this and people will be clamoring to read from this
+    // and we must have order!
+    mutable std::mutex buffer_mutex;
 };
 
 } // sim

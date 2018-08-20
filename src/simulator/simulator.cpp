@@ -25,10 +25,9 @@ void Simulator::restart_with(const Configuration& config)
 {
     stop();
 
-    status   = LOADING;
-    scenario = std::shared_ptr<Scenario>(new Scenario(config, scenario));
-    if (!scenario->is_valid())
-        return;
+    status = LOADING;
+    simulation
+        = std::shared_ptr<Simulation>(new Simulation(config, simulation));
 
     running = true;
 
@@ -102,39 +101,35 @@ void Simulator::run()
 
     LOG_S(INFO) << "Starting simulation";
 
-    State state(
-        scenario->begin_s() - scenario->step_s(),
-        scenario->simulation().system_proprty(),
-        scenario->simulation().fleet_property());
+    State state = simulation->get_state_template(
+        simulation->config.begin_s - simulation->config.step_s);
 
     // Prime the velocity computation
-    scenario->orrery()->set_body_positions(state.t_s(), state.system);
-    state.advance_t_s(scenario->step_s());
-    scenario->orrery()->set_body_positions(state.t_s(), state.system);
+    simulation->orrery->set_body_positions(state.t_s(), state.system);
+    state.advance_t_s(simulation->config.step_s);
+    simulation->orrery->set_body_positions(state.t_s(), state.system);
 
-    setup_actions(scenario->actions, state);
-    cleanup_actions(scenario->actions);
+    setup_actions(simulation->actions, state);
+    cleanup_actions(simulation->actions);
 
     status = RUNNING;
-    while (running && (state.t_s() < scenario->end_s())) {
-        _done_s = state.t_s();
+    while (running && (state.t_s() < simulation->config.end_s)) {
 
-        scenario->orrery()->set_body_positions(state.t_s(), state.system);
+        simulation->orrery->set_body_positions(state.t_s(), state.system);
 
-        update_ships(state, state.t_s(), scenario->step_s());
-        execute_actions(scenario->actions, state);
-        cleanup_actions(scenario->actions);
+        update_ships(state, state.t_s(), simulation->config.step_s);
+        execute_actions(simulation->actions, state);
+        cleanup_actions(simulation->actions);
 
-        scenario->simulation().append(state);
+        simulation->append(state);
 
-        state.advance_t_s(scenario->step_s());
+        state.advance_t_s(simulation->config.step_s);
     }
-    scenario->simulation().flush();
+    simulation->flush();
     running = false;
     status  = WAITING;
 
-    LOG_S(INFO) << "Saved " << scenario->simulation().point_count
-                << " state vectors";
+    LOG_S(INFO) << "Saved " << simulation->point_count << " state vectors";
     LOG_S(INFO) << "Stopping simulation";
 }
 

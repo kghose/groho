@@ -100,81 +100,61 @@ fpapl_t parse_ship_actions(
     return actions;
 }
 
-Scenario::Scenario(
-    const Configuration& new_config, std::shared_ptr<Scenario> old_scenario)
+std::shared_ptr<const SpkOrrery> load_orrery(
+    const Configuration&             new_config,
+    const Configuration&             old_config,
+    std::shared_ptr<const SpkOrrery> old_orrery)
 {
-    if (old_scenario == nullptr) {
-        _simulation.simulation_serial = 1;
-    } else {
-        _simulation.simulation_serial = old_scenario->simulation_serial() + 1;
-    }
+    std::shared_ptr<const SpkOrrery> new_orrery;
 
-    // Right now, we only do Orrery caching. In more sophisticated
-    // implementations we would compare the configurations and retain components
-    // of the old simulation too ...
-
-    bool reload_orrery = (_orrery == nullptr)
-        || (_config.orrery_fnames != new_config.orrery_fnames)
-        || ((new_config.begin_s < _orrery->begin_s)
-            || (_orrery->end_s < new_config.end_s));
+    bool reload_orrery = (old_orrery == nullptr)
+        || (old_config.orrery_fnames != new_config.orrery_fnames)
+        || ((new_config.begin_s < old_orrery->begin_s)
+            || (old_orrery->end_s < new_config.end_s));
 
     if (reload_orrery) {
-        _orrery = std::shared_ptr<SpkOrrery>(new SpkOrrery(
+        new_orrery = std::shared_ptr<SpkOrrery>(new SpkOrrery(
             new_config.orrery_fnames,
             new_config.begin_s - new_config.step_s,
             new_config.end_s));
     } else {
-        _orrery = old_scenario->orrery();
+        new_orrery = old_orrery;
     }
-
-    for (auto& o : _orrery->get_bodies()) {
-        _simulation.system.push_back({ o, {} });
-    }
-
-    int default_ship_code = -1000;
-    // https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#Spacecraft
-    for (auto& fp_name : new_config.flightplan_fnames) {
-        auto ship = parse_ship_properties(fp_name, --default_ship_code);
-        if (ship) {
-            _simulation.fleet.push_back({ ship->property, {} });
-            actions.splice(
-                actions.end(),
-                parse_ship_actions(
-                    fp_name, _simulation.fleet.size() - 1, ship->property));
-        }
-    }
-    actions.sort(fpa_order);
-
-    LOG_S(INFO) << _simulation.system.size() << " rocks in simulation.";
-    LOG_S(INFO) << _simulation.fleet.size() << " spaceships in simulation.";
-    LOG_S(INFO) << "Loaded " << actions.size() << " actions";
-
-    _config = new_config;
-    _valid  = true;
+    return new_orrery;
 }
 
-// Gives the properties and state of the entire simulation at a given time
-// point. This is expensive because of the interpolation and copying
-void Scenario::get_snapshot_at(double t_s, Objects<SnapShot>&) const { ; }
-
-// The passed in function has the opportunity to copy over the simulation
-void Scenario::read(
-    const std::vector<SimulationSegment>&  ss,
-    std::function<void(const Simulation&)> f) const
+std::optional<ShipWithActions>
+load_ship(std::string fp_name, int ship_code, int ship_idx)
 {
-    std::lock_guard<std::mutex> lock(_simulation.buffer_mutex);
-    f(_simulation);
+    ShipWithActions swa;
+
+    auto ship = parse_ship_properties(fp_name, ship_code);
+    if (ship) {
+        swa.ship    = *ship;
+        swa.actions = parse_ship_actions(fp_name, ship_idx, ship->property);
+        return swa;
+    } else {
+        return {};
+    }
 }
 
-// Possibly very expensive operation. A display element can ask for a
-// simulation object that only consists of parts of the simulation and that
-// has been interpolated
-void Scenario::interpolate(
-    const std::vector<SimulationSegment>&  ss,
-    std::function<void(const Simulation&)> f)
+/*
+const std::vector<RockLike::Property> Scenario::system_list() const
 {
-    std::lock_guard<std::mutex> lock(_simulation.buffer_mutex);
-    f(_simulation);
+    std::vector<RockLike::Property> _p;
+    for (auto const& r : _simulation.system.bodies) {
+        _p.push_back(r.property);
+    }
+    return _p;
 }
 
+const std::vector<ShipLike::Property> Scenario::fleet_list() const
+{
+    std::vector<ShipLike::Property> _p;
+    for (auto const& s : _simulation.fleet.bodies) {
+        _p.push_back(s.property);
+    }
+    return _p;
+}
+*/
 } // namespace sim

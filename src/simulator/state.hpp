@@ -14,7 +14,7 @@ This class collects Orrery, Spaceships and other object state at a given instant
 
 namespace sim {
 
-class State {
+class State : public RocksAndShips<SnapShotV, SnapShot> {
 public:
     State(
         double                                t_s,
@@ -41,22 +41,6 @@ public:
         system.N       = 1 - system.N;
         _t_s[system.N] = _t_s[1 - system.N] + d_t_s;
     }
-
-    // TODO: rename this to "solar_system" and "fleet"
-    // std::vector<SnapShot<RockLike>>& system() { return _rocks[N]; }
-    // std::vector<SnapShot<ShipLike>>& fleet() { return _ships; }
-
-    // constexpr const std::vector<SnapShot<RockLike>>& system() const
-    // {
-    //     return _rocks[N];
-    // }
-    // constexpr const std::vector<SnapShot<ShipLike>>& fleet() const
-    // {
-    //     return _ships;
-    // }
-
-    Collection<RockSnapShotWithVel> system;
-    Collection<SnapShot<ShipLike>>  fleet;
 
 private:
     double _t_s[2];

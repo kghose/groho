@@ -16,25 +16,80 @@ It's important functions are:
 */
 
 #include "simulation.hpp"
+#include "scenario.hpp"
 
 namespace sim {
+
+Simulation::Simulation(
+    const Configuration& new_config, std::shared_ptr<Simulation> old_simulation)
+{
+    if (old_simulation == nullptr) {
+        simulation_serial = 1;
+
+        orrery = load_orrery(new_config, config, orrery);
+
+    } else {
+        simulation_serial = old_simulation->simulation_serial + 1;
+
+        orrery = load_orrery(
+            new_config, old_simulation->config, old_simulation->orrery);
+    }
+
+    for (auto& o : orrery->get_bodies()) {
+        record.system.push_back({ o, {} });
+    }
+
+    config = new_config;
+
+    int ship_code = -1000;
+    // https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#Spacecraft
+    for (auto& fp_name : config.flightplan_fnames) {
+        auto swa = load_ship(fp_name, --ship_code, record.fleet.size());
+        if (swa) {
+            record.fleet.push_back({ swa->ship.property, {} });
+            actions.splice(actions.end(), swa->actions);
+        }
+    }
+    actions.sort(fpa_order);
+
+    LOG_S(INFO) << record.system.size() << " rocks in simulation.";
+    LOG_S(INFO) << record.fleet.size() << " spaceships in simulation.";
+    LOG_S(INFO) << "Loaded " << actions.size() << " actions";
+}
+
+State Simulation::get_state_template(double init_t_s)
+{
+    std::vector<RockLike::Property> rocks;
+    for (auto const& r : record.system.bodies) {
+        rocks.push_back(r.property);
+    }
+
+    std::vector<ShipLike::Property> ships;
+    for (auto const& s : record.fleet.bodies) {
+        ships.push_back(s.property);
+    }
+
+    return { init_t_s, rocks, ships };
+}
 
 void Simulation::append(const State& state)
 {
     std::lock_guard<std::mutex> lock(buffer_mutex);
 
-    for (size_t i = 0; i < system.size(); i++) {
-        if (!system[i].property.naif.is_barycenter()) {
-            if (system[i].history.append(state.system[i].state())) {
+    for (size_t i = 0; i < record.system.size(); i++) {
+        if (!record.system[i].property.naif.is_barycenter()) {
+            if (record.system[i].history.append(state.system[i].state())) {
                 point_count++;
             }
         }
     }
-    for (size_t i = 0; i < state.fleet.size(); i++) {
-        if (fleet[i].history.append(state.fleet[i].state)) {
+    for (size_t i = 0; i < record.fleet.size(); i++) {
+        if (record.fleet[i].history.append(state.fleet[i].state)) {
             point_count++;
         }
     }
+
+    progress_s = state.t_s();
 }
 
 // Add any unsampled data into the history
@@ -43,13 +98,13 @@ bool Simulation::flush()
     std::lock_guard<std::mutex> lock(buffer_mutex);
 
     bool flushed = false;
-    for (auto& r : system.bodies) {
+    for (auto& r : record.system.bodies) {
         if (r.history.flush()) {
             flushed = true;
             point_count++;
         }
     }
-    for (auto& s : fleet.bodies) {
+    for (auto& s : record.fleet.bodies) {
         if (s.history.flush()) {
             flushed = true;
             point_count++;
@@ -59,23 +114,41 @@ bool Simulation::flush()
     return flushed;
 }
 
-const std::vector<RockLike::Property> Simulation::system_proprty() const
+// The passed in function has the opportunity to read from the simulation in
+// a thread-safe manner
+void Simulation::read_record(
+    const std::vector<SimulationSegment>&                     ss,
+    std::function<void(const RocksAndShips<Record, Record>&)> f) const
 {
-    std::vector<RockLike::Property> _p;
-    for (auto const& r : system.bodies) {
-        _p.push_back(r.property);
+    static thread_local bool reentrant = false;
+
+    if (reentrant) {
+        throw std::runtime_error(
+            "Rentrant call to Simulation::read_record will lead to deadlock. "
+            "You have called Simulation::read_record from within a callback "
+            "passed to Simulation::read_record. Fix your code.");
     }
-    return _p;
+
+    std::lock_guard<std::mutex> lock(buffer_mutex);
+    reentrant = true;
+    f(record);
+    reentrant = false;
 }
 
-const std::vector<ShipLike::Property> Simulation::fleet_property() const
-{
-    std::vector<ShipLike::Property> _p;
-    for (auto const& s : fleet.bodies) {
-        _p.push_back(s.property);
-    }
-    return _p;
-}
+// // Gives the properties and state of the entire simulation at a given time
+// // point. This is expensive because of the interpolation and copying
+// void Simulation::get_snapshot_at(
+//     double t_s, RocksAndShips<SnapShot>& snapshot) const
+// {
+//     for (size_t i = 0; i < system.size(); i++) {
+//         if (!system[i].property.naif.is_barycenter()) {
+//             snapshot.system[i].state = system[i].history.at(t_s);
+//         }
+//     }
+//     for (size_t i = 0; i < fleet.size(); i++) {
+//         snapshot.fleet[i].state = fleet[i].history.at(t_s);
+//     }
+// }
 
 // BodyState Buffer::at(size_t i, double t_s) const
 // {

@@ -32,70 +32,17 @@ It's important functions are:
 
 namespace sim {
 
-// This class is a bit "insulated" because we want it's contents modified only
-// in certain principled ways even by components (like the simulator) that we
-// expect to have write access.
-class Scenario {
+std::shared_ptr<const SpkOrrery> load_orrery(
+    const Configuration&,
+    const Configuration&,
+    std::shared_ptr<const SpkOrrery>);
 
-public:
-    // We use the old Scenario in order to do any caching that we can
-    Scenario(const Configuration&, std::shared_ptr<Scenario>);
-
-    // If we have errors on construction, we flag this
-    bool is_valid() { return _valid; }
-
-    // Allows the simulator to save simulation data into history
-    void append(const State& state) { _simulation.append(state); }
-
-    // Gives the properties and state of the entire simulation at a given time
-    // point. This is expensive because of the interpolation and copying
-    void get_snapshot_at(double t_s, Objects<SnapShot>&) const;
-
-    // The passed in function has the opportunity to copy over the simulation
-    void read(
-        const std::vector<SimulationSegment>&,
-        std::function<void(const Simulation&)>) const;
-
-    // Possibly very expensive operation. A display element can ask for a
-    // simulation object that only consists of parts of the simulation and that
-    // has been interpolated
-    void interpolate(
-        const std::vector<SimulationSegment>&,
-        std::function<void(const Simulation&)>);
-
-    // This allows a reader to figure out if the simulation has been restarted
-    // since their last read
-    size_t simulation_serial() const { return _simulation.simulation_serial; }
-
-    Simulation&       simulation() { return _simulation; }
-    const Simulation& simulation() const { return _simulation; }
-
-    // This allows a reader to figure out if the data has changed since their
-    // last read
-    size_t point_count() const { return _simulation.point_count; }
-
-    constexpr const Configuration& config() const { return _config; }
-
-    std::shared_ptr<const SpkOrrery> orrery() const { return _orrery; }
-
-    constexpr double begin_s() const { return _config.begin_s; }
-    constexpr double end_s() const { return _config.end_s; }
-    constexpr double step_s() const { return _config.step_s; }
-
-    fpapl_t actions;
-
-private:
-    // We want to construct a scenario and then have the simulator iterate on it
-    // While it is cheap to load configurations and flightplans, orreries can
-    // be expensive to both load and keep around, so we do a form of caching by
-    // using shared pointers
-    std::shared_ptr<const SpkOrrery> _orrery;
-
-    Simulation _simulation;
-
-    Configuration _config;
-
-    // TODO: more fine grained errors?
-    bool _valid;
+struct ShipWithActions {
+    SnapShot<ShipLike> ship;
+    fpapl_t            actions;
 };
+
+std::optional<ShipWithActions>
+load_ship(std::string fp_name, int ship_code, int ship_idx);
+
 }

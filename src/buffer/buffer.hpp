@@ -29,20 +29,6 @@ should see if this is fast enough for us.
 
 namespace sim {
 
-// template <typename T> struct data_t {
-//     const std::vector<BodyState>&   sampled;
-//     const std::optional<BodyState>& unsampled;
-
-//     size_t required_size()
-//     {
-//         size_t size = sampled.size();
-//         if (unsampled) {
-//             size += 1;
-//         }
-//         return size;
-//     }
-// };
-
 template <typename T> struct SubBuffer {
 
     SubBuffer() { sampler = FractalDownsampler(1.001, 1e6); }

@@ -69,19 +69,19 @@ private:
 class ScaleModelGroup {
 public:
     ScaleModelGroup() = default;
-    ScaleModelGroup(const Objects<SnapShot>& snap_shot)
+    ScaleModelGroup(const RocksAndShips<SnapShot>& snap_shot)
     {
-        for (const auto& b : snap_shot.system) {
+        for (const auto& b : snap_shot.system.bodies) {
             models.push_back({ b.property.color,
                                b.property.r,
                                !b.property.naif.is_barycenter() });
         }
     }
 
-    void set_data(const Objects<SnapShot>& snapshot)
+    void set_data(const RocksAndShips<SnapShot>& snapshot)
     {
         for (size_t i = 0; i < models.size(); i++) {
-            models[i].set_pos(v2v(snapshot.system[i].state.pos));
+            models[i].set_pos(v2v(snapshot.system.bodies[i].state.pos));
         }
     }
 

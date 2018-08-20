@@ -76,7 +76,7 @@ void GrohoApp::tickEvent()
         // In the future we may want to keep a pair of scenarios, or a rolling
         // buffer
         scenario = new_scenario;
-        scenario->read(
+        scenario->read_simulation(
             {}, std::bind(&GrohoApp::load_from, this, std::placeholders::_1));
         redraw_required = true;
     } else {
@@ -84,7 +84,7 @@ void GrohoApp::tickEvent()
             return;
         } else {
             if (scenario->point_count() > point_count) {
-                scenario->read(
+                scenario->read_simulation(
                     {},
                     std::bind(
                         &GrohoApp::update_from, this, std::placeholders::_1));
@@ -116,7 +116,7 @@ void GrohoApp::load_from(const Simulation& simulation)
 {
     trajectories.load_from(simulation);
     // camera.set_body_tree(orbit_view.get_body_tree());
-    // camera.set_time_range(simulator.begin_s(), simulator.end_s());
+    camera.set_time_range(simulator.begin_s(), simulator.end_s());
     // orbit_view.set_body_state_at_time_cursor(camera, buffer);
     // orbit_view.set_camera_center_pos_from_body_state(camera);
 }
