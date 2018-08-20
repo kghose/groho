@@ -4,6 +4,7 @@ Developer notes
 <!-- TOC -->
 
 - [Notes on C++](#notes-on-c)
+    - [Templated class specialization where template argument is a template](#templated-class-specialization-where-template-argument-is-a-template)
     - [Explicit template instantiation](#explicit-template-instantiation)
     - [Template template arguments](#template-template-arguments)
     - [Order matters](#order-matters)
@@ -38,6 +39,7 @@ Developer notes
     - [Passing member function pointers to callbacks](#passing-member-function-pointers-to-callbacks)
     - [The use of "f" in code using OpenGL](#the-use-of-f-in-code-using-opengl)
 - [Some notes on implementation](#some-notes-on-implementation)
+    - [Organization](#organization)
     - [Loading planetary kernels](#loading-planetary-kernels)
     - [The LOD problem](#the-lod-problem)
         - [Option: Store all the data](#option-store-all-the-data)
@@ -84,6 +86,32 @@ Developer notes
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## Templated class specialization where template argument is a template
+
+(From a [question](https://stackoverflow.com/questions/4189945/templated-class-specialization-where-template-argument-is-a-template) and [answer](https://stackoverflow.com/a/4200397) on stack overflow)
+
+```
+template <typename T> struct SnapShot {
+    typename T::Property property;
+    typename T::State    state;
+};
+
+template <typename T> struct BaseCollection {
+    std::vector<T>                       bodies;
+    ...
+};
+
+template <typename T> struct Collection : public BaseCollection<T> {
+};
+
+template <>
+template <typename T>
+struct Collection<SnapShot<T>> : public BaseCollection<SnapShot<T>> {
+    ...
+};
+```
+
 
 ## Explicit template instantiation
 
@@ -701,6 +729,15 @@ the underlying functions operate of floats, passing a number like 2.0
 
 
 # Some notes on implementation
+
+## Organization
+
+Simulation contains Scenario, History and State
+
+Scenario loads and contains orrery, flightplans and configuration (file I/O)
+
+
+
 
 ## Loading planetary kernels
 
