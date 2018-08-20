@@ -4,6 +4,7 @@ Developer notes
 <!-- TOC -->
 
 - [Notes on C++](#notes-on-c)
+    - [std::map [] and const : gcc vs clang](#stdmap--and-const--gcc-vs-clang)
     - [Templated class specialization where template argument is a template](#templated-class-specialization-where-template-argument-is-a-template)
     - [Explicit template instantiation](#explicit-template-instantiation)
     - [Template template arguments](#template-template-arguments)
@@ -86,6 +87,16 @@ Developer notes
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## std::map [] and const : gcc vs clang
+
+(Thanks to http://www.cplusplus.com/forum/beginner/160820/)
+
+The `[]` operator on `std::map/unordered_map` will perform an insert if the key 
+does not exist. So one can not use this in a function where the map is supposed
+to be a constant. Except, clang happily compiles such code where as gcc complains.
+The replacement is to use `at`. 
+
 
 ## Templated class specialization where template argument is a template
 

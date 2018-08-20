@@ -101,12 +101,12 @@ template <typename T> struct BaseCollection {
     size_t size() const { return bodies.size(); }
 
     T& operator[](size_t idx) { return bodies[idx]; }
-    T& operator[](const NAIFbody& id) { return bodies[lookup[id]]; }
+    T& operator[](const NAIFbody& id) { return bodies[lookup.at(id)]; }
 
     const T& operator[](size_t idx) const { return bodies[idx]; }
     const T& operator[](const NAIFbody& id) const
     {
-        return bodies[std::as_const(lookup[id])];
+        return bodies[lookup.at(id)];
     }
 
     virtual void push_back(const T& body)
