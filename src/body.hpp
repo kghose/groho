@@ -116,17 +116,16 @@ template <typename T> struct BaseCollection {
 template <typename T> struct Collection : public BaseCollection<T> {
 };
 
-// template <>
 template <typename T>
 struct Collection<SnapShotV<T>> : public BaseCollection<SnapShotV<T>> {
+
+    using BaseCollection<SnapShotV<T>>::bodies;
+    using BaseCollection<SnapShotV<T>>::lookup;
 
     int N = 0;
 
     void push_back(const typename T::Property& property)
     {
-        // using BaseCollection<SnapShotV<T>>::bodies;
-        // using BaseCollection<SnapShotV<T>>::lookup;
-
         bodies.push_back({ N, property });
         lookup[property.naif] = bodies.size() - 1;
     }
