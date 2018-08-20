@@ -104,7 +104,10 @@ template <typename T> struct BaseCollection {
     T& operator[](const NAIFbody& id) { return bodies[lookup[id]]; }
 
     const T& operator[](size_t idx) const { return bodies[idx]; }
-    const T& operator[](const NAIFbody& id) const { return bodies[lookup[id]]; }
+    const T& operator[](const NAIFbody& id) const
+    {
+        return bodies[std::as_const(lookup[id])];
+    }
 
     virtual void push_back(const T& body)
     {
