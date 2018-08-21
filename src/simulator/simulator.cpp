@@ -109,8 +109,8 @@ void Simulator::run()
     state.advance_t_s(simulation->config.step_s);
     simulation->orrery->set_body_positions(state.t_s(), state.system);
 
-    setup_actions(simulation->actions, state);
-    cleanup_actions(simulation->actions);
+    setup_actions(simulation->actions_data.get().object, state);
+    cleanup_actions(simulation->actions_data.get().object);
 
     status = RUNNING;
     while (running && (state.t_s() < simulation->config.end_s)) {
@@ -118,8 +118,8 @@ void Simulator::run()
         simulation->orrery->set_body_positions(state.t_s(), state.system);
 
         update_ships(state, state.t_s(), simulation->config.step_s);
-        execute_actions(simulation->actions, state);
-        cleanup_actions(simulation->actions);
+        execute_actions(simulation->actions_data.get().object, state);
+        cleanup_actions(simulation->actions_data.get().object);
 
         simulation->append(state);
 

@@ -23,6 +23,7 @@ It's important functions are:
 #include "buffer.hpp"
 #include "configuration.hpp"
 #include "flightplanaction.hpp"
+#include "lockabledata.hpp"
 #include "spkorrery.hpp"
 #include "state.hpp"
 
@@ -44,6 +45,8 @@ public:
     // We use the old Simulation in order to do any caching that we can
     Simulation(const Configuration&, std::shared_ptr<Simulation>);
 
+    // This conveniently generates a State object for the simulator with time
+    // initialized to whatever value we pass in
     State get_state_template(double);
 
     // Add the current snapshot of simulation to the history
@@ -75,16 +78,13 @@ public:
     std::shared_ptr<const SpkOrrery> orrery;
 
     // The data store!
-    RocksAndShips<Record, Record> record;
+    LockableData<RocksAndShips<Record, Record>> trajectory_data;
+
+    // Flightplan actions
+    LockableData<fpapl_t> actions_data;
 
     // What have we simulated up to
     std::atomic<double> progress_s;
-
-    fpapl_t actions;
-
-    // We'll be writing to this and people will be clamoring to read from this
-    // and we must have order!
-    mutable std::mutex buffer_mutex;
 };
 
 } // sim

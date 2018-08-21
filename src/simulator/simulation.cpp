@@ -35,11 +35,15 @@ Simulation::Simulation(
             new_config, old_simulation->config, old_simulation->orrery);
     }
 
+    auto& record = trajectory_data.get().object;
+
     for (auto& o : orrery->get_bodies()) {
         record.system.push_back({ o, {} });
     }
 
     config = new_config;
+
+    auto& actions = actions_data.get().object;
 
     int ship_code = -1000;
     // https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#Spacecraft
@@ -57,8 +61,12 @@ Simulation::Simulation(
     LOG_S(INFO) << "Loaded " << actions.size() << " actions";
 }
 
+// This conveniently generates a State object for the simulator with time
+// initialized to whatever value we pass in
 State Simulation::get_state_template(double init_t_s)
 {
+    auto& record = trajectory_data.get().object;
+
     std::vector<RockLike::Property> rocks;
     for (auto const& r : record.system.bodies) {
         rocks.push_back(r.property);
@@ -72,9 +80,10 @@ State Simulation::get_state_template(double init_t_s)
     return { init_t_s, rocks, ships };
 }
 
+// Add the current snapshot of simulation to the history
 void Simulation::append(const State& state)
 {
-    std::lock_guard<std::mutex> lock(buffer_mutex);
+    auto& record = trajectory_data.get().object;
 
     for (size_t i = 0; i < record.system.size(); i++) {
         if (!record.system[i].property.naif.is_barycenter()) {
@@ -95,7 +104,7 @@ void Simulation::append(const State& state)
 // Add any unsampled data into the history
 bool Simulation::flush()
 {
-    std::lock_guard<std::mutex> lock(buffer_mutex);
+    auto& record = trajectory_data.get().object;
 
     bool flushed = false;
     for (auto& r : record.system.bodies) {
@@ -129,7 +138,8 @@ void Simulation::read_record(
             "passed to Simulation::read_record. Fix your code.");
     }
 
-    std::lock_guard<std::mutex> lock(buffer_mutex);
+    const auto& record = trajectory_data.get().object;
+
     reentrant = true;
     f(record);
     reentrant = false;
