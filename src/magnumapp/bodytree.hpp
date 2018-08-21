@@ -12,7 +12,9 @@ Organizes all the bodies (as ids) in a tree that reflects how we can select them
 #include <unordered_set>
 #include <vector>
 
+#include "body.hpp"
 #include "naifbody.hpp"
+#include "simulation.hpp"
 
 namespace sim {
 
@@ -33,8 +35,17 @@ struct BodyTree {
         body_id = 0;
     }
 
-    BodyTree(const std::unordered_set<NAIFbody>& bodies_present)
+    // BodyTree(const std::unordered_set<NAIFbody>& bodies_present)
+    BodyTree(const RocksAndShips<Record, Record>& record)
     {
+        std::unordered_set<NAIFbody> bodies_present;
+        for (const auto& r : record.system.bodies) {
+            bodies_present.insert(r.property.naif);
+        }
+        for (const auto& s : record.fleet.bodies) {
+            bodies_present.insert(s.property.naif);
+        }
+
         std::vector<NAIFbody> ships;
         for (auto b : bodies_present) {
             if (b.is_ship()) {

@@ -69,7 +69,7 @@ private:
 class ScaleModelGroup {
 public:
     ScaleModelGroup() = default;
-    ScaleModelGroup(const RocksAndShips<SnapShot>& snap_shot)
+    ScaleModelGroup(const RocksAndShips<SnapShot, SnapShot>& snap_shot)
     {
         for (const auto& b : snap_shot.system.bodies) {
             models.push_back({ b.property.color,
@@ -78,7 +78,7 @@ public:
         }
     }
 
-    void set_data(const RocksAndShips<SnapShot>& snapshot)
+    void set_data(const RocksAndShips<SnapShot, SnapShot>& snapshot)
     {
         for (size_t i = 0; i < models.size(); i++) {
             models[i].set_pos(v2v(snapshot.system.bodies[i].state.pos));

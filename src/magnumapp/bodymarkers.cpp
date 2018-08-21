@@ -13,7 +13,7 @@ namespace sim {
 
 // BodyMarkers::BodyMarkers(const std::vector<Vector>& pos) { set_data(pos); }
 
-void BodyMarkers::set_data(const RocksAndShips<SnapShot>& snapshot)
+void BodyMarkers::set_data(const RocksAndShips<SnapShot, SnapShot>& snapshot)
 {
     size_t size = snapshot.system.size() + snapshot.fleet.size();
 

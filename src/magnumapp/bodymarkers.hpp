@@ -21,7 +21,7 @@ using namespace Magnum;
 
 class BodyMarkers {
 public:
-    void set_data(const RocksAndShips<SnapShot>&);
+    void set_data(const RocksAndShips<SnapShot, SnapShot>&);
     void draw(const Camera& camera);
 
 private:

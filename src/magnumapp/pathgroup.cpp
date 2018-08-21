@@ -10,10 +10,10 @@ Convenient container for managing a group of trajectories for display
 
 namespace sim {
 
-void PathGroup::load_from(const Simulation& simulation)
+void PathGroup::load_from(const RocksAndShips<Record, Record>& record)
 {
     paths.clear();
-    for (const auto& b : simulation.system.bodies) {
+    for (const auto& b : record.system.bodies) {
         if (b.property.naif.is_barycenter())
             continue;
 
@@ -23,7 +23,7 @@ void PathGroup::load_from(const Simulation& simulation)
         paths.push_back(p);
     }
 
-    for (const auto& b : simulation.fleet.bodies) {
+    for (const auto& b : record.fleet.bodies) {
         auto p = std::shared_ptr<Path>(new Path);
         p->set_color(style::trajectory_color);
         p->copy_all(b.history);
@@ -31,16 +31,16 @@ void PathGroup::load_from(const Simulation& simulation)
     }
 }
 
-void PathGroup::update_from(const Simulation& simulation)
+void PathGroup::update_from(const RocksAndShips<Record, Record>& record)
 {
     size_t j = 0;
-    for (const auto& b : simulation.system.bodies) {
+    for (const auto& b : record.system.bodies) {
         if (b.property.naif.is_barycenter())
             continue;
         paths[j]->copy_new(b.history);
         j++;
     }
-    for (const auto& b : simulation.fleet.bodies) {
+    for (const auto& b : record.fleet.bodies) {
         paths[j]->copy_new(b.history);
         j++;
     }

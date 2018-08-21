@@ -23,8 +23,8 @@ using namespace Magnum;
 class PathGroup {
 
 public:
-    void load_from(const Simulation&);
-    void update_from(const Simulation&);
+    void load_from(const RocksAndShips<Record, Record>&);
+    void update_from(const RocksAndShips<Record, Record>&);
     void draw(const Matrix4& projection_matrix);
 
 private:

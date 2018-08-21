@@ -40,10 +40,10 @@ private:
 
     // This (re)loads all the data, erasing any previous information and
     // recreating any visualizations and control objects
-    void load_from(const Simulation&);
+    void load_from(const RocksAndShips<Record, Record>&);
 
     // This updates only the added new bits of the simulation
-    void update_from(const Simulation&);
+    void update_from(const RocksAndShips<Record, Record>&);
 
     void mousePressEvent(MouseEvent& event) override;
     void mouseReleaseEvent(MouseEvent& event) override;
@@ -56,9 +56,14 @@ private:
 private:
     const Simulator& simulator;
 
+    // We carry a pointer such that we can still operate on it even if the
+    // simulator has moved on to a new simulation. This also keeps an avenue for
+    // future expansion where we can overlay multiple simulations.
     // TODO: make this a rolling buffer for overlaying multiple sims
-    std::shared_ptr<const Scenario> scenario;
+    std::shared_ptr<const Simulation> simulation;
 
+    // We keep track of the last point count so we can determine if we need to
+    // update our display
     size_t point_count = 0;
 
     struct Show {
@@ -69,7 +74,7 @@ private:
     } show;
 
     // The object state at some point in time. This is used to set the markers
-    RocksAndShips<SnapShot> snapshot;
+    RocksAndShips<SnapShot, SnapShot> snapshot;
 
     // Display components
     Camera          camera;

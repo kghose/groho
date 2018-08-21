@@ -70,21 +70,24 @@ void GrohoApp::tickEvent()
 {
     bool redraw_required = false;
 
-    std::shared_ptr<const Scenario> new_scenario = simulator.get_scenario();
+    std::shared_ptr<const Simulation> new_simulation
+        = simulator.get_simulation();
 
-    if (scenario != new_scenario) {
+    if (simulation != new_simulation) {
         // In the future we may want to keep a pair of scenarios, or a rolling
         // buffer
-        scenario = new_scenario;
-        scenario->read_simulation(
+        simulation = new_simulation;
+        camera.set_time_range(
+            simulation->config.begin_s, simulation->config.end_s);
+        simulation->read_record(
             {}, std::bind(&GrohoApp::load_from, this, std::placeholders::_1));
         redraw_required = true;
     } else {
-        if (scenario == nullptr) {
+        if (simulation == nullptr) {
             return;
         } else {
-            if (scenario->point_count() > point_count) {
-                scenario->read_simulation(
+            if (simulation->point_count > point_count) {
+                simulation->read_record(
                     {},
                     std::bind(
                         &GrohoApp::update_from, this, std::placeholders::_1));
@@ -112,18 +115,18 @@ void GrohoApp::tickEvent()
     }
 }
 
-void GrohoApp::load_from(const Simulation& simulation)
+void GrohoApp::load_from(const RocksAndShips<Record, Record>& record)
 {
-    trajectories.load_from(simulation);
+    trajectories.load_from(record);
+    camera.set_body_tree(record);
     // camera.set_body_tree(orbit_view.get_body_tree());
-    camera.set_time_range(simulator.begin_s(), simulator.end_s());
     // orbit_view.set_body_state_at_time_cursor(camera, buffer);
     // orbit_view.set_camera_center_pos_from_body_state(camera);
 }
 
-void GrohoApp::update_from(const Simulation& simulation)
+void GrohoApp::update_from(const RocksAndShips<Record, Record>& record)
 {
-    trajectories.update_from(simulation);
+    trajectories.update_from(record);
 }
 
 void GrohoApp::mousePressEvent(MouseEvent& event)
