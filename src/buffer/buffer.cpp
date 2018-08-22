@@ -18,14 +18,14 @@ T interpolate(const T& state0, const T& state1, double t_s)
     T state   = state0;
     state.pos = state0.pos
         + (state1.pos - state0.pos)
-            * ((t_s - state0.t) / (state1.t - state0.t));
+            * ((t_s - state0.t_s) / (state1.t_s - state0.t_s));
     return state;
 }
 
 // Don't do this on an empty vector
 template <typename T> T SubBuffer<T>::at(double t_s) const
 {
-    double t0 = data[0].t, t1 = data[data.size() - 1].t;
+    double t0 = data[0].t_s, t1 = data[data.size() - 1].t_s;
     if (t_s < t0) {
         return data[0];
     }
@@ -44,12 +44,12 @@ template <typename T> T SubBuffer<T>::at(double t_s) const
         if (idx2 == idx0 + 1) {
             break;
         }
-        if (t_s < data[idx1].t) {
+        if (t_s < data[idx1].t_s) {
             idx2 = idx1;
             idx1 = (idx0 + idx2) / 2;
             continue;
         }
-        if (t_s >= data[idx1].t) {
+        if (t_s >= data[idx1].t_s) {
             idx0 = idx1;
             idx1 = (idx0 + idx2) / 2;
             continue;
@@ -58,6 +58,9 @@ template <typename T> T SubBuffer<T>::at(double t_s) const
 
     return interpolate(data[idx0], data[idx2], t_s);
 }
+
+template struct SubBuffer<RockLike::State>;
+template struct SubBuffer<ShipLike::State>;
 
 // Simulation::Simulation(
 //     std::vector<Rock::Property>& _rocks, std::vector<Ship::Property>& _ships)

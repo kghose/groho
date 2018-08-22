@@ -40,6 +40,9 @@ template <typename T> struct Record {
     SubBuffer<typename T::State> history;
 };
 
+RocksAndShips<SnapShot, SnapShot>
+get_snapshot(double, const RocksAndShips<Record, Record>&);
+
 class Simulation {
 public:
     // We use the old Simulation in order to do any caching that we can
@@ -54,12 +57,6 @@ public:
 
     // Add any unsampled data into the history
     bool flush();
-
-    // The passed in function has the opportunity to read from the simulation in
-    // a thread-safe manner
-    void read_record(
-        const std::vector<SimulationSegment>&,
-        std::function<void(const RocksAndShips<Record, Record>&)>) const;
 
     // This allows a reader to figure out if the simulation has been restarted
     // since their last read

@@ -20,6 +20,28 @@ It's important functions are:
 
 namespace sim {
 
+// TODO: Pass in pre-initialized snapshot to save compute?
+RocksAndShips<SnapShot, SnapShot>
+get_snapshot(double t_s, const RocksAndShips<Record, Record>& record)
+{
+    RocksAndShips<SnapShot, SnapShot> snapshot;
+
+    for (size_t i = 0; i < record.system.size(); i++) {
+        RockLike::State state;
+        if (!record.system[i].property.naif.is_barycenter()) {
+            state = record.system[i].history.at(t_s);
+        }
+        snapshot.system.push_back({ record.system[i].property, state });
+    }
+
+    for (size_t i = 0; i < record.fleet.size(); i++) {
+        snapshot.fleet.push_back(
+            { record.fleet[i].property, record.fleet[i].history.at(t_s) });
+    }
+
+    return snapshot;
+}
+
 Simulation::Simulation(
     const Configuration& new_config, std::shared_ptr<Simulation> old_simulation)
 {
@@ -121,28 +143,6 @@ bool Simulation::flush()
     }
 
     return flushed;
-}
-
-// The passed in function has the opportunity to read from the simulation in
-// a thread-safe manner
-void Simulation::read_record(
-    const std::vector<SimulationSegment>&                     ss,
-    std::function<void(const RocksAndShips<Record, Record>&)> f) const
-{
-    static thread_local bool reentrant = false;
-
-    if (reentrant) {
-        throw std::runtime_error(
-            "Rentrant call to Simulation::read_record will lead to deadlock. "
-            "You have called Simulation::read_record from within a callback "
-            "passed to Simulation::read_record. Fix your code.");
-    }
-
-    const auto [record, rlock] = trajectory_data.borrow();
-
-    reentrant = true;
-    f(record);
-    reentrant = false;
 }
 
 // // Gives the properties and state of the entire simulation at a given time

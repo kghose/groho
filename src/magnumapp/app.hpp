@@ -40,10 +40,10 @@ private:
 
     // This (re)loads all the data, erasing any previous information and
     // recreating any visualizations and control objects
-    void load_from(const RocksAndShips<Record, Record>&);
+    void load_new();
 
     // This updates only the added new bits of the simulation
-    void update_from(const RocksAndShips<Record, Record>&);
+    void update_existing();
 
     void mousePressEvent(MouseEvent& event) override;
     void mouseReleaseEvent(MouseEvent& event) override;

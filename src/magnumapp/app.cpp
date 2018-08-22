@@ -77,20 +77,14 @@ void GrohoApp::tickEvent()
         // In the future we may want to keep a pair of scenarios, or a rolling
         // buffer
         simulation = new_simulation;
-        camera.set_time_range(
-            simulation->config.begin_s, simulation->config.end_s);
-        simulation->read_record(
-            {}, std::bind(&GrohoApp::load_from, this, std::placeholders::_1));
+        load_new();
         redraw_required = true;
     } else {
         if (simulation == nullptr) {
             return;
         } else {
             if (simulation->point_count > point_count) {
-                simulation->read_record(
-                    {},
-                    std::bind(
-                        &GrohoApp::update_from, this, std::placeholders::_1));
+                update_existing();
                 redraw_required = true;
             }
         }
@@ -115,17 +109,29 @@ void GrohoApp::tickEvent()
     }
 }
 
-void GrohoApp::load_from(const RocksAndShips<Record, Record>& record)
+void GrohoApp::load_new()
 {
+    camera.set_time_range(simulation->config.begin_s, simulation->config.end_s);
+
+    auto [record, rlock] = simulation->trajectory_data.borrow();
+
     trajectories.load_from(record);
     camera.set_body_tree(record);
+    snapshot = get_snapshot(simulation->progress_s, record);
+
     // orbit_view.set_body_state_at_time_cursor(camera, buffer);
     // orbit_view.set_camera_center_pos_from_body_state(camera);
+
+    point_count = simulation->point_count;
 }
 
-void GrohoApp::update_from(const RocksAndShips<Record, Record>& record)
+void GrohoApp::update_existing()
 {
+    auto [record, rlock] = simulation->trajectory_data.borrow();
+
     trajectories.update_from(record);
+
+    point_count = simulation->point_count;
 }
 
 void GrohoApp::mousePressEvent(MouseEvent& event)
