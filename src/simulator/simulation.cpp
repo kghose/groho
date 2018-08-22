@@ -35,7 +35,7 @@ Simulation::Simulation(
             new_config, old_simulation->config, old_simulation->orrery);
     }
 
-    auto& record = trajectory_data.get().object;
+    auto [record, rlock] = trajectory_data.borrow();
 
     for (auto& o : orrery->get_bodies()) {
         record.system.push_back({ o, {} });
@@ -43,7 +43,7 @@ Simulation::Simulation(
 
     config = new_config;
 
-    auto& actions = actions_data.get().object;
+    auto [actions, alock] = action_list.borrow();
 
     int ship_code = -1000;
     // https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#Spacecraft
@@ -65,7 +65,7 @@ Simulation::Simulation(
 // initialized to whatever value we pass in
 State Simulation::get_state_template(double init_t_s)
 {
-    auto& record = trajectory_data.get().object;
+    auto [record, rlock] = trajectory_data.borrow();
 
     std::vector<RockLike::Property> rocks;
     for (auto const& r : record.system.bodies) {
@@ -83,7 +83,7 @@ State Simulation::get_state_template(double init_t_s)
 // Add the current snapshot of simulation to the history
 void Simulation::append(const State& state)
 {
-    auto& record = trajectory_data.get().object;
+    auto [record, rlock] = trajectory_data.borrow();
 
     for (size_t i = 0; i < record.system.size(); i++) {
         if (!record.system[i].property.naif.is_barycenter()) {
@@ -104,7 +104,7 @@ void Simulation::append(const State& state)
 // Add any unsampled data into the history
 bool Simulation::flush()
 {
-    auto& record = trajectory_data.get().object;
+    auto [record, rlock] = trajectory_data.borrow();
 
     bool flushed = false;
     for (auto& r : record.system.bodies) {
@@ -138,7 +138,7 @@ void Simulation::read_record(
             "passed to Simulation::read_record. Fix your code.");
     }
 
-    const auto& record = trajectory_data.get().object;
+    const auto [record, rlock] = trajectory_data.borrow();
 
     reentrant = true;
     f(record);

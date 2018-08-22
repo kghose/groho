@@ -119,7 +119,6 @@ void GrohoApp::load_from(const RocksAndShips<Record, Record>& record)
 {
     trajectories.load_from(record);
     camera.set_body_tree(record);
-    // camera.set_body_tree(orbit_view.get_body_tree());
     // orbit_view.set_body_state_at_time_cursor(camera, buffer);
     // orbit_view.set_camera_center_pos_from_body_state(camera);
 }

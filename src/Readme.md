@@ -4,6 +4,8 @@ Developer notes
 <!-- TOC -->
 
 - [Notes on C++](#notes-on-c)
+    - [std::pair and std::lock_guard](#stdpair-and-stdlock_guard)
+    - [structured bindings](#structured-bindings)
     - [std::map [] and const : gcc vs clang](#stdmap--and-const--gcc-vs-clang)
     - [Templated class specialization where template argument is a template](#templated-class-specialization-where-template-argument-is-a-template)
     - [Explicit template instantiation](#explicit-template-instantiation)
@@ -87,6 +89,111 @@ Developer notes
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## std::pair and std::lock_guard
+
+While working on 
+
+The following will compile and execute fine:
+```
+#include <iostream>
+#include <mutex>
+#include <utility>
+#include <vector>
+
+template <typename T> class Locked {
+public:
+    Locked(T& _object, std::mutex& _mutex)
+        : object(_object)
+        , lock(_mutex)
+    {
+    }
+
+    T&                          object;
+    std::lock_guard<std::mutex> lock;
+};
+
+template <typename T> class Lockable {
+public:
+    Locked<T>       borrow() { return Locked(object, mutex); }
+    Locked<const T> borrow() const { return Locked(object, mutex); }
+
+private:
+    T                  object;
+    mutable std::mutex mutex;
+};
+
+int main()
+{
+    Lockable<std::vector<int>> lv;
+    
+    auto [vec, lock] = lv.borrow();
+
+    std::cout << vec.size() << std::endl;
+    return 0;
+}
+```
+
+
+While this subsequent code, will throw up a horrendous, hard to parse error.
+
+```
+#include <iostream>
+#include <mutex>
+#include <utility>
+#include <vector>
+
+template <typename T> class Lockable {
+public:
+    std::pair<T&, std::lock_guard<std::mutex>>       borrow() { return std::pair(object, std::lock_guard<std::mutex>(mutex)); }
+    std::pair<const T&, std::lock_guard<std::mutex>> borrow() const { return std::pair(object, std::lock_guard<std::mutex>(mutex)); }
+
+private:
+    T                  object;
+    mutable std::mutex mutex;
+};
+
+int main()
+{
+    Lockable<std::vector<int>> lv;
+    
+    auto [vec, lock] = lv.borrow();
+
+    std::cout << vec.size() << std::endl;
+    return 0;
+}
+```
+I think it has to to with std::lock_guard and move semantics but I fail to
+understand why, then, other version works. In the working version, in my mind,
+the `Locked` class is bascially same as `std:pair`.
+
+
+## structured bindings
+
+C++17 introduced structured bindings which can be used to extract components of
+a pair or tuple very neatly:
+
+```
+auto [a, b] = std::pair("hi", 23);
+for( auto [key, value] : my_map ) { ; }
+```
+
+What I find especially cool is that such bindings "just work" with structs and
+classes, extracting out, in order, all the public data members of a class.
+
+```
+struct A {
+    int a;
+    float b;
+};
+
+A my_A{10, 12.5};
+
+auto [a, b] = my_A;
+```
+
+More details are [here](https://blog.tartanllama.xyz/structured-bindings/)
+
 
 ## std::map [] and const : gcc vs clang
 

@@ -1,6 +1,6 @@
 /*
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
-Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+Copyright (c) 2017, 2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 Entry point function for command line program
 */

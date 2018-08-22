@@ -23,7 +23,7 @@ It's important functions are:
 #include "buffer.hpp"
 #include "configuration.hpp"
 #include "flightplanaction.hpp"
-#include "lockabledata.hpp"
+#include "lockable.hpp"
 #include "spkorrery.hpp"
 #include "state.hpp"
 
@@ -78,10 +78,10 @@ public:
     std::shared_ptr<const SpkOrrery> orrery;
 
     // The data store!
-    LockableData<RocksAndShips<Record, Record>> trajectory_data;
+    Lockable<RocksAndShips<Record, Record>> trajectory_data;
 
     // Flightplan actions
-    LockableData<fpapl_t> actions_data;
+    Lockable<fpapl_t> action_list;
 
     // What have we simulated up to
     std::atomic<double> progress_s;
