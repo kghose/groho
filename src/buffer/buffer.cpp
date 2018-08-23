@@ -26,10 +26,10 @@ T interpolate(const T& state0, const T& state1, double t_s)
 template <typename T> T SubBuffer<T>::at(double t_s) const
 {
     double t0 = data[0].t_s, t1 = data[data.size() - 1].t_s;
-    if (t_s < t0) {
+    if (t_s <= t0) {
         return data[0];
     }
-    if (t_s > t1) {
+    if (t_s >= t1) {
         return data[data.size() - 1];
     }
 
