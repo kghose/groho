@@ -39,6 +39,8 @@ get_snapshot(double t_s, const RocksAndShips<Record, Record>& record)
             { record.fleet[i].property, record.fleet[i].history.at(t_s) });
     }
 
+    snapshot.t_s = t_s;
+
     return snapshot;
 }
 
@@ -120,7 +122,7 @@ void Simulation::append(const State& state)
         }
     }
 
-    progress_s = state.t_s();
+    record.t_s = state.t_s();
 }
 
 // Add any unsampled data into the history

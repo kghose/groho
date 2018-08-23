@@ -5,6 +5,8 @@ Copyright (c) 2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 Renders a text label
 */
 
+#include <Magnum/GL/DefaultFramebuffer.h>
+
 #include "textlabel.hpp"
 
 namespace sim {
@@ -61,24 +63,27 @@ Label2D& Label2D::set_pos(const Vector2& p)
 
 void Label2D::draw(const Camera& camera)
 {
-    Vector2d    normalized_pos;
-    const View& view = camera.get_view();
+    Vector2d normalized_pos;
+    // const View& view = camera.get_view();
+    auto width  = GL::defaultFramebuffer.viewport().sizeX();
+    auto height = GL::defaultFramebuffer.viewport().sizeY();
+
     switch (anchor) {
     case BOTTOM_LEFT:
-        normalized_pos = { 2 * _pos.x() / view.width - 1.0,
-                           2 * _pos.y() / view.height - 1.0 };
+        normalized_pos
+            = { 2 * _pos.x() / width - 1.0, 2 * _pos.y() / height - 1.0 };
         break;
     case BOTTOM_RIGHT:
-        normalized_pos = { 1.0 - 2 * _pos.x() / view.width,
-                           2 * _pos.y() / view.height - 1.0 };
+        normalized_pos
+            = { 1.0 - 2 * _pos.x() / width, 2 * _pos.y() / height - 1.0 };
         break;
     case TOP_LEFT:
-        normalized_pos = { 2 * _pos.x() / view.width - 1.0,
-                           1.0 - 2 * _pos.y() / view.height };
+        normalized_pos
+            = { 2 * _pos.x() / width - 1.0, 1.0 - 2 * _pos.y() / height };
         break;
     case TOP_RIGHT:
-        normalized_pos = { 1.0 - 2 * _pos.x() / view.width,
-                           1.0 - 2 * _pos.y() / view.height };
+        normalized_pos
+            = { 1.0 - 2 * _pos.x() / width, 1.0 - 2 * _pos.y() / height };
         break;
 
     default:
@@ -88,7 +93,7 @@ void Label2D::draw(const Camera& camera)
     _shader
         .setTransformationProjectionMatrix(
             Matrix3::translation((Vector2)normalized_pos)
-            * Matrix3::scaling({ _size / view.width, _size / view.height }))
+            * Matrix3::scaling({ _size / width, _size / height }))
         .setColor(_color);
     _text->mesh().draw(_shader);
 }

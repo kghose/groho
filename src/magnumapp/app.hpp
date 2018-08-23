@@ -76,8 +76,11 @@ private:
     // The object state at some point in time. This is used to set the markers
     RocksAndShips<SnapShot, SnapShot> snapshot;
 
+    // View control
+    Camera   camera;
+    BodyTree body_tree;
+
     // Display components
-    Camera          camera;
     Overlay         overlay;
     PathGroup       trajectories;
     ScaleModelGroup scale_models;

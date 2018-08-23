@@ -141,6 +141,10 @@ template <template <typename> class Trock, template <typename> class Tship>
 struct RocksAndShips {
     Collection<Trock<RockLike>> system;
     Collection<Tship<ShipLike>> fleet;
+
+    // This comes in useful. For snapshots this is the snapshot time and for
+    // records this is the last sample time
+    double t_s;
 };
 
 /*

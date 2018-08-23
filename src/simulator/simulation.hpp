@@ -79,9 +79,6 @@ public:
 
     // Flightplan actions
     Lockable<fpapl_t> action_list;
-
-    // What have we simulated up to
-    std::atomic<double> progress_s;
 };
 
 } // sim

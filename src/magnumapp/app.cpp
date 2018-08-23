@@ -33,6 +33,22 @@ void GrohoApp::drawEvent()
 {
     GL::defaultFramebuffer.clear(GL::FramebufferClear::Color);
 
+    auto center_body = body_tree.get_body();
+    if (center_body.code == 0) {
+        camera.set_center({ 0, 0, 0 });
+    } else {
+        if (center_body.is_ship()) {
+            camera.set_center(v2v(snapshot.fleet[center_body].state.pos));
+        } else {
+            camera.set_center(v2v(snapshot.system[center_body].state.pos));
+        }
+    }
+
+    overlay.view_text = center_body.name + ": "
+        + std::to_string(s2jd(snapshot.t_s)) + " JD: ("
+        + std::to_string((float)camera.az) + ", "
+        + std::to_string((float)camera.el) + ")";
+
     if (show.trajectories) {
         trajectories.draw(camera.get_matrix());
     }
@@ -111,13 +127,14 @@ void GrohoApp::tickEvent()
 
 void GrohoApp::load_new()
 {
-    camera.set_time_range(simulation->config.begin_s, simulation->config.end_s);
+    // camera.set_time_range(simulation->config.begin_s,
+    // simulation->config.end_s);
 
     auto [record, rlock] = simulation->trajectory_data.borrow();
 
     trajectories.load_from(record);
-    camera.set_body_tree(record);
-    snapshot = get_snapshot(simulation->progress_s, record);
+    body_tree = BodyTree(record);
+    snapshot  = get_snapshot(record.t_s, record);
 
     // orbit_view.set_body_state_at_time_cursor(camera, buffer);
     // orbit_view.set_camera_center_pos_from_body_state(camera);
@@ -130,6 +147,7 @@ void GrohoApp::update_existing()
     auto [record, rlock] = simulation->trajectory_data.borrow();
 
     trajectories.update_from(record);
+    snapshot = get_snapshot(record.t_s, record);
 
     point_count = simulation->point_count;
 }
@@ -174,9 +192,9 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
     if (event.modifiers() == InputEvent::Modifier::Alt) {
         // Scroll in time
         if (event.offset().y() > 0) {
-            camera.step_forward_in_time();
+            // camera.step_forward_in_time();
         } else {
-            camera.step_backward_in_time();
+            // camera.step_backward_in_time();
         }
         // orbit_view.set_body_state_at_time_cursor(camera, buffer);
         // orbit_view.set_camera_center_pos_from_body_state(camera);
@@ -218,16 +236,16 @@ void GrohoApp::keyReleaseEvent(KeyEvent& event)
 {
     switch (event.key()) {
     case KeyEvent::Key::Left:
-        camera.prev_body();
+        body_tree.change_item(BodyTree::PREVBODY);
         break;
     case KeyEvent::Key::Right:
-        camera.next_body();
+        body_tree.change_item(BodyTree::NEXTBODY);
         break;
     case KeyEvent::Key::Up:
-        camera.prev_category();
+        body_tree.change_cat(BodyTree::PREVCAT);
         break;
     case KeyEvent::Key::Down:
-        camera.next_category();
+        body_tree.change_cat(BodyTree::NEXTCAT);
         break;
     default:
         break;

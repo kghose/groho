@@ -54,7 +54,7 @@ void Overlay::draw(const Camera& camera)
     status_label->set_text(status_string);
     status_label->draw(camera);
 
-    view_label->set_text("View: " + camera.to_string());
+    view_label->set_text("View: " + view_text);
     view_label->draw(camera);
 }
 }

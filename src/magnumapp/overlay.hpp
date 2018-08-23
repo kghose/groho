@@ -20,7 +20,7 @@ public:
 public:
     Simulator::Status status;
 
-    std::string camera_center;
+    std::string view_text;
     double      jd;
 
 private:
