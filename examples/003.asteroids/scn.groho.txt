@@ -1,5 +1,5 @@
 ; This scenario file sets up an orrery containing all 9 planets and
-; their moons
+; their moons and a set of 343 asteroids. It looks cool.
 
 name  = Earth to Mars
 begin = 2420000.5 ; This is in Julian Date
