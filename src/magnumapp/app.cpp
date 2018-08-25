@@ -44,6 +44,10 @@ void GrohoApp::drawEvent()
         }
     }
 
+    body_markers.set_data(snapshot);
+    scale_models.set_data(snapshot);
+
+    overlay.status    = simulator.status;
     overlay.view_text = center_body.name + ": "
         + std::to_string(s2jd(snapshot.t_s)) + " JD: ("
         + std::to_string((float)camera.az) + ", "
@@ -62,12 +66,8 @@ void GrohoApp::drawEvent()
     }
 
     if (show.overlay) {
-        overlay.status = simulator.status;
-        // overlay.jd     = s2jd(simulator.t_s());
         overlay.draw(camera);
     }
-
-    // orbit_view.draw(camera);
 
     swapBuffers();
 }
@@ -106,20 +106,6 @@ void GrohoApp::tickEvent()
         }
     }
 
-    // if (simulation_has_been_restarted()) {
-    //     // scenario = simulator.get_scenario();
-    //     camera.set_body_tree(orbit_view.get_body_tree());
-    //     camera.set_time_range(simulator.begin_s(), simulator.end_s());
-    //     orbit_view.set_body_state_at_time_cursor(camera, buffer);
-    //     orbit_view.set_camera_center_pos_from_body_state(camera);
-    //     redraw_required = true;
-    // }
-
-    // if (orbit_view.buffer_has_more_points_now(buffer)) {
-    //     orbit_view.update_simulation_from_buffer(buffer);
-    //     redraw_required = true;
-    // }
-
     if (redraw_required) {
         redraw();
     }
@@ -127,17 +113,16 @@ void GrohoApp::tickEvent()
 
 void GrohoApp::load_new()
 {
-    // camera.set_time_range(simulation->config.begin_s,
-    // simulation->config.end_s);
+    time_cursor.set_range(simulation->config.begin_s, simulation->config.end_s);
 
     auto [record, rlock] = simulation->trajectory_data.borrow();
 
     trajectories.load_from(record);
-    body_tree = BodyTree(record);
-    snapshot  = get_snapshot(record.t_s, record);
+    body_tree    = BodyTree(record);
+    snapshot     = get_snapshot(time_cursor.current_s, record);
+    scale_models = ScaleModelGroup(snapshot);
 
-    // orbit_view.set_body_state_at_time_cursor(camera, buffer);
-    // orbit_view.set_camera_center_pos_from_body_state(camera);
+    time_cursor.sim_progress_s = record.t_s;
 
     point_count = simulation->point_count;
 }
@@ -145,9 +130,8 @@ void GrohoApp::load_new()
 void GrohoApp::update_existing()
 {
     auto [record, rlock] = simulation->trajectory_data.borrow();
-
     trajectories.update_from(record);
-    snapshot = get_snapshot(record.t_s, record);
+    time_cursor.sim_progress_s = record.t_s;
 
     point_count = simulation->point_count;
 }
@@ -192,12 +176,15 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
     if (event.modifiers() == InputEvent::Modifier::Alt) {
         // Scroll in time
         if (event.offset().y() > 0) {
-            // camera.step_forward_in_time();
+            time_cursor.forward();
         } else {
-            // camera.step_backward_in_time();
+            time_cursor.backward();
         }
-        // orbit_view.set_body_state_at_time_cursor(camera, buffer);
-        // orbit_view.set_camera_center_pos_from_body_state(camera);
+
+        auto [record, rlock] = simulation->trajectory_data.borrow();
+
+        snapshot = get_snapshot(time_cursor.current_s, record);
+
     } else {
         // Zoom in and out
         if (event.offset().y() > 0)

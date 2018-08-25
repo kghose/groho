@@ -22,6 +22,7 @@ Magnum App to handle windowing and display
 #include "pathgroup.hpp"
 #include "scalemodelgroup.hpp"
 #include "simulator.hpp"
+#include "timecursor.hpp"
 
 namespace sim {
 
@@ -77,8 +78,9 @@ private:
     RocksAndShips<SnapShot, SnapShot> snapshot;
 
     // View control
-    Camera   camera;
-    BodyTree body_tree;
+    Camera     camera;
+    BodyTree   body_tree;
+    TimeCursor time_cursor;
 
     // Display components
     Overlay         overlay;

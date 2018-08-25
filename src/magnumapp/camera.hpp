@@ -23,48 +23,6 @@ namespace sim {
 using namespace Magnum;
 using namespace Math::Literals;
 
-struct TimeCursor {
-    double current_s = 0;
-    double delta_s   = 86400; // how far we advance when we scroll in time
-    double sim_begin_s;
-    double sim_end_s;
-
-    void set_range(double _t0, double _t1)
-    {
-        sim_begin_s = _t0;
-        sim_end_s   = _t1;
-        current_s   = std::min(sim_end_s, std::max(sim_begin_s, current_s));
-    }
-
-    void forward() { current_s = std::min(sim_end_s, current_s + delta_s); }
-    void backward() { current_s = std::max(sim_begin_s, current_s - delta_s); }
-};
-
-struct SpaceCursor {
-    float scale = 1.0;
-    Deg   az    = 0.0_degf;
-    Deg   el    = 0.0_degf;
-
-    NAIFbody center_id = { 0, "SSB" };
-    Vector3  center    = { 0, 0, 0 };
-};
-
-struct View {
-    Deg   fov   = 35.0_degf;
-    float front = 0.01f;
-    float back  = 100.0f;
-
-    int   width, height;
-    float aspect_ratio = 2.0;
-
-    void set_viewport(int x, int y)
-    {
-        width        = x;
-        height       = y;
-        aspect_ratio = (float)x / (float)y;
-    }
-};
-
 struct Camera {
 
     void set_viewport(int width, int height)
