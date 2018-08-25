@@ -20,8 +20,8 @@ public:
     {
     }
 
-    T&                          object;
-    std::lock_guard<std::mutex> lock;
+    T&                           object;
+    std::scoped_lock<std::mutex> lock;
 };
 
 template <typename T> class Lockable {
