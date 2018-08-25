@@ -54,6 +54,8 @@ private:
     void keyPressEvent(KeyEvent& event) override;
     void keyReleaseEvent(KeyEvent& event) override;
 
+    void synchronize_snapshot();
+
 private:
     const Simulator& simulator;
 

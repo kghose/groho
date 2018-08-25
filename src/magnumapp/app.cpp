@@ -67,6 +67,7 @@ void GrohoApp::drawEvent()
 
     if (show.overlay) {
         overlay.draw(camera);
+        time_cursor.draw();
     }
 
     swapBuffers();
@@ -141,6 +142,12 @@ void GrohoApp::mousePressEvent(MouseEvent& event)
     if (event.button() != MouseEvent::Button::Left)
         return;
 
+    if (time_cursor.on_click(event.position())) {
+        event.setAccepted();
+        synchronize_snapshot();
+        return;
+    }
+
     _previousMousePosition = event.position();
     event.setAccepted();
 }
@@ -180,11 +187,7 @@ void GrohoApp::mouseScrollEvent(MouseScrollEvent& event)
         } else {
             time_cursor.backward();
         }
-
-        auto [record, rlock] = simulation->trajectory_data.borrow();
-
-        snapshot = get_snapshot(time_cursor.current_s, record);
-
+        synchronize_snapshot();
     } else {
         // Zoom in and out
         if (event.offset().y() > 0)
@@ -238,7 +241,12 @@ void GrohoApp::keyReleaseEvent(KeyEvent& event)
         break;
     }
 
-    // orbit_view.set_camera_center_pos_from_body_state(camera);
     redraw();
+}
+
+void GrohoApp::synchronize_snapshot()
+{
+    auto [record, rlock] = simulation->trajectory_data.borrow();
+    snapshot             = get_snapshot(time_cursor.current_s, record);
 }
 }
