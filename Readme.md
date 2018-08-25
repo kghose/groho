@@ -110,8 +110,12 @@ at one location is detected at other locations/ships.
 
 
 **This code requires a C++17 compiler.** In case you need it, there is a 
-[Dockerfile](.circleci/dockerfile) that installs a recent GCC.
-`std::optional` is one of the C++17 features used.
+[Dockerfile](.circleci/dockerfile) that installs a recent GCC. I used the 
+following creature comforts from C++17
+- [`std::optional`](https://en.cppreference.com/w/cpp/utility/optional)
+- [structured bindings](http://wg21.link/p0217r3)
+- [typename in a template template parameter](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4051.html)
+- [`[[maybe_unused]]` attribute](https://en.cppreference.com/w/cpp/language/attributes/maybe_unused)
 
 ## Dependencies
 
