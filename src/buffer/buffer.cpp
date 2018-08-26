@@ -22,9 +22,13 @@ T interpolate(const T& state0, const T& state1, double t_s)
     return state;
 }
 
-// Don't do this on an empty vector
+// This is a slow function that does linear interpolation ...
 template <typename T> T SubBuffer<T>::at(double t_s) const
 {
+    if (data.size() == 0) {
+        return *_last_state;
+    }
+
     double t0 = data[0].t_s, t1 = data[data.size() - 1].t_s;
     if (t_s <= t0) {
         return data[0];
@@ -61,11 +65,4 @@ template <typename T> T SubBuffer<T>::at(double t_s) const
 
 template struct SubBuffer<RockLike::State>;
 template struct SubBuffer<ShipLike::State>;
-
-// Simulation::Simulation(
-//     std::vector<Rock::Property>& _rocks, std::vector<Ship::Property>& _ships)
-// {
-//     rocks.resize(_rocks.size());
-//     ships.resize(_ships.size());
-// }
 }

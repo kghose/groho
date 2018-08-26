@@ -73,38 +73,4 @@ template <typename T> struct SubBuffer {
     // We use this when we flush the buffer or pass it to readers
     std::optional<T> _last_state;
 };
-
-// struct SimulationSegment {
-//     NAIFbody naif;
-//     double   start_ts;
-//     double   end_ts;
-// };
-
-// template <typename T> struct Record {
-//     typename T::Property         property;
-//     SubBuffer<typename T::State> history;
-// };
-
-// struct Simulation : public Objects<Record> {
-
-//     //
-//     void append(const State&);
-
-//     // Add any unsampled data into the history
-//     bool flush();
-
-//     // We'll be writing to this and people will be clamoring to read from
-//     this
-//     // and we must have order!
-//     mutable std::mutex buffer_mutex;
-
-//     // This allows a reader to figure out if the simulation has been
-//     restarted
-//     // since their last read
-//     std::atomic<size_t> simulation_serial = 0;
-
-//     // This allows a reader to figure out if the data has changed since their
-//     // last read
-//     std::atomic<size_t> point_count = 0;
-// };
 }
