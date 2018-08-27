@@ -45,22 +45,6 @@ https://naif.jpl.nasa.gov/pub/naif/pds/data/co-s_j_e_v-spice-6-v1.0/cosp_1000/da
 
 namespace sim {
 
-/*
-Data is arranged to match BodyConstant
-
-struct BodyConstant {
-    BodyType    body_type;
-    int         code; // SPK code for body (made up ones for spaceships)
-    std::string name; // Human readable name for body
-
-    float GM; // GM value for body
-    float r;  // Radius of body (for collision tests)
-
-    uint32_t color; // For display purposes
-};
-
-*/
-
 struct OrreryBodyData {
     int         naif_code;
     std::string body_name;

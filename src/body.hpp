@@ -1,11 +1,12 @@
 /*
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
-Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+Copyright (c) 2017, 2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 We have two types of objects in the simulation - Orrery bodies
 (planets/moons/asteroid) and spaceships. They behave quite differently and
-are described as separate classes of objects with some elements in common
+are described as separate classes of objects with some elements in common.
 
+We make extensive use of templates to reduce the amount of boiler plate we need.
 */
 
 #pragma once
@@ -146,80 +147,6 @@ struct RocksAndShips {
     // records this is the last sample time
     double t_s;
 };
-
-/*
-// TODO: deprecate
-// This allows us to do lazy computation of rock velocities.
-// Time will tell if we were too clever here
-struct RockSnapShotWithVel {
-
-    RockSnapShotWithVel(int& N, RockLike::Property _property)
-        : _N(N)
-    {
-        property = _property;
-    }
-
-    RockLike::Property property;
-    RockLike::State    _state[2];
-
-    double& t_s() { return _state[_N].t_s; }
-    double  t_s() const { return _state[_N].t_s; }
-
-    Vector&       pos() { return _state[_N].pos; }
-    const Vector& pos() const { return _state[_N].pos; }
-    Vector        vel() const
-    {
-        return (_state[_N].pos - _state[1 - _N].pos)
-            / (_state[_N].t_s - _state[1 - _N].t_s);
-    }
-
-    constexpr const RockLike::State& state() const { return _state[_N]; }
-
-    int& _N;
-};
-
-template <typename T> struct BaseCollection {
-    std::vector<T>                       bodies;
-    std::unordered_map<NAIFbody, size_t> lookup;
-
-    constexpr size_t size() const { return bodies.size(); }
-
-    constexpr T& operator[](size_t idx) { return bodies[idx]; }
-    constexpr T& operator[](const NAIFbody& id) { return bodies[lookup[id]]; }
-
-    constexpr const T& operator[](size_t idx) const { return bodies[idx]; }
-
-    virtual void push_back(const T& body)
-    {
-        bodies.push_back(body);
-        lookup[body.property.naif] = bodies.size() - 1;
-    }
-};
-
-template <typename T> struct Collection : public BaseCollection<T> {
-};
-
-template <>
-struct Collection<RockSnapShotWithVel>
-    : public BaseCollection<RockSnapShotWithVel> {
-
-    int N = 0;
-
-    void push_back(const RockLike::Property& property)
-    {
-        bodies.push_back({ N, property });
-        lookup[property.naif] = bodies.size() - 1;
-    }
-
-private:
-    using BaseCollection<RockSnapShotWithVel>::push_back;
-};
-
-template <template <typename> class T> struct RocksAndShips {
-    Collection<T<RockLike>> system;
-    Collection<T<ShipLike>> fleet;
-};
-*/
 
 template <typename T>
 inline std::optional<size_t>

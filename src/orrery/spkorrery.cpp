@@ -2,7 +2,8 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-Subclasses Orrery and incorporates code to read JPL/NASA SPK/DAF files.
+Orrery. Glues together code to read JPL/NASA SPK/DAF files and compute body
+positions based on that data.
 One or more SPK files can be loaded into memory and body position computed
 at given times.
 */

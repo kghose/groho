@@ -2,7 +2,7 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-Organizes all the bodies (as ids) in a tree that reflects how we can select them
+Organizes all the bodies in a tree that reflects how we can select them
 */
 
 #pragma once

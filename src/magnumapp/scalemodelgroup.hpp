@@ -33,7 +33,6 @@ public:
         , visible(_vis)
     {
         const Trade::MeshData3D circle = Primitives::circle3DWireframe(15);
-        // const Trade::MeshData3D circle = Primitives::circle3DSolid(15);
 
         vertexBuffer.setData(circle.positions(0), GL::BufferUsage::StaticDraw);
 

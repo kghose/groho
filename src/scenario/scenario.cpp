@@ -2,7 +2,8 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-This defines some functions for the simulation scenario data structure
+Code to parse scneario files and flight plans and load in the Orrery and Ship
+definitions.
 */
 #include <iostream>
 #include <set>
@@ -138,23 +139,4 @@ load_ship(std::string fp_name, int ship_code, int ship_idx)
     }
 }
 
-/*
-const std::vector<RockLike::Property> Scenario::system_list() const
-{
-    std::vector<RockLike::Property> _p;
-    for (auto const& r : _simulation.system.bodies) {
-        _p.push_back(r.property);
-    }
-    return _p;
-}
-
-const std::vector<ShipLike::Property> Scenario::fleet_list() const
-{
-    std::vector<ShipLike::Property> _p;
-    for (auto const& s : _simulation.fleet.bodies) {
-        _p.push_back(s.property);
-    }
-    return _p;
-}
-*/
 } // namespace sim

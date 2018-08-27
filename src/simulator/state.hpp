@@ -2,7 +2,9 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-This class collects Orrery, Spaceships and other object state at a given instant
+This class collects Orrery, Spaceships and other object state at a given
+simulation step. It also allows us to extract velocities for any orrery bodies
+if we need by managing a double state for orrery bodies.
 */
 
 #pragma once
