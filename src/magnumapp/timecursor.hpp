@@ -43,6 +43,8 @@ public:
             .addVertexBuffer(_cursor_buffer, 0, Shaders::Flat2D::Position{});
     }
 
+    void set_color(const Color4 _color) { _shader.setColor(_color); }
+
     void set_range(double _t0, double _t1)
     {
         sim_begin_s = _t0;

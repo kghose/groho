@@ -18,14 +18,14 @@ void PathGroup::load_from(const RocksAndShips<Record, Record>& record)
             continue;
 
         auto p = std::shared_ptr<Path>(new Path);
-        p->set_color(style::trajectory_color);
+        p->set_color(color);
         p->copy_all(b.history);
         paths.push_back(p);
     }
 
     for (const auto& b : record.fleet.bodies) {
         auto p = std::shared_ptr<Path>(new Path);
-        p->set_color(style::trajectory_color);
+        p->set_color(color);
         p->copy_all(b.history);
         paths.push_back(p);
     }

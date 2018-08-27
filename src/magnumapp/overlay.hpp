@@ -15,13 +15,13 @@ namespace sim {
 class Overlay {
 public:
     Overlay();
+    void set_color(const Color3 _color);
     void draw(const Camera& camera);
 
 public:
     Simulator::Status status;
 
     std::string view_text;
-    double      jd;
 
 private:
     Font font;

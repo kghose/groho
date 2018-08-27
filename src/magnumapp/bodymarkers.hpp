@@ -21,6 +21,7 @@ using namespace Magnum;
 
 class BodyMarkers {
 public:
+    void set_color(const Color3 _color) { color = _color; }
     void set_data(const RocksAndShips<SnapShot, SnapShot>&);
     void draw(const Camera& camera);
 

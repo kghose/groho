@@ -6,6 +6,7 @@ Magnum App to handle windowing and display
 */
 
 #include "app.hpp"
+#include "style.hpp"
 
 namespace sim {
 
@@ -19,11 +20,20 @@ GrohoApp::GrohoApp(const Arguments& arguments, const sim::Simulator& simulator)
                              GLConfiguration{}.setSampleCount(4) }
     , simulator(simulator)
 {
+    Style config_style;
+    config_style.trajectory_color = { 0.2, 0.2, 0.2 };
+
     Font::enable_blending();
 
     camera.set_viewport(
         GL::defaultFramebuffer.viewport().sizeX(),
         GL::defaultFramebuffer.viewport().sizeY());
+
+    GL::Renderer::setClearColor(config_style.canvas_color);
+    time_cursor.set_color(config_style.overlay_color);
+    overlay.set_color(config_style.overlay_color);
+    body_markers.set_color(config_style.overlay_color);
+    trajectories.set_color(config_style.trajectory_color);
 
     setMinimalLoopPeriod(5);
     // setSwapInterval(1);

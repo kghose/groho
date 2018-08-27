@@ -45,7 +45,7 @@ void BodyMarkers::set_data(const RocksAndShips<SnapShot, SnapShot>& snapshot)
 
     CORRADE_INTERNAL_ASSERT_OUTPUT(buffer.unmap());
 
-    shader.setColor(style::body_marker_color);
+    shader.setColor(color);
     mesh.setPrimitive(GL::MeshPrimitive::Points)
         .setCount(size)
         .addVertexBuffer(buffer, 0, Shaders::Flat3D::Position{});

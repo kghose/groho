@@ -29,6 +29,12 @@ Overlay::Overlay()
         new Billboard(font, Text::Alignment::LineLeft));
 }
 
+void Overlay::set_color(const Color3 _color)
+{
+    status_label->set_color(_color);
+    view_label->set_color(_color);
+}
+
 void Overlay::draw(const Camera& camera)
 {
     std::string status_string;
@@ -43,7 +49,7 @@ void Overlay::draw(const Camera& camera)
         break;
 
     case Simulator::RUNNING:
-        status_string = "Running: " + std::to_string(jd);
+        status_string = "Running";
         break;
 
     default:
