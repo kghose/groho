@@ -15,8 +15,7 @@ Entry point function for command line program
 #include "app.hpp"
 #endif
 
-#include "buffer.hpp"
-#include "scenario.hpp"
+#include "configuration.hpp"
 #include "simulator.hpp"
 
 #define LOGURU_IMPLEMENTATION 1

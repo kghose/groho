@@ -29,9 +29,9 @@ should see if this is fast enough for us.
 
 namespace sim {
 
-template <typename T> struct SubBuffer {
+template <typename T> struct SampledHistory {
 
-    SubBuffer() { sampler = FractalDownsampler(1.001, 1e6); }
+    SampledHistory() { sampler = FractalDownsampler(1.001, 1e6); }
 
     bool append(const T& state)
     {

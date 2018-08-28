@@ -7,7 +7,7 @@ State vector is assumed to be sorted in time ascending manner (as would be
 produced by a simulation)
 */
 
-#include "buffer.hpp"
+#include "sampledhistory.hpp"
 
 namespace sim {
 
@@ -23,7 +23,7 @@ T interpolate(const T& state0, const T& state1, double t_s)
 }
 
 // This is a slow function that does linear interpolation ...
-template <typename T> T SubBuffer<T>::at(double t_s) const
+template <typename T> T SampledHistory<T>::at(double t_s) const
 {
     if (data.size() == 0) {
         return *_last_state;
@@ -63,6 +63,6 @@ template <typename T> T SubBuffer<T>::at(double t_s) const
     return interpolate(data[idx0], data[idx2], t_s);
 }
 
-template struct SubBuffer<RockLike::State>;
-template struct SubBuffer<ShipLike::State>;
+template struct SampledHistory<RockLike::State>;
+template struct SampledHistory<ShipLike::State>;
 }

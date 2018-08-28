@@ -13,13 +13,9 @@ definitions.
 #include <string>
 #include <vector>
 
-#include "body.hpp"
-#include "buffer.hpp"
 #include "configuration.hpp"
 #include "flightplanaction.hpp"
-#include "simulation.hpp"
 #include "spkorrery.hpp"
-#include "state.hpp"
 
 namespace sim {
 

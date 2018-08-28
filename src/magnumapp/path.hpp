@@ -13,7 +13,7 @@ Convenient container for managing data to display for a given object
 #include <Magnum/GL/Mesh.h>
 #include <Magnum/Shaders/Flat.h>
 
-#include "buffer.hpp"
+#include "sampledhistory.hpp"
 
 namespace sim {
 
@@ -26,25 +26,20 @@ public:
     void set_color(Color3 color) { _color = color; }
 
     // This copies over all the data
-    template <typename T> void copy_all(const SubBuffer<T>&);
+    template <typename T> void copy_all(const SampledHistory<T>&);
 
     // This copies just the new elements
-    template <typename T> void copy_new(const SubBuffer<T>&);
+    template <typename T> void copy_new(const SampledHistory<T>&);
 
-    void draw(Shaders::Flat3D& shader)
-    {
-        // shader.setColor(_color);
-        // using namespace Math::Literals;
-        // shader.setColor(0xff0000_rgbf);
-        _mesh.draw(shader.setColor(_color));
-    }
+    void draw(Shaders::Flat3D& shader) { _mesh.draw(shader.setColor(_color)); }
 
 private:
     void reallocate(size_t new_size);
 
     enum Mode { ALL, JUST_NEW };
 
-    template <typename T> void map(const SubBuffer<T>& buf_data, Mode mode);
+    template <typename T>
+    void map(const SampledHistory<T>& buf_data, Mode mode);
 
     GL::Buffer _buffer;
     size_t     allocated_size = 0;

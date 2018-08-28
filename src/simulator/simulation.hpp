@@ -20,10 +20,10 @@ It's important functions are:
 #include <functional>
 #include <memory>
 
-#include "buffer.hpp"
 #include "configuration.hpp"
 #include "flightplanaction.hpp"
 #include "lockable.hpp"
+#include "sampledhistory.hpp"
 #include "spkorrery.hpp"
 #include "state.hpp"
 
@@ -36,8 +36,8 @@ struct SimulationSegment {
 };
 
 template <typename T> struct Record {
-    typename T::Property         property;
-    SubBuffer<typename T::State> history;
+    typename T::Property              property;
+    SampledHistory<typename T::State> history;
 };
 
 RocksAndShips<SnapShot, SnapShot>

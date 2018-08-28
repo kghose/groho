@@ -11,7 +11,7 @@ Convenient container for managing data to display for a given object
 namespace sim {
 
 // This copies over all the data
-template <typename T> void Path::copy_all(const SubBuffer<T>& buf_data)
+template <typename T> void Path::copy_all(const SampledHistory<T>& buf_data)
 {
     if (buf_data.effective_size() > 0) {
         map(buf_data, ALL);
@@ -22,7 +22,7 @@ template <typename T> void Path::copy_all(const SubBuffer<T>& buf_data)
 }
 
 // This copies just the new elements
-template <typename T> void Path::copy_new(const SubBuffer<T>& buf_data)
+template <typename T> void Path::copy_new(const SampledHistory<T>& buf_data)
 {
     if (buf_data.effective_size() > 0) {
         size_t new_size = buf_data.effective_size();
@@ -45,7 +45,8 @@ void Path::reallocate(size_t new_size)
         GL::BufferUsage::StaticDraw);
 }
 
-template <typename T> void Path::map(const SubBuffer<T>& buf_data, Mode mode)
+template <typename T>
+void Path::map(const SampledHistory<T>& buf_data, Mode mode)
 {
     size_t new_size = buf_data.effective_size();
 
@@ -89,21 +90,21 @@ template <typename T> void Path::map(const SubBuffer<T>& buf_data, Mode mode)
     CORRADE_INTERNAL_ASSERT_OUTPUT(_buffer.unmap());
 }
 
-template void
-Path::copy_all<RockLike::State>(const SubBuffer<RockLike::State>& buf_data);
+template void Path::copy_all<RockLike::State>(
+    const SampledHistory<RockLike::State>& buf_data);
 
-template void
-Path::copy_new<RockLike::State>(const SubBuffer<RockLike::State>& buf_data);
+template void Path::copy_new<RockLike::State>(
+    const SampledHistory<RockLike::State>& buf_data);
 
 template void Path::map<RockLike::State>(
-    const SubBuffer<RockLike::State>& buf_data, Mode mode);
+    const SampledHistory<RockLike::State>& buf_data, Mode mode);
 
-template void
-Path::copy_all<ShipLike::State>(const SubBuffer<ShipLike::State>& buf_data);
+template void Path::copy_all<ShipLike::State>(
+    const SampledHistory<ShipLike::State>& buf_data);
 
-template void
-Path::copy_new<ShipLike::State>(const SubBuffer<ShipLike::State>& buf_data);
+template void Path::copy_new<ShipLike::State>(
+    const SampledHistory<ShipLike::State>& buf_data);
 
 template void Path::map<ShipLike::State>(
-    const SubBuffer<ShipLike::State>& buf_data, Mode mode);
+    const SampledHistory<ShipLike::State>& buf_data, Mode mode);
 }

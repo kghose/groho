@@ -44,8 +44,8 @@ find_package( Corrade REQUIRED
 file(GLOB SOURCES 
     "src/*.cpp" 
     "src/actions/*.cpp" 
-    "src/buffer/*.cpp" 
     "src/orrery/*.cpp"
+    "src/sampling/*.cpp" 
     "src/scenario/*.cpp"
     "src/simulator/*.cpp"
     #"src/magnumapp/*.cpp"
@@ -63,8 +63,8 @@ add_executable( groho ${SOURCE_FILES} ${RESOURCES} )
 include_directories(
     "src/"
     "src/actions" 
-    "src/buffer" 
     "src/orrery"
+    "src/sampling" 
     "src/scenario"
     "src/simulator"
     "src/magnumapp"

@@ -12,9 +12,8 @@ This file declares the simulator code
 #include <memory>
 #include <thread>
 
-//#include "action.hpp"
-#include "buffer.hpp"
 #include "scenario.hpp"
+#include "simulation.hpp"
 #include "spkorrery.hpp"
 #include "state.hpp"
 

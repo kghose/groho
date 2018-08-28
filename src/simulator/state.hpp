@@ -12,7 +12,7 @@ if we need by managing a double state for orrery bodies.
 #include <array>
 #include <vector>
 
-#include "buffer.hpp"
+#include "sampledhistory.hpp"
 
 namespace sim {
 
