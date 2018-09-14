@@ -2,9 +2,7 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-Binary search into a vector of state data based on time and interpolate state.
-State vector is assumed to be sorted in time ascending manner (as would be
-produced by a simulation)
+Samples and stores simulation data using the fractal downsampler.
 */
 
 #include "sampledhistory.hpp"
@@ -22,19 +20,22 @@ T interpolate(const T& state0, const T& state1, double t_s)
     return state;
 }
 
-// This is a slow function that does linear interpolation ...
-template <typename T> T SampledHistory<T>::at(double t_s) const
+// TODO: How can we handle enums in a template class
+// Return smallest index greater than t_s
+// Implemented as binary search
+template <typename T>
+std::pair<size_t, IndexSide> SampledHistory<T>::index(double t_s) const
 {
     if (data.size() == 0) {
-        return *_last_state;
+        return { 0, IndexSide::INVALID };
     }
 
     double t0 = data[0].t_s, t1 = data[data.size() - 1].t_s;
     if (t_s <= t0) {
-        return data[0];
+        return { 0, IndexSide::LEFT };
     }
     if (t_s >= t1) {
-        return data[data.size() - 1];
+        return { data.size() - 1, IndexSide::RIGHT };
     }
 
     // Not as elegant as the recursive formulation, but it gets the job done
@@ -59,8 +60,29 @@ template <typename T> T SampledHistory<T>::at(double t_s) const
             continue;
         }
     }
+    return { idx2, IndexSide::MIDDLE };
+}
 
-    return interpolate(data[idx0], data[idx2], t_s);
+// This is a slow function that does linear interpolation ...
+template <typename T> T SampledHistory<T>::at(double t_s) const
+{
+    auto [idx, side] = index(t_s);
+
+    switch (side) {
+
+    case IndexSide::INVALID:
+        // This should raise an error?
+        return T();
+        break;
+
+    case IndexSide::LEFT:
+    case IndexSide::RIGHT:
+        return data[idx];
+        break;
+
+    default:
+        return interpolate(data[idx - 1], data[idx], t_s);
+    }
 }
 
 template struct SampledHistory<RockLike::State>;

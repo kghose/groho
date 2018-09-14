@@ -31,6 +31,25 @@ public:
     // This copies just the new elements
     template <typename T> void copy_new(const SampledHistory<T>&);
 
+    void set_segment(size_t i0, size_t i1)
+    {
+        /*
+        start_idx = i0 > current_size ? 0 : i0;
+        stop_idx  = i1 > current_size ? current_size : i1;
+
+        stop_idx = current_size - 1;
+        if (stop_idx > 20) {
+            start_idx = stop_idx - 20;
+        } else {
+            start_idx = 0;
+        }*/
+
+        if (current_size > 10) {
+            _mesh.setBaseVertex(i0);
+            _mesh.setCount(i1 - i0);
+        }
+    }
+
     void draw(Shaders::Flat3D& shader) { _mesh.draw(shader.setColor(_color)); }
 
 private:
@@ -44,6 +63,9 @@ private:
     GL::Buffer _buffer;
     size_t     allocated_size = 0;
     size_t     current_size   = 0;
+
+    size_t start_idx = 0;
+    size_t stop_idx  = 0;
 
     // The simulation data buffer can carry an unsaved last point. For
     // interpolation and display purposes we want to show this, but we

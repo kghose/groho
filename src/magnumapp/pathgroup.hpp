@@ -26,6 +26,7 @@ public:
     void set_color(const Color3 _color) { color = _color; }
     void load_from(const RocksAndShips<Record, Record>&);
     void update_from(const RocksAndShips<Record, Record>&);
+    void set_segment(const RocksAndShips<Record, Record>&, double);
     void draw(const Matrix4& projection_matrix);
 
 private:

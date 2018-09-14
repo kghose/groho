@@ -6,6 +6,7 @@ Convenient container for managing a group of trajectories for display
 */
 
 #include "pathgroup.hpp"
+#include "singleorbit.hpp"
 #include "style.hpp"
 
 namespace sim {
@@ -42,6 +43,34 @@ void PathGroup::update_from(const RocksAndShips<Record, Record>& record)
     }
     for (const auto& b : record.fleet.bodies) {
         paths[j]->copy_new(b.history);
+        j++;
+    }
+}
+
+void PathGroup::set_segment(
+    const RocksAndShips<Record, Record>& record, double t_s)
+{
+    size_t j = 0;
+    for (const auto& b : record.system.bodies) {
+        if (b.property.naif.is_barycenter())
+            continue;
+        auto t_idx = find_reference_index(b.history.data, t_s);
+        if (t_idx) {
+            // std::cout << b.property.naif.name << ": " << *t_idx << std::endl;
+            // paths[j]->set_segment(*t_idx - 10, *t_idx);
+            paths[j]->set_segment(*t_idx - 10, *t_idx);
+        } else {
+            paths[j]->set_segment(0, 0);
+        }
+        j++;
+    }
+    for (const auto& b : record.fleet.bodies) {
+        auto t_idx = find_reference_index(b.history.data, t_s);
+        if (t_idx) {
+            paths[j]->set_segment(*t_idx - 10, *t_idx);
+        } else {
+            paths[j]->set_segment(0, 0);
+        }
         j++;
     }
 }

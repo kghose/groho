@@ -13,7 +13,7 @@ namespace sim {
 // This copies over all the data
 template <typename T> void Path::copy_all(const SampledHistory<T>& buf_data)
 {
-    if (buf_data.effective_size() > 0) {
+    if (buf_data.data.size() > 0) {
         map(buf_data, ALL);
         _mesh.setPrimitive(GL::MeshPrimitive::LineStrip)
             .setCount(current_size)
@@ -24,8 +24,8 @@ template <typename T> void Path::copy_all(const SampledHistory<T>& buf_data)
 // This copies just the new elements
 template <typename T> void Path::copy_new(const SampledHistory<T>& buf_data)
 {
-    if (buf_data.effective_size() > 0) {
-        size_t new_size = buf_data.effective_size();
+    if (buf_data.data.size() > 0) {
+        size_t new_size = buf_data.data.size();
         if (allocated_size < new_size) {
             return copy_all(buf_data);
         }
@@ -48,7 +48,7 @@ void Path::reallocate(size_t new_size)
 template <typename T>
 void Path::map(const SampledHistory<T>& buf_data, Mode mode)
 {
-    size_t new_size = buf_data.effective_size();
+    size_t new_size = buf_data.data.size();
 
     size_t offset = 0;
     if (mode == JUST_NEW) {
@@ -70,12 +70,12 @@ void Path::map(const SampledHistory<T>& buf_data, Mode mode)
     CORRADE_INTERNAL_ASSERT(data);
 
     size_t      i  = offset;
-    const auto& _p = buf_data.sampled();
+    const auto& _p = buf_data.data;
     for (; i < _p.size(); i++) {
         data[i - offset] = v2v(_p[i].pos);
     }
-    if (buf_data.unsampled()) {
-        data[i - offset]          = v2v(buf_data.unsampled()->pos);
+    if (buf_data.last_point_is_unsampled) {
+        // data[i - offset]          = v2v(buf_data.unsampled()->pos);
         last_point_is_provisional = true;
     } else {
         last_point_is_provisional = false;
