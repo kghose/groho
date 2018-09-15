@@ -31,24 +31,7 @@ public:
     // This copies just the new elements
     template <typename T> void copy_new(const SampledHistory<T>&);
 
-    void set_segment(size_t i0, size_t i1)
-    {
-        /*
-        start_idx = i0 > current_size ? 0 : i0;
-        stop_idx  = i1 > current_size ? current_size : i1;
-
-        stop_idx = current_size - 1;
-        if (stop_idx > 20) {
-            start_idx = stop_idx - 20;
-        } else {
-            start_idx = 0;
-        }*/
-
-        if (current_size > 10) {
-            _mesh.setBaseVertex(i0);
-            _mesh.setCount(i1 - i0);
-        }
-    }
+    void set_segment(long int i0, long int i1);
 
     void draw(Shaders::Flat3D& shader) { _mesh.draw(shader.setColor(_color)); }
 

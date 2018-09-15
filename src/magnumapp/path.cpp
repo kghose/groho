@@ -90,6 +90,15 @@ void Path::map(const SampledHistory<T>& buf_data, Mode mode)
     CORRADE_INTERNAL_ASSERT_OUTPUT(_buffer.unmap());
 }
 
+void Path::set_segment(long int i0, long int i1)
+{
+    if (i0 < 0) {
+        i0 = 0;
+    }
+    _mesh.setBaseVertex(i0);
+    _mesh.setCount(i1 - i0);
+}
+
 template void Path::copy_all<RockLike::State>(
     const SampledHistory<RockLike::State>& buf_data);
 

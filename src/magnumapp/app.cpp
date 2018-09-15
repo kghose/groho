@@ -258,6 +258,6 @@ void GrohoApp::synchronize_snapshot()
 {
     auto [record, rlock] = simulation->trajectory_data.borrow();
     snapshot             = get_snapshot(time_cursor.current_s, record);
-    // trajectories.set_segment(record, time_cursor.current_s);
+    trajectories.set_segment(record, time_cursor.current_s);
 }
 }
