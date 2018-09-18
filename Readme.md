@@ -60,6 +60,7 @@ cd examples/002.full-solar-system
     - [SolarSystemOrbiter](#solarsystemorbiter)
     - [Poliastro by Juan Luis Cano Rodríguez](#poliastro-by-juan-luis-cano-rodríguez)
     - [Celestia](#celestia)
+    - [Asterank](#asterank)
 - [Thanks](#thanks)
     - [Components](#components)
     - [Dev tooling](#dev-tooling)
@@ -316,6 +317,11 @@ problems in Astrodynamics and Orbital Mechanics.
 
 [Celestia](https://github.com/CelestiaProject/Celestia) - 
 "A real-time space simulation that lets you experience our universe in three dimensions."
+
+## Asterank
+
+[asterank](https://github.com/typpo/asterank) - "Using publicly available data and scientific papers, the project evaluates the economic prospects of mining nearly 600,000 cataloged asteroids."
+They are live at http://www.asterank.com/. 
 
 # Thanks
 
