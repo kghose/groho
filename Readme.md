@@ -65,7 +65,7 @@ cd examples/002.full-solar-system
     - [Components](#components)
     - [Dev tooling](#dev-tooling)
 - [Meta: Why did you put everything in this one document?](#meta-why-did-you-put-everything-in-this-one-document)
-    - [Some other documents of interest](#some-other-documents-of-interest)
+    - [Developer notes](#developer-notes)
 
 <!-- /TOC -->
 
@@ -361,12 +361,7 @@ look for things using your browser or text editor's search function and not
 have to keep jumping from document to document. I will try to use bookmarks
 to help orientation. It's an experiment - tell me if you hate it.
 
-## Some other documents of interest
+## Developer notes
 
-That said, there are a few other documents that you may be interested in from
-a development point of view. I kept them separate because they are not necessary
-to operate Groho.
-
-- [Notes about C++ and computations](src/Readme.md) - Just some war stories and C++ notes
-- [Examples](examples) - These are example scenario files to get you started
-- [backlog](docs/backlog.md) - some plans and ideas
+That said, there is a separate file, which contains 
+[some war stories about C++ and implementation](src/Readme.md).
