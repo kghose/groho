@@ -46,10 +46,11 @@ cd examples/002.full-solar-system
     - [Getting the data](#getting-the-data)
     - [Simulation files](#simulation-files)
         - [Signals](#signals)
+    - [What does a ship know about the world?](#what-does-a-ship-know-about-the-world)
     - [Orbit view interactions](#orbit-view-interactions)
-        - [Meta](#meta)
-            - [Why is the tutorial/manual in the form of commented examples?](#why-is-the-tutorialmanual-in-the-form-of-commented-examples)
-            - [Why do you have stuff in the manual/examples that isn't implemented yet?](#why-do-you-have-stuff-in-the-manualexamples-that-isnt-implemented-yet)
+    - [Meta](#meta)
+        - [Why is the tutorial/manual in the form of commented examples?](#why-is-the-tutorialmanual-in-the-form-of-commented-examples)
+        - [Why do you have stuff in the manual/examples that isn't implemented yet?](#why-do-you-have-stuff-in-the-manualexamples-that-isnt-implemented-yet)
 - [Physics/astronautics word salad](#physicsastronautics-word-salad)
 - [Related software](#related-software)
     - [NASA's GMAT](#nasas-gmat)
@@ -191,8 +192,18 @@ A flight plan can create signals on behalf of a ship. Signals travel radially
 out at the speed of light from their point of origin and can be recieved by
 other ships once they are within the sphere. Once the signal has spread past 
 the furthest simulation object it is removed, since all ships have recieved
-the signal by that time.
+the signal by that time. Signals can be shaped, such that they have different 
+amplitudes in different directions. Ship recievers can have different 
+sensitivities to signal intensity.
 
+## What does a ship know about the world?
+
+We assume that every ship has access to perfect knowledge about all Orrery
+objects. Every ship has access to perfect information about itself, but not
+others. In order to get information about other ships it has to make use of
+signals (which travel at the speed of light). Signals can be radar/lidar which
+allow ranging, velocity and some identity information or data packets broadcast
+from another ship, which can carry arbitrary information.
 
 ## Orbit view interactions
 
@@ -213,9 +224,9 @@ the `view` annotation and in a much more effective way. Check out the documentat
 
 *Eventually the [tutorial here](docs/tutorial.md) will be copied over into this space.*
 
-### Meta 
+## Meta 
 
-#### Why is the tutorial/manual in the form of commented examples?
+### Why is the tutorial/manual in the form of commented examples?
 
 I personally learn well by example, so I wanted to try this out. I also use
 these tutorial scripts as ways to prototype proposed simulation file syntax,
@@ -226,7 +237,7 @@ create/update example scripts and a separate manual or tutorial
 (where I'd have to paste in snippets of code anyway). I chose to use comments 
 in the simulation files as a reliable way to keep upto-date documentation. 
 
-#### Why do you have stuff in the manual/examples that isn't implemented yet?
+### Why do you have stuff in the manual/examples that isn't implemented yet?
 
 I'm aspirational. But seriously, I use the manual and the example input files as
 functional specifications. As I build out more of the software, more of the
