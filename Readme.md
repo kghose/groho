@@ -45,7 +45,9 @@ cd examples/002.full-solar-system
 - [Manual/Tutorial](#manualtutorial)
     - [Getting the data](#getting-the-data)
     - [Simulation files](#simulation-files)
+        - [Actions](#actions)
         - [Signals](#signals)
+        - [Restarts](#restarts)
     - [What does a ship know about the world?](#what-does-a-ship-know-about-the-world)
     - [Orbit view interactions](#orbit-view-interactions)
     - [Meta](#meta)
@@ -186,6 +188,12 @@ Start with the [basic example][basic-ex]: Read the [simulation file][basic-sim-f
 
 After that, just browse the examples to get a feel for what else is available.
 
+### Actions
+
+Flight Plan actions are commands to a ship to do something. Actions can take
+place at a particular time or be triggered by a particular world state. Actions
+happen in sequence. 
+
 ### Signals
 
 A flight plan can create signals on behalf of a ship. Signals travel radially 
@@ -195,6 +203,18 @@ the furthest simulation object it is removed, since all ships have recieved
 the signal by that time. Signals can be shaped, such that they have different 
 amplitudes in different directions. Ship recievers can have different 
 sensitivities to signal intensity.
+
+### Restarts
+
+Restarts allow
+1. An existing complete simulation to be rerun with an extended end time without
+   having to recompute the previously computed segment
+1. An existing simulation to be rerun intelligently conserving previously computed
+   parts.
+
+Restarts are have not been implemented yet but features are implemented with
+restarts in mind.
+
 
 ## What does a ship know about the world?
 

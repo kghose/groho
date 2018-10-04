@@ -78,7 +78,7 @@ public:
     Lockable<RocksAndShips<Record, Record>> trajectory_data;
 
     // Flightplan actions
-    Lockable<fpapl_t> action_list;
+    Lockable<FlightPlans> flightplans;
 };
 
 } // sim

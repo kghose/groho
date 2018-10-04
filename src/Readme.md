@@ -195,6 +195,11 @@ auto [a, b] = my_A;
 More details are [here](https://blog.tartanllama.xyz/structured-bindings/)
 
 
+But there are wierdnesses with structured bindings that one runs into when using
+lambdas
+https://stackoverflow.com/a/46115028/2512851
+
+
 ## std::map [] and const : gcc vs clang
 
 (Thanks to http://www.cplusplus.com/forum/beginner/160820/)

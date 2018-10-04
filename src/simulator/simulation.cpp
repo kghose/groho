@@ -67,18 +67,20 @@ Simulation::Simulation(
 
     config = new_config;
 
-    auto [actions, alock] = action_list.borrow();
+    auto [actions, alock] = flightplans.borrow();
 
     int ship_code = -1000;
     // https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html#Spacecraft
     for (auto& fp_name : config.flightplan_fnames) {
-        auto swa = load_ship(fp_name, --ship_code, record.fleet.size());
-        if (swa) {
-            record.fleet.push_back({ swa->ship.property, {} });
-            actions.splice(actions.end(), swa->actions);
+        auto loaded_ship = load_ship(fp_name, --ship_code);
+        if (loaded_ship) {
+            record.fleet.push_back({ loaded_ship->property, {} });
+            actions.push_back(std::move(loaded_ship->flight_plan));
+            LOG_S(INFO) << "Loaded " << loaded_ship->flight_plan.size()
+                        << " actions for ship "
+                        << loaded_ship->property.naif.name;
         }
     }
-    actions.sort(fpa_order);
 
     LOG_S(INFO) << record.system.size() << " rocks in simulation.";
     LOG_S(INFO) << record.fleet.size() << " spaceships in simulation.";

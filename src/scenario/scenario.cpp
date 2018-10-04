@@ -2,7 +2,7 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-Code to parse scneario files and flight plans and load in the Orrery and Ship
+Code to parse scenario files and flight plans and load in the Orrery and Ship
 definitions.
 */
 #include <iostream>
@@ -15,90 +15,9 @@ definitions.
 
 namespace sim {
 
-std::optional<SnapShot<ShipLike>>
-parse_ship_properties(std::string fname, int ship_idx)
+bool could_be_a_property_line(std::string line)
 {
-    SnapShot<ShipLike> ship;
-
-    ship.property.naif = { ship_idx, std::to_string(ship_idx) };
-
-    typedef std::string sst;
-
-    std::unordered_map<sst, std::function<void(sst)>> keyword_map{
-
-        { "name", [&](sst v) { ship.property.naif.name = v; } },
-        { "color",
-          [&](sst v) { ship.property.color = stoul(v, nullptr, 16); } },
-        { "max-acceleration", [&](sst v) { ship.property.max_acc = stof(v); } },
-        { "max-fuel", [&](sst v) { ship.property.max_fuel        = stof(v); } },
-        { "burn-rate", [&](sst v) { ship.property.burn_rate      = stof(v); } },
-
-        // It's much too random to try and place a spacecraft absolutely in the
-        // solar system but we let you do it
-        { "position", [&](sst v) { ship.state.pos = stoV(v); } },
-        { "velocity", [&](sst v) { ship.state.vel = stoV(v); } },
-        { "attitude", [&](sst v) { ship.state.att = stoV(v); } },
-        { "acc", [&](sst v) { ship.state.acc      = stof(v); } },
-        { "fuel", [&](sst v) { ship.state.fuel    = stof(v); } },
-    };
-
-    auto flt_plan_file = ScenarioFile::open(fname);
-    if (!flt_plan_file) {
-        LOG_S(ERROR) << fname << ": flight plan not found";
-        return {};
-    }
-
-    LOG_S(INFO) << "Loading ship: " << fname;
-
-    for (auto line = flt_plan_file->next(); line;
-         line      = flt_plan_file->next()) {
-
-        auto tokens = split(*line);
-        if (could_be_a_number(tokens[0])) {
-            continue;
-        }
-
-        auto kv = get_key_value(*line);
-        if (keyword_map.count(kv->key)) {
-            keyword_map[kv->key](kv->value);
-        } else {
-            LOG_S(ERROR) << fname << ": line " << flt_plan_file->line_no
-                         << ": unknown key: " << kv->key;
-        }
-    }
-
-    return ship;
-}
-
-fpapl_t parse_ship_actions(
-    std::string fname, size_t ship_idx, ShipLike::Property property)
-{
-    auto flt_plan_file = ScenarioFile::open(fname);
-    if (!flt_plan_file) {
-        LOG_S(ERROR) << fname << ": flight plan not found";
-        return {};
-    }
-
-    LOG_S(INFO) << "Loading actions: " << fname;
-    fpapl_t actions;
-
-    for (auto line = flt_plan_file->next(); line;
-         line      = flt_plan_file->next()) {
-
-        auto tokens = split(*line);
-        if (!could_be_a_number(tokens[0])) {
-            continue;
-        }
-
-        actions.push_back(parse_line_into_action(
-            ship_idx, fname, flt_plan_file->line_no, tokens, property));
-    }
-
-    actions.remove_if([](fpap_t& p) { return p == nullptr; });
-
-    LOG_S(INFO) << "Loaded " << actions.size() << " actions";
-
-    return actions;
+    return line.find("=") != std::string::npos;
 }
 
 std::shared_ptr<const SpkOrrery> load_orrery(
@@ -124,19 +43,71 @@ std::shared_ptr<const SpkOrrery> load_orrery(
     return new_orrery;
 }
 
-std::optional<ShipWithActions>
-load_ship(std::string fp_name, int ship_code, int ship_idx)
+std::optional<LoadedShip> load_ship(std::string fp_name, int ship_code)
 {
-    ShipWithActions swa;
+    // Would have been nice to use structured bindngs like this, but a
+    // problem in the C++ specification prevents this
+    // https://stackoverflow.com/a/46115028/2512851
+    // LoadedShip ship;
+    // auto& [property, flight_plan] = ship;
 
-    auto ship = parse_ship_properties(fp_name, ship_code);
-    if (ship) {
-        swa.ship    = *ship;
-        swa.actions = parse_ship_actions(fp_name, ship_idx, ship->property);
-        return swa;
-    } else {
+    ShipLike::Property property;
+    FlightPlan         flight_plan;
+
+    typedef std::string sst;
+
+    property.naif = { ship_code, std::to_string(ship_code) };
+
+    std::unordered_map<sst, std::function<void(sst)>> process_key_value{
+
+        { "name", [&](sst v) { property.naif.name = v; } },
+        { "color", [&](sst v) { property.color    = stoul(v, nullptr, 16); } },
+        { "max-acceleration", [&](sst v) { property.max_acc = stof(v); } },
+        { "max-fuel", [&](sst v) { property.max_fuel        = stof(v); } },
+        { "burn-rate", [&](sst v) { property.burn_rate      = stof(v); } },
+
+    };
+
+    auto flt_plan_file = ScenarioFile::open(fp_name);
+    if (!flt_plan_file) {
+        LOG_S(ERROR) << fp_name << ": flight plan not found";
         return {};
     }
+
+    LOG_S(INFO) << "Loading ship and flight plan: " << fp_name;
+
+    for (auto line = flt_plan_file->next(); line;
+         line      = flt_plan_file->next()) {
+
+        if (could_be_a_property_line(*line)) {
+
+            auto kv = get_key_value(*line);
+            if (process_key_value.count(kv->key)) {
+                process_key_value[kv->key](kv->value);
+            } else {
+                LOG_S(ERROR) << fp_name << ":" << flt_plan_file->line_no
+                             << " Property? " << *line;
+            }
+
+        } else {
+
+            auto fpa = parse_line_into_action(*line);
+
+            if (fpa) {
+
+                fpa->flightplan_fname = fp_name;
+                fpa->command_string   = *line;
+                fpa->line_no          = flt_plan_file->line_no;
+                flight_plan.push_back(std::move(fpa));
+
+            } else {
+                LOG_S(ERROR) << fp_name << ":" << flt_plan_file->line_no
+                             << " Action? " << *line;
+            }
+        }
+    }
+
+    return LoadedShip{ property, std::move(flight_plan) };
 }
 
 } // namespace sim

@@ -24,11 +24,10 @@ std::shared_ptr<const SpkOrrery> load_orrery(
     const Configuration&,
     std::shared_ptr<const SpkOrrery>);
 
-struct ShipWithActions {
-    SnapShot<ShipLike> ship;
-    fpapl_t            actions;
+struct LoadedShip {
+    ShipLike::Property property;
+    FlightPlan         flight_plan;
 };
 
-std::optional<ShipWithActions>
-load_ship(std::string fp_name, int ship_code, int ship_idx);
+std::optional<LoadedShip> load_ship(std::string fp_name, int ship_code);
 }

@@ -26,67 +26,50 @@ Base action class and base parser for flight plan actions
 
 namespace sim {
 
-// Utility functions /////////////////////////////////////////////////////////
+// These are pleasant to alias
+typedef std::string                      str_t;
+typedef std::vector<std::string>         strv_t;
+typedef std::unordered_map<str_t, str_t> params_t;
 
-// template <typename T>
-// size_t
-// FlightPlanAction::find2(const std::vector<T>& bodies, const NAIFbody& body)
-// {
-//     auto _idx = find(bodies, body);
-//     if (!_idx) {
-//         std::string msg = meta.fname + ":" + std::to_string(meta.line_no) +
-//         ": "
-//             + meta.command_string + ": Can't find "
-//             + std::to_string((int)body.code);
-//         throw std::runtime_error(msg);
-//     }
-//     return *_idx;
-// }
+typedef FlightPlanAction fpa_t;
+template <class T> using ptr_t = std::unique_ptr<T>;
+typedef ptr_t<FlightPlanAction> fpap_t;
+typedef std::list<fpap_t>       fpapl_t;
 
 ///////////////////////////////
 // AVAILABLE ACTIONS (VERBS) //
 ///////////////////////////////
 
+struct INITIAL_STATE;
 struct SET_ATTITUDE;
 struct BURN;
 struct INITIAL_ORBIT;
 struct PARK_IN_ORBIT;
 
-std::unordered_map<str_t, std::function<fpap_t(const FPAmeta&, params_t&)>>
+std::unordered_map<
+    std::string,
+    std::function<std::unique_ptr<FlightPlanAction>(params_t*, std::ifstream*)>>
     available_actions{ { "set-attitude", construct<SET_ATTITUDE> },
                        { "burn", construct<BURN> },
                        { "initial-orbit", construct<INITIAL_ORBIT> },
                        { "park", construct<PARK_IN_ORBIT> } };
 
-fpap_t parse_line_into_action(
-    size_t                   ship_idx,
-    std::string              fname,
-    size_t                   line_no,
-    std::vector<std::string> tokens,
-    ShipLike::Property       property)
+std::unique_ptr<FlightPlanAction> parse_line_into_action(std::string line)
 {
-    double jd = do_this_first;
-    if (tokens[0] != "-") {
-        jd = stod(tokens[0]);
-    }
+    auto tokens = split(line);
 
-    if (available_actions.count(tokens[1])) {
+    if (available_actions.count(tokens[0])) {
+
         params_t params;
-
-        for (size_t i = 2; i < tokens.size(); i++) {
+        for (size_t i = 1; i < tokens.size(); i++) {
             auto kv = get_named_parameter(tokens[i]);
             if (kv) {
                 params[kv->key] = kv->value;
             }
         }
-
-        return available_actions[tokens[1]](
-            FPAmeta{ ship_idx, fname, line_no, tokens[1], property, jd2s(jd) },
-            params);
+        return available_actions[tokens[0]](&params, nullptr);
 
     } else {
-        LOG_S(ERROR) << fname << ": " << line_no
-                     << ": Unknown action: " << tokens[1];
         return {};
     }
 }

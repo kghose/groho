@@ -18,44 +18,43 @@ burn-rate         = 0.2   ; This is a duplicate key. This value is used
 
 ; Or a line can take the form
 
-; <time> <action> <key>:<value> <key>:<value> ...
+; <action> <key>:<value> <key>:<value> ...
 
-; This is an action line. 
-; It indicates the time an action is active from, the action and parameters
+; This is an action line.
+;
+; Actions can be
+; - commands for a ship to orient or fire it's engines
+; - a waiting state that holds up execution until a particular ship state is achieved
+; - commands to send out signals
+;
 ; Action lines form the bulk of a flight plan
 
-- initial-orbit id:499 alt:3000 ; Orbit 499 (Mars) at 3000 km altitude
-; An action with "-" is an initialization action that sets some initial state
-; at the very start of the simulation.
-; Some actions (like this one) are only available as initialization actions
-
+initial-orbit id:499 alt:3000 ; Orbit 499 (Mars) at 3000 km altitude
+; Some actions (like this one) operate at the setup phase. It is best to put
+; them at the start of the script: they will have the same effect wherever they
+; are put, but it can be confusing to see them later
 
 ; You can break a command across multiple lines for readability
-- initial-orbit \ ; and add comments
+initial-orbit \ ; and add comments
     id:499 \ ; This is Mars
     alt:8000 ; This is km from the surface
 
 ; You'll notice that in order to show off my fancy multi-line command I 
 ; repeated the command. In this case the second one over-writes the first one
 
-2458248.5 hi-there
+hi-there
 ; An un-recognized action is marked out in the log and ignored
-
-0 initial-orbit id:499 alt:3000 ; Orbit 499 (Mars) at 3000 km altitude
-; It's illegal to try to place this action anywhere other than the start
-; of the simulation (marked by "-") and we will get scolded.
-
 
 ; After a while in orbit, we get bored and blast off into the unknown
 
-2458248.5 set-attitude x:-0.2 y:0.3 z:0.3 ; point somewhere, out there
+time 2458248.5
+; This waiting state just pauses until the given time passes
 
-2458648.8 set-accel    0.01  
-; This should give an informative error in the logs and carry on ...
+sun-opposition id:499
+; This waits until we are on the "outer side" of Mars, farthest from the sun
+; during our orbit.
 
-2458300.8 burn acc:0.01 for:3000 ; Burn 1G (0.01 km/s^2) for 3000s
-; We'll find that its very hard to figure out what absolute direction we
-; should be pointing at ...
+prograde id:499
+; Orient us prograde in our orbit around Mars
 
-2458300.8 retrograde
-
+burn acc:0.01 for:3000 ; Burn 1G (0.01 km/s^2) for 3000s

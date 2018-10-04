@@ -11,39 +11,53 @@ namespace sim {
 
 struct SET_ATTITUDE : public FlightPlanAction {
 
-    SET_ATTITUDE(const FPAmeta& _meta)
-        : FlightPlanAction(_meta)
+    void setup(
+        [[maybe_unused]] SnapShot<ShipLike>&                    this_ship,
+        [[maybe_unused]] const Collection<SnapShotV<RockLike>>& system)
     {
+        ;
     }
 
-    void setup(State& state) { ; }
-
-    ShipCommand execute(const State& state)
+    ShipCommand execute(
+        const SnapShot<ShipLike>&              this_ship,
+        const Collection<SnapShotV<RockLike>>& system)
     {
-        DLOG_S(INFO) << state.fleet[meta.ship_idx].property.naif.name
-                     << " attitude set";
+        DLOG_S(INFO) << this_ship.property.naif.name << " attitude set";
 
         done = true;
-        return { {}, att };
+        return { {}, att, {} };
     }
 
     Vector att;
 };
 
 template <>
-fpap_t construct<SET_ATTITUDE>(const FPAmeta& _meta, params_t& params)
+std::unique_ptr<FlightPlanAction>
+construct<SET_ATTITUDE>(params_t* params, std::ifstream* ifs)
 {
-    try {
-        auto action = ptr_t<SET_ATTITUDE>(new SET_ATTITUDE(_meta));
-        action->att
-            = Vector{ stof(params["x"]), stof(params["y"]), stof(params["z"]) };
+    auto action = std::unique_ptr<SET_ATTITUDE>(new SET_ATTITUDE());
 
+    if (ifs) {
+        // code to load from file
         return action;
-    } catch (std::exception& e) {
-        LOG_S(ERROR) << _meta.fname << ": Line: " << _meta.line_no
-                     << ": Need three floats for attitude vector: eg: "
-                        "x:1.1 y:0.4 z:0.2";
-        return {};
     }
+
+    if (params) {
+        try {
+
+            action->att = Vector{ stof((*params)["x"]),
+                                  stof((*params)["y"]),
+                                  stof((*params)["z"]) };
+            return action;
+
+        } catch (std::exception& e) {
+
+            LOG_S(ERROR) << "Need three floats for attitude vector: eg: "
+                            "x:1.1 y:0.4 z:0.2";
+            return {};
+        }
+    }
+
+    return {};
 }
 }

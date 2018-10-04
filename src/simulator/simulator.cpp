@@ -62,36 +62,53 @@ void update_ships(State& state, double t_s, double step_s)
     }
 }
 
-void setup_actions(fpapl_t& actions, State& state)
+void cleanup_actions(FlightPlans& flight_plans)
 {
-    for (auto& action : actions) {
-        action->setup(state);
+    for (auto& plan : flight_plans) {
+        plan.remove_if([](std::unique_ptr<FlightPlanAction>& a) {
+            DLOG_IF_S(INFO, a->done) << a->flightplan_fname << ":" << a->line_no
+                                     << " : " << a->command_string << " done";
+            return a->done;
+        });
     }
 }
 
-void execute_actions(fpapl_t& actions, State& state)
+void setup_actions(Simulation* simulation, State& state)
 {
-    for (auto& action : actions) {
-        if (state.t_s() < action->meta.t_s)
-            continue;
+    auto [flight_plans, lock] = simulation->flightplans.borrow();
 
-        ShipCommand cmd = action->execute(state);
-        if (cmd.acc) {
-            state.fleet[action->meta.ship_idx].state.acc = *(cmd.acc);
-        }
-        if (cmd.att) {
-            state.fleet[action->meta.ship_idx].state.att = *(cmd.att);
+    for (size_t s = 0; s < flight_plans.size(); s++) {
+        auto& ship = state.fleet[s];
+        for (auto& action : flight_plans[s]) {
+            action->setup(ship, state.system);
         }
     }
+
+    cleanup_actions(flight_plans);
 }
 
-void cleanup_actions(fpapl_t& actions)
+void execute_actions(Simulation* simulation, State& state)
 {
-    actions.remove_if([](fpap_t& a) {
-        DLOG_IF_S(INFO, a->done) << a->meta.fname << ":" << a->meta.line_no
-                                 << " : " << a->meta.command_string << " done";
-        return a->done;
-    });
+    auto [flight_plans, lock] = simulation->flightplans.borrow();
+
+    for (size_t s = 0; s < flight_plans.size(); s++) {
+        auto& ship = state.fleet[s];
+        for (auto& action : flight_plans[s]) {
+            ShipCommand cmd = action->execute(ship, state.system);
+            if (cmd.acc) {
+                ship.state.acc = *(cmd.acc);
+            }
+            if (cmd.att) {
+                ship.state.att = *(cmd.att);
+            }
+
+            if (action->block) {
+                break;
+            }
+        }
+    }
+
+    cleanup_actions(flight_plans);
 }
 
 void Simulator::run()
@@ -109,9 +126,7 @@ void Simulator::run()
     state.advance_t_s(simulation->config.step_s);
     simulation->orrery->set_body_positions(state.t_s(), state.system);
 
-    auto [actions, lock] = simulation->action_list.borrow();
-    setup_actions(actions, state);
-    cleanup_actions(actions);
+    setup_actions(simulation.get(), state);
 
     status = RUNNING;
     while (running && (state.t_s() < simulation->config.end_s)) {
@@ -119,8 +134,7 @@ void Simulator::run()
         simulation->orrery->set_body_positions(state.t_s(), state.system);
 
         update_ships(state, state.t_s(), simulation->config.step_s);
-        execute_actions(actions, state);
-        cleanup_actions(actions);
+        execute_actions(simulation.get(), state);
 
         simulation->append(state);
 

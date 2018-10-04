@@ -144,12 +144,6 @@ inline Vector stoV(std::string v)
     return out;
 }
 
-inline bool could_be_a_number(std::string token)
-{
-    return !token.empty()
-        && (token.find_first_not_of("-.0123456789") == std::string::npos);
-}
-
 inline time_t file_modification_time(std::string fname)
 {
     struct stat result;

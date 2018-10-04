@@ -12,60 +12,63 @@ namespace sim {
 // TODO: What happens when burns are fractions of a time step?
 struct BURN : public FlightPlanAction {
 
-    BURN(const FPAmeta& _meta)
-        : FlightPlanAction(_meta)
+    double                acc;
+    double                burn_duration;
+    std::optional<double> burn_end_time;
+
+    void setup(
+        [[maybe_unused]] SnapShot<ShipLike>&                    this_ship,
+        [[maybe_unused]] const Collection<SnapShotV<RockLike>>& system)
     {
+        ;
     }
 
-    void setup(State& state) { ; }
-
-    ShipCommand execute(const State& state)
+    ShipCommand execute(
+        const SnapShot<ShipLike>&                               this_ship,
+        [[maybe_unused]] const Collection<SnapShotV<RockLike>>& system)
     {
-        auto const& ship = state.fleet[meta.ship_idx];
-
-        if (!burning) {
-            burning    = true;
-            float _acc = acc;
-            if (_acc > ship.property.max_acc) {
-                _acc = ship.property.max_acc;
-                LOG_S(WARNING) << meta.line_no << ": SET_ACCEL for "
-                               << ship.property.naif.name << " exceeds max_acc";
-            }
-
-            DLOG_S(INFO) << ship.property.naif.name << " acceleration set";
-
-            return { _acc, {} };
-
-        } else {
-
-            if (state.t_s() < burn_end_time) {
-                return {};
-
+        if (burn_end_time) {
+            if (*burn_end_time < this_ship.state.t_s) {
+                return { acc, {}, {} };
             } else {
-
                 done = true;
-                return { 0, {} };
+                return { 0, {}, {} };
             }
+        } else {
+            burn_end_time = this_ship.state.t_s + burn_duration;
+            if (acc > this_ship.property.max_acc) {
+                LOG_S(WARNING)
+                    << line_no << ": SET_ACCEL for "
+                    << this_ship.property.naif.name << " exceeds max_acc";
+                acc = this_ship.property.max_acc;
+            }
+            return { acc, {}, {} };
+        }
+    }
+};
+
+template <>
+std::unique_ptr<FlightPlanAction>
+construct<BURN>(params_t* params, std::ifstream* ifs)
+{
+    auto action = std::unique_ptr<BURN>(new BURN());
+
+    if (ifs) {
+        // code to load from file
+        return action;
+    }
+
+    if (params) {
+        try {
+            action->acc           = stof((*params)["acc"]);
+            action->burn_duration = stod((*params)["for"]);
+            return action;
+        } catch (std::exception& e) {
+            LOG_S(ERROR) << "Burn command should be like: burn acc:0.01 for:10";
+            return {};
         }
     }
 
-    double acc;
-    double burn_end_time;
-    bool   burning = false;
-};
-
-template <> fpap_t construct<BURN>(const FPAmeta& _meta, params_t& params)
-{
-    try {
-        auto action = ptr_t<BURN>(new BURN(_meta));
-        action->acc = stof(params["acc"]);
-
-        action->burn_end_time = _meta.t_s + stod(params["for"]);
-        return action;
-    } catch (std::exception& e) {
-        LOG_S(ERROR) << _meta.fname << ": Line: " << _meta.line_no
-                     << ": burn command should be like: burn acc:0.01 for:10";
-        return {};
-    }
+    return {};
 }
 }
