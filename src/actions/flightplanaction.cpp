@@ -49,7 +49,8 @@ struct PARK_IN_ORBIT;
 std::unordered_map<
     std::string,
     std::function<std::unique_ptr<FlightPlanAction>(params_t*, std::ifstream*)>>
-    available_actions{ { "set-attitude", construct<SET_ATTITUDE> },
+    available_actions{ { "initial-state", construct<INITIAL_STATE> },
+                       { "set-attitude", construct<SET_ATTITUDE> },
                        { "burn", construct<BURN> },
                        { "initial-orbit", construct<INITIAL_ORBIT> },
                        { "park", construct<PARK_IN_ORBIT> } };
@@ -67,10 +68,18 @@ std::unique_ptr<FlightPlanAction> parse_line_into_action(std::string line)
                 params[kv->key] = kv->value;
             }
         }
-        return available_actions[tokens[0]](&params, nullptr);
+
+        try {
+            return available_actions[tokens[0]](&params, nullptr);
+        } catch (std::exception& e) {
+            throw std::domain_error(
+                "Can't parse action: " + line + "\n" + e.what());
+        }
 
     } else {
-        return {};
+        throw std::invalid_argument("Unknown action: " + line);
     }
 }
+
+std::string list_available_actions() { return ""; }
 }

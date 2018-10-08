@@ -102,7 +102,7 @@ void execute_actions(Simulation* simulation, State& state)
                 ship.state.att = *(cmd.att);
             }
 
-            if (action->block) {
+            if (action->is_blocking()) {
                 break;
             }
         }

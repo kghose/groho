@@ -45,10 +45,6 @@ struct FlightPlanAction {
     std::string        command_string;
     ShipLike::Property property;
 
-    // This is true for blocking actions. This prevents the simulator from
-    // processing the next actions until this one is done and removed
-    bool block;
-
     // Set this flag once the action is completely done and can be discarded
     bool done = false;
 
@@ -71,6 +67,13 @@ struct FlightPlanAction {
         const SnapShot<ShipLike>&              this_ship,
         const Collection<SnapShotV<RockLike>>& system)
         = 0;
+
+    // This is true for blocking actions. This prevents the simulator from
+    // processing the next actions until this one is done and removed
+    virtual bool is_blocking() const = 0;
+
+    // Return a helpful usage string
+    virtual std::string usage() const = 0;
 
     // We have to convert an id to an index into a list of bodies very often
     // If we fail, we have to disable the action and warn the user. It is
@@ -103,4 +106,6 @@ std::unique_ptr<FlightPlanAction>
 construct(params_t* params, std::ifstream* ifs);
 
 std::unique_ptr<FlightPlanAction> parse_line_into_action(std::string line);
+
+std::string list_available_actions();
 }

@@ -30,7 +30,7 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
     bool parking_maneuver_started = false;
 
     void setup(
-        SnapShot<ShipLike>&                    this_ship,
+        [[maybe_unused]] SnapShot<ShipLike>&   this_ship,
         const Collection<SnapShotV<RockLike>>& system)
     {
         target_idx = find(system.bodies, target);
@@ -93,6 +93,15 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
 
         return cmd;
     }
+
+    bool is_blocking() const { return true; }
+
+    std::string usage() const
+    {
+        return R"(Park in orbit
+    id:399 \ ; NAIF id of target body  
+    r:200    ; altitude for parking )";
+    }
 };
 
 template <>
@@ -113,8 +122,7 @@ construct<PARK_IN_ORBIT>(params_t* params, std::ifstream* ifs)
             action->R_capture = stof((*params)["r"]);
             return action;
         } catch (std::exception& e) {
-            LOG_S(ERROR) << "Park in orbit needs two elements eg: id:399 r:200";
-            return {};
+            throw "Usage error:\n" + action->usage();
         }
     }
 

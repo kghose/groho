@@ -24,4 +24,4 @@ burn-rate         = 0.2   ; This is a duplicate key. This value is used
 ; It indicates the time an action is active from, the action and parameters
 ; Action lines form the bulk of a flight plan
 
-- initial-orbit id:499 alt:50000 ; Orbit 499 (Mars) at 5000 km altitude
+initial-state px:23 pf:34

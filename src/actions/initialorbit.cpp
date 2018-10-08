@@ -44,6 +44,16 @@ struct INITIAL_ORBIT : public FlightPlanAction {
     {
         return {};
     }
+
+    bool is_blocking() const { return false; }
+
+    std::string usage() const
+    {
+        return R"(Start spaceship in orbit
+    id:399 \ ; target 
+    alt:3000 ; altitude of orbit
+    )";
+    }
 };
 
 template <>
@@ -64,8 +74,7 @@ construct<INITIAL_ORBIT>(params_t* params, std::ifstream* ifs)
             action->alt    = stod((*params)["alt"]);
             return action;
         } catch (std::exception& e) {
-            LOG_S(ERROR)
-                << "Need two elements for initial orbit, e.g.: id:399 alt:3000";
+            LOG_S(ERROR) << "Usage error:\n" << action->usage();
             return {};
         }
     }

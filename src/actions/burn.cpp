@@ -45,6 +45,16 @@ struct BURN : public FlightPlanAction {
             return { acc, {}, {} };
         }
     }
+
+    bool is_blocking() const { return false; }
+
+    std::string usage() const
+    {
+        return R"(burn: Fire engines for given time.
+    
+usage:
+    burn acc:0.01 for:10)";
+    }
 };
 
 template <>
@@ -64,7 +74,7 @@ construct<BURN>(params_t* params, std::ifstream* ifs)
             action->burn_duration = stod((*params)["for"]);
             return action;
         } catch (std::exception& e) {
-            LOG_S(ERROR) << "Burn command should be like: burn acc:0.01 for:10";
+            LOG_S(ERROR) << "Usage error:\n" << action->usage();
             return {};
         }
     }

@@ -9,9 +9,7 @@ Set initial state of ship
 
 namespace sim {
 
-struct INTITIAL_STATE : public FlightPlanAction {
-
-    static const std::string usage;
+struct INITIAL_STATE : public FlightPlanAction {
 
     std::optional<Vector> pos;
     std::optional<Vector> vel;
@@ -43,22 +41,27 @@ struct INTITIAL_STATE : public FlightPlanAction {
     {
         return {};
     }
-};
 
-const std::string INTITIAL_STATE::usage =
-    R"(initial-state \ ; followed by any of the following optional params
+    bool is_blocking() const { return false; }
+
+    std::string usage() const
+    {
+        return R"(Set initial state for space ship
+    ; none or more of the following optional params to be specified
     px:1.0 py:1.0 pz:1.0 \ ; raw position
     vx:1.0 vy:1.0 vz:1.0 \ ; raw velocity
     ax:1.0 ay:1.0 az:1.0 \ ; raw attitute
     acc:10.0 \ ; acceleration
-    fuel:1.0 \ ; fuel level
+    fuel:1.0   ; fuel level
     )";
+    }
+};
 
 template <>
 std::unique_ptr<FlightPlanAction>
-construct<INTITIAL_STATE>(params_t* params, std::ifstream* ifs)
+construct<INITIAL_STATE>(params_t* params, std::ifstream* ifs)
 {
-    auto action = std::unique_ptr<INTITIAL_STATE>(new INTITIAL_STATE());
+    auto action = std::unique_ptr<INITIAL_STATE>(new INITIAL_STATE());
 
     if (ifs) {
         // code to load from file
@@ -97,10 +100,7 @@ construct<INTITIAL_STATE>(params_t* params, std::ifstream* ifs)
             return action;
 
         } catch (std::exception& e) {
-
-            LOG_S(ERROR) << "Need three floats for attitude vector: eg: "
-                            "x:1.1 y:0.4 z:0.2";
-            return {};
+            throw std::invalid_argument("Correct usage:\n" + action->usage());
         }
     }
 

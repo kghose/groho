@@ -11,6 +11,8 @@ namespace sim {
 
 struct SET_ATTITUDE : public FlightPlanAction {
 
+    Vector att;
+
     void setup(
         [[maybe_unused]] SnapShot<ShipLike>&                    this_ship,
         [[maybe_unused]] const Collection<SnapShotV<RockLike>>& system)
@@ -19,8 +21,8 @@ struct SET_ATTITUDE : public FlightPlanAction {
     }
 
     ShipCommand execute(
-        const SnapShot<ShipLike>&              this_ship,
-        const Collection<SnapShotV<RockLike>>& system)
+        const SnapShot<ShipLike>&                               this_ship,
+        [[maybe_unused]] const Collection<SnapShotV<RockLike>>& system)
     {
         DLOG_S(INFO) << this_ship.property.naif.name << " attitude set";
 
@@ -28,7 +30,13 @@ struct SET_ATTITUDE : public FlightPlanAction {
         return { {}, att, {} };
     }
 
-    Vector att;
+    bool is_blocking() const { return false; }
+
+    std::string usage() const
+    {
+        return R"(Set ship attitude:
+    x:1.1 y:0.4 z:0.2)";
+    }
 };
 
 template <>
@@ -52,8 +60,7 @@ construct<SET_ATTITUDE>(params_t* params, std::ifstream* ifs)
 
         } catch (std::exception& e) {
 
-            LOG_S(ERROR) << "Need three floats for attitude vector: eg: "
-                            "x:1.1 y:0.4 z:0.2";
+            LOG_S(ERROR) << "Usage error:\n" << action->usage();
             return {};
         }
     }

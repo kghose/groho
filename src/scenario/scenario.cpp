@@ -91,18 +91,17 @@ std::optional<LoadedShip> load_ship(std::string fp_name, int ship_code)
 
         } else {
 
-            auto fpa = parse_line_into_action(*line);
+            try {
 
-            if (fpa) {
-
+                auto fpa              = parse_line_into_action(*line);
                 fpa->flightplan_fname = fp_name;
                 fpa->command_string   = *line;
                 fpa->line_no          = flt_plan_file->line_no;
                 flight_plan.push_back(std::move(fpa));
 
-            } else {
-                LOG_S(ERROR) << fp_name << ":" << flt_plan_file->line_no
-                             << " Action? " << *line;
+            } catch (std::exception& e) {
+                LOG_S(ERROR) << fp_name << ":" << flt_plan_file->line_no << ": "
+                             << e.what();
             }
         }
     }
