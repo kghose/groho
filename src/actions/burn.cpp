@@ -57,28 +57,13 @@ usage:
     }
 };
 
-template <>
-std::unique_ptr<FlightPlanAction>
-construct<BURN>(params_t* params, std::ifstream* ifs)
+template <> std::unique_ptr<FlightPlanAction> construct<BURN>(params_t* params)
 {
     auto action = std::unique_ptr<BURN>(new BURN());
-
-    if (ifs) {
-        // code to load from file
-        return action;
-    }
-
     if (params) {
-        try {
-            action->acc           = stof((*params)["acc"]);
-            action->burn_duration = stod((*params)["for"]);
-            return action;
-        } catch (std::exception& e) {
-            LOG_S(ERROR) << "Usage error:\n" << action->usage();
-            return {};
-        }
+        action->acc           = stof((*params)["acc"]);
+        action->burn_duration = stod((*params)["for"]);
     }
-
-    return {};
+    return action;
 }
 }

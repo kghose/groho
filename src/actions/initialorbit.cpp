@@ -57,28 +57,13 @@ struct INITIAL_ORBIT : public FlightPlanAction {
 };
 
 template <>
-std::unique_ptr<FlightPlanAction>
-construct<INITIAL_ORBIT>(params_t* params, std::ifstream* ifs)
+std::unique_ptr<FlightPlanAction> construct<INITIAL_ORBIT>(params_t* params)
 {
     auto action = std::unique_ptr<INITIAL_ORBIT>(new INITIAL_ORBIT());
-
-    if (ifs) {
-        // code to load from file
-        return action;
-    }
-
     if (params) {
-
-        try {
-            action->target = NAIFbody(stoi((*params)["id"]));
-            action->alt    = stod((*params)["alt"]);
-            return action;
-        } catch (std::exception& e) {
-            LOG_S(ERROR) << "Usage error:\n" << action->usage();
-            return {};
-        }
+        action->target = NAIFbody(stoi((*params)["id"]));
+        action->alt    = stod((*params)["alt"]);
     }
-
-    return {};
+    return action;
 }
 }

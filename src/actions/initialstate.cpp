@@ -58,52 +58,38 @@ struct INITIAL_STATE : public FlightPlanAction {
 };
 
 template <>
-std::unique_ptr<FlightPlanAction>
-construct<INITIAL_STATE>(params_t* params, std::ifstream* ifs)
+std::unique_ptr<FlightPlanAction> construct<INITIAL_STATE>(params_t* params)
 {
     auto action = std::unique_ptr<INITIAL_STATE>(new INITIAL_STATE());
 
-    if (ifs) {
-        // code to load from file
-        return action;
-    }
-
     if (params) {
-        try {
+        if ((*params).count("px")) {
+            action->pos = Vector{ stof((*params)["px"]),
+                                  stof((*params)["py"]),
+                                  stof((*params)["pz"]) };
+        }
 
-            if ((*params).count("px")) {
-                action->pos = Vector{ stof((*params)["px"]),
-                                      stof((*params)["py"]),
-                                      stof((*params)["pz"]) };
-            }
+        if ((*params).count("vx")) {
+            action->vel = Vector{ stof((*params)["vx"]),
+                                  stof((*params)["vy"]),
+                                  stof((*params)["vz"]) };
+        }
 
-            if ((*params).count("vx")) {
-                action->vel = Vector{ stof((*params)["vx"]),
-                                      stof((*params)["vy"]),
-                                      stof((*params)["vz"]) };
-            }
+        if ((*params).count("ax")) {
+            action->att = Vector{ stof((*params)["ax"]),
+                                  stof((*params)["ay"]),
+                                  stof((*params)["az"]) };
+        }
 
-            if ((*params).count("ax")) {
-                action->att = Vector{ stof((*params)["ax"]),
-                                      stof((*params)["ay"]),
-                                      stof((*params)["az"]) };
-            }
+        if ((*params).count("acc")) {
+            action->acc = stod((*params)["acc"]);
+        }
 
-            if ((*params).count("acc")) {
-                action->acc = stod((*params)["acc"]);
-            }
-
-            if ((*params).count("fuel")) {
-                action->fuel = stod((*params)["fuel"]);
-            }
-
-            return action;
-
-        } catch (std::exception& e) {
-            throw std::invalid_argument("Correct usage:\n" + action->usage());
+        if ((*params).count("fuel")) {
+            action->fuel = stod((*params)["fuel"]);
         }
     }
 
-    return {};
+    return action;
 }
 }

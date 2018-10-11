@@ -40,31 +40,14 @@ struct SET_ATTITUDE : public FlightPlanAction {
 };
 
 template <>
-std::unique_ptr<FlightPlanAction>
-construct<SET_ATTITUDE>(params_t* params, std::ifstream* ifs)
+std::unique_ptr<FlightPlanAction> construct<SET_ATTITUDE>(params_t* params)
 {
     auto action = std::unique_ptr<SET_ATTITUDE>(new SET_ATTITUDE());
-
-    if (ifs) {
-        // code to load from file
-        return action;
-    }
-
     if (params) {
-        try {
-
-            action->att = Vector{ stof((*params)["x"]),
-                                  stof((*params)["y"]),
-                                  stof((*params)["z"]) };
-            return action;
-
-        } catch (std::exception& e) {
-
-            LOG_S(ERROR) << "Usage error:\n" << action->usage();
-            return {};
-        }
+        action->att = Vector{ stof((*params)["x"]),
+                              stof((*params)["y"]),
+                              stof((*params)["z"]) };
     }
-
-    return {};
+    return action;
 }
 }

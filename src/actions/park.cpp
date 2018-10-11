@@ -105,27 +105,13 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
 };
 
 template <>
-std::unique_ptr<FlightPlanAction>
-construct<PARK_IN_ORBIT>(params_t* params, std::ifstream* ifs)
+std::unique_ptr<FlightPlanAction> construct<PARK_IN_ORBIT>(params_t* params)
 {
     auto action = std::unique_ptr<PARK_IN_ORBIT>(new PARK_IN_ORBIT());
-
-    if (ifs) {
-        // code to load from file
-        return action;
-    }
-
     if (params) {
-
-        try {
-            action->target    = stof((*params)["id"]);
-            action->R_capture = stof((*params)["r"]);
-            return action;
-        } catch (std::exception& e) {
-            throw "Usage error:\n" + action->usage();
-        }
+        action->target    = stof((*params)["id"]);
+        action->R_capture = stof((*params)["r"]);
     }
-
-    return {};
+    return action;
 }
 }

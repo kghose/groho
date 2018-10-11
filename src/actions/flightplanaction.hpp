@@ -39,7 +39,9 @@ struct ShipCommand {
 // All actions are derived from this base class
 struct FlightPlanAction {
 
-    std::string        action_name;
+    // This is like a type name, which allows us to deserialize this thing
+    // properly
+    std::string        _action_name;
     std::string        flightplan_fname;
     size_t             line_no;
     std::string        command_string;
@@ -98,12 +100,28 @@ typedef std::list<std::unique_ptr<FlightPlanAction>> FlightPlan;
 // All the flight plans of the fleet
 typedef std::vector<FlightPlan> FlightPlans;
 
+template <typename T>
+std::unique_ptr<FlightPlanAction> construct(params_t* params);
+
 // Each FPA we add specializes this function template
 // We can initialize an action either from a parameter dictionary or from a
 // file containing a saved state (which will be used for restarts)
 template <typename T>
 std::unique_ptr<FlightPlanAction>
-construct(params_t* params, std::ifstream* ifs);
+try_construct(std::string name, params_t* params)
+{
+    // We'd handle the null pointer case (we just want the action constructed
+    // because we are reading it's data from disk) here, but templating will not
+    // allow us to have std::unique_ptr<T>(new T()) for forward declarations
+    try {
+        auto action          = construct<T>(params);
+        action->_action_name = name; // ensures we serialize it
+        return action;
+    } catch (std::exception& e) {
+        LOG_S(ERROR) << "Usage error:\n" << construct<T>(nullptr)->usage();
+        return {};
+    }
+}
 
 std::unique_ptr<FlightPlanAction> parse_line_into_action(std::string line);
 
