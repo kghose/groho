@@ -100,7 +100,7 @@ struct PARK_IN_ORBIT : public FlightPlanAction {
     {
         return R"(Park in orbit
     id:399 \ ; NAIF id of target body  
-    r:200    ; altitude for parking )";
+    r:200    ; altitude for parking (km above target surface) )";
     }
 };
 

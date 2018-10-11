@@ -81,9 +81,9 @@ struct Options {
     void print_usage()
     {
         std::cout << "\nUsage:\n"
-                  << "groho <scenario file> [annotation file] [--no-gui]"
-                  << std::endl;
+                  << "groho <scenario file> [annotation file] [--no-gui]";
 
+        std::cout << "\n\n" << sim::list_available_actions();
         exit(0);
     }
 };

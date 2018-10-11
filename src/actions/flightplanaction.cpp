@@ -81,5 +81,12 @@ std::unique_ptr<FlightPlanAction> parse_line_into_action(std::string line)
     }
 }
 
-std::string list_available_actions() { return ""; }
+std::string list_available_actions()
+{
+    std::string list_str = "Available actions:\n";
+    for (auto const& [name, func] : available_actions) {
+        list_str += name + "  \\ ; " + func(name, nullptr)->usage() + "\n\n";
+    }
+    return list_str;
+}
 }

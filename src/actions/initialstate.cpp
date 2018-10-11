@@ -48,11 +48,11 @@ struct INITIAL_STATE : public FlightPlanAction {
     {
         return R"(Set initial state for space ship
     ; none or more of the following optional params to be specified
-    px:1.0 py:1.0 pz:1.0 \ ; raw position
-    vx:1.0 vy:1.0 vz:1.0 \ ; raw velocity
+    px:1.0 py:1.0 pz:1.0 \ ; raw position (km)
+    vx:1.0 vy:1.0 vz:1.0 \ ; raw velocity (km/s)
     ax:1.0 ay:1.0 az:1.0 \ ; raw attitute
-    acc:10.0 \ ; acceleration
-    fuel:1.0   ; fuel level
+    acc:0.01 \ ; acceleration (km/s^2)
+    fuel:0.5   ; fuel level (ratio)
     )";
     }
 };

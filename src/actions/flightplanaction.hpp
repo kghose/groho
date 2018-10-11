@@ -118,8 +118,13 @@ try_construct(std::string name, params_t* params)
         action->_action_name = name; // ensures we serialize it
         return action;
     } catch (std::exception& e) {
-        LOG_S(ERROR) << "Usage error:\n" << construct<T>(nullptr)->usage();
-        return {};
+        throw std::domain_error(
+            // We chose this route (constructing an empty object) because the
+            // alternative is to explicitly declare each action in a header file
+            // and include that header file in flightplanaction.cpp. In that
+            // method we would have declared usage as a static function and
+            // called that in this function template
+            "Usage error:\n" + construct<T>(nullptr)->usage());
     }
 }
 

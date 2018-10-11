@@ -50,8 +50,8 @@ struct INITIAL_ORBIT : public FlightPlanAction {
     std::string usage() const
     {
         return R"(Start spaceship in orbit
-    id:399 \ ; target 
-    alt:3000 ; altitude of orbit
+    id:399 \ ; target (NAIF id)
+    alt:3000 ; altitude of orbit (Km above surface)
     )";
     }
 };

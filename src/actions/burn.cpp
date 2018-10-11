@@ -50,10 +50,10 @@ struct BURN : public FlightPlanAction {
 
     std::string usage() const
     {
-        return R"(burn: Fire engines for given time.
+        return R"(Fire engines for given time.
     
-usage:
-    burn acc:0.01 for:10)";
+    acc:0.01 \ ; acceleration in km/s^2
+    for:10  ; duration in s)";
     }
 };
 
