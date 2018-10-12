@@ -4,6 +4,7 @@ Developer notes
 <!-- TOC -->
 
 - [Notes on C++](#notes-on-c)
+    - [loguru and signal](#loguru-and-signal)
     - [std::pair and std::lock_guard](#stdpair-and-stdlock_guard)
     - [structured bindings](#structured-bindings)
     - [std::map [] and const : gcc vs clang](#stdmap--and-const--gcc-vs-clang)
@@ -90,11 +91,25 @@ Developer notes
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
 
+##  loguru and signal
+`loguru` probably attaches it's own SIGINT handler, so doing 
+```
+loguru::init(argc, argv);
+signal(SIGINT, ctrl_c_pressed);
+```
+works while
+```
+signal(SIGINT, ctrl_c_pressed);
+loguru::init(argc, argv);
+```
+doesn't (i.e. in the second case pressing CTRL-C will not lead to the callback
+being called, and will lead to an error because the thread is not stopped cleanly)
+
+
 ## std::pair and std::lock_guard
 
-While working on 
-
-The following will compile and execute fine:
+While working on my Lockable class I ran into the issue that the following 
+will compile and execute fine:
 ```
 #include <iostream>
 #include <mutex>
@@ -166,6 +181,32 @@ int main()
 I think it has to to with std::lock_guard and move semantics but I fail to
 understand why, then, other version works. In the working version, in my mind,
 the `Locked` class is bascially same as `std:pair`.
+
+Some kind people at SO [answered my question][so-lockable]
+
+```
+template <typename T>
+class Lockable {
+public:
+    auto borrow()       { return std::pair<      T&, std::lock_guard<std::mutex>>{object, mutex}; }
+    auto borrow() const { return std::pair<const T&, std::lock_guard<std::mutex>>{object, mutex}; }
+
+private:
+    T                  object;
+    mutable std::mutex mutex;
+};
+
+
+The idea is to explicitly specify std::lock_guard as a template argument in 
+std::pair, but feed mutex as the corresponding constructor argument (indeed, 
+the second version doesn't work because std::lock_guard isn't movable). 
+Overload (3) of std::pair::pair will be used in this case.
+
+(Also, since it is C++17, I would suggest to use std::scoped_lock instead of 
+std::lock_guard).
+```
+
+[so-lockable]: https://stackoverflow.com/questions/52016678/how-to-return-stdlock-guard-in-a-stdpair
 
 
 ## structured bindings
