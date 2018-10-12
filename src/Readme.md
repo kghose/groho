@@ -4,6 +4,7 @@ Developer notes
 <!-- TOC -->
 
 - [Notes on C++](#notes-on-c)
+    - [Command line parsing](#command-line-parsing)
     - [loguru and signal](#loguru-and-signal)
     - [std::pair and std::lock_guard](#stdpair-and-stdlock_guard)
     - [structured bindings](#structured-bindings)
@@ -90,6 +91,27 @@ Developer notes
 
 I learned several things about C++ coding while doing this project. My haphazard
 notes are here.
+
+## Command line parsing
+I used to think `cxxopts` was great, until I actually used it. What is with 
+the positional arguments appearing in the help list??
+Also, it consumed `args` leaving `loguru` complaining. The example program seems
+to be out of date and not well advertised. All this was non intuitive enough 
+for me that I discarded `cxxopts` and tried out [CLI11][CLI11]
+
+I found it awesome because
+
+1. Single header (or header only)
+1. It has a very simple interface and generates the kind of help and CLI that one expects from a CLI tool
+1. It doesn’t consume argc like cxxopts does (and which leads to other things, like loguru, to complain)
+1. You hook it up to write the parsed arguments to your variables, so you can write
+   the variables to your own structures and not have to use anything custome to
+   the library.
+1. The docs are simple but sufficient
+
+[CLI11]: https://github.com/CLIUtils/CLI11#why-write-another-cli-parser
+
+
 
 ##  loguru and signal
 `loguru` probably attaches it's own SIGINT handler, so doing 

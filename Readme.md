@@ -360,8 +360,9 @@ They are live at http://www.asterank.com/.
 Included in the code are the following fine pieces of software
 
 1. [loguru](https://github.com/emilk/loguru) from Emil Ernerfeldt for the logging
-2. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash for unit tests
-3. [magnum/corrade][magnum] from Mosra (Vladimír Von­druš) for everything graphical
+1. [CLI11](https://github.com/CLIUtils/CLI11) from Henry Schreiner for the CLI 
+1. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash for unit tests
+1. [magnum/corrade][magnum] from Mosra (Vladimír Von­druš) for everything graphical
 
 ## Dev tooling
 I was helped in writing the code by

@@ -11,6 +11,8 @@ Entry point function for command line program
 #include <stdlib.h>
 #include <thread>
 
+#include "CLI11.hpp"
+
 #ifndef NOGUI
 #include "app.hpp"
 #endif
@@ -28,64 +30,18 @@ void ctrl_c_pressed(int) { keep_running = false; }
 
 void print_license()
 {
-    std::cout <<
-        R"(  Groho 18.08: A simulator for inter-planetary travel and warfare
-  Copyright (c) 2017, 2018 by Kaushik Ghose. 
-  Released under the MIT License. Some rights reserved)"
-              << std::endl;
+    std::cout << R"(  
+    Groho 18.11: A simulator for inter-planetary travel and warfare
+    Copyright (c) 2017, 2018 by Kaushik Ghose. 
+    Released under the MIT License. Some rights reserved
+    
+)";
 }
 
 struct Options {
     std::string scenario_file;
     std::string annotation_file;
-    bool        interactive = true;
-    bool        ok          = false;
-
-    Options(int argc, char* argv[])
-    {
-        if (argc < 2) {
-            print_usage();
-            return;
-        }
-
-        int pos = 1;
-        for (int i = 1; i < argc; i++) {
-            std::string opt(argv[i]);
-
-            if (opt[0] == '-') {
-                // Optional arguments
-
-                if (opt == "--no-gui") {
-                    interactive = false;
-                } else {
-                    i++; // skip the option argument if we can't understand it
-                }
-
-                continue;
-
-            } else {
-                // Positional arguments
-
-                switch (pos++) {
-                case 1:
-                    scenario_file = opt;
-                    break;
-                case 2:
-                    annotation_file = opt;
-                    break;
-                }
-            }
-        }
-    }
-
-    void print_usage()
-    {
-        std::cout << "\nUsage:\n"
-                  << "groho <scenario file> [annotation file] [--no-gui]";
-
-        std::cout << "\n\n" << sim::list_available_actions();
-        exit(0);
-    }
+    bool        non_interactive = false;
 };
 
 // Periodically monitor scenario file and restart simulator as needed
@@ -120,23 +76,54 @@ int main(int argc, char* argv[])
 {
     print_license();
 
+    Options opt;
+    bool    show_actions_and_exit;
+
+    CLI::App cli_options{
+        "Groho: A simulator for inter-planetary travel and warfare"
+    };
+    cli_options.add_flag(
+        "--no-gui", opt.non_interactive, "Run in non-interactive mode");
+    cli_options.add_flag(
+        "--actions", show_actions_and_exit, "Show action list");
+    cli_options.add_option("scenariofile", opt.scenario_file, "Scenario file")
+        ->check(CLI::ExistingFile);
+    cli_options
+        .add_option("annotationfile", opt.annotation_file, "Annotation file")
+        ->check(CLI::ExistingFile);
+
+    try {
+        cli_options.parse(argc, argv);
+    } catch (const CLI::ParseError& e) {
+        return cli_options.exit(e);
+    }
+
+    if (show_actions_and_exit) {
+        std::cout << sim::list_available_actions();
+        exit(0);
+    }
+
+    if (opt.scenario_file == "") {
+        std::cout << cli_options.help("", CLI::AppFormatMode::All);
+        exit(0);
+    }
+
     loguru::init(argc, argv);
 
+    // This has to come after loguru::init
     signal(SIGINT, ctrl_c_pressed);
-
-    Options options(argc, argv);
 
     sim::Simulator simulator;
 
     unsigned int interval_ms = 500;
 
-    auto simulator_thread = std::thread(
-        simulator_loop, std::ref(simulator), options, interval_ms);
+    auto simulator_thread
+        = std::thread(simulator_loop, std::ref(simulator), opt, interval_ms);
 
     int ret_val = 0;
 
 #ifndef NOGUI
-    if (options.interactive) {
+    if (!opt.non_interactive) {
         sim::GrohoApp app({ argc, argv }, simulator);
         ret_val      = app.exec();
         keep_running = false;
