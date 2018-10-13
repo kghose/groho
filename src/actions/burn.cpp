@@ -51,7 +51,6 @@ struct BURN : public FlightPlanAction {
     std::string usage() const
     {
         return R"(Fire engines for given time.
-    
     acc:0.01 \ ; acceleration in km/s^2
     for:10  ; duration in s)";
     }
