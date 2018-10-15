@@ -56,6 +56,7 @@ cd examples/002.full-solar-system
 - [Physics/astronautics word salad](#physicsastronautics-word-salad)
 - [Related software](#related-software)
     - [NASA's GMAT](#nasas-gmat)
+    - [Solar System Voyager (SSVG)](#solar-system-voyager-ssvg)
     - [NASA Ames Research Center Trajectory Browser](#nasa-ames-research-center-trajectory-browser)
     - [Rebound by Hanno Rein](#rebound-by-hanno-rein)
     - [Orbiter by Martin Schweiger](#orbiter-by-martin-schweiger)
@@ -148,6 +149,11 @@ make
 ```
 
 # Manual/Tutorial
+
+```
+groho --help  # Get help about the program
+groho --actions # List available spacecraft actions 
+```
 
 ## Getting the data
 
@@ -294,6 +300,22 @@ so I stubbornly rolled my own to my own (much more limited) specifications.
 
 [GMAT]: http://gmatcentral.org/display/GW/GMAT+Wiki+Home
 [GMAT-github]: https://github.com/haisamido/GMAT
+
+## Solar System Voyager (SSVG)
+
+"[SSVG] is simulation software which enables users to fly their own space probes in the solar system.  Each space probe has three propulsion systems: a chemical propulsion engine, an electric propulsion engine, and solar sail.  Fly your own space probe in the precisely simulated Solar System."
+
+I found SSVG on Oct 14th and browsing through the manual][SSVG-manual] found that
+the author had a very similar concept (including the name "Flight plan") and a
+cool looking GUI for writing flight plans! I had, by then, however, discarded the
+idea of timed actions in favor of event/condition driven actions. But it is
+cool for me to see a "flight plan" like concept, because I have so far been
+unsuccessful in finding what a real flight plan, or set of propulsive maneuvers
+actually looks like.
+
+[SSVG]: https://github.com/whiskie14142/SolarSystemVoyager/
+[SSVG-manual]: https://github.com/whiskie14142/SolarSystemVoyager/blob/master/doc/SSVG_UsersGuide-en.pdf
+
 
 ## NASA Ames Research Center Trajectory Browser
 
