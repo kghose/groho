@@ -44,6 +44,7 @@ struct BURN;
 struct INITIAL_ORBIT;
 struct PARK_IN_ORBIT;
 struct ORIENT;
+struct PHASE;
 struct WAITTILL;
 
 std::map<
@@ -55,6 +56,7 @@ std::map<
                        { "initial-orbit", try_construct<INITIAL_ORBIT> },
                        { "park", try_construct<PARK_IN_ORBIT> },
                        { "orient", try_construct<ORIENT> },
+                       { "wait-till-phase", try_construct<PHASE> },
                        { "wait-till", try_construct<WAITTILL> } };
 
 std::unique_ptr<FlightPlanAction> parse_line_into_action(std::string line)
