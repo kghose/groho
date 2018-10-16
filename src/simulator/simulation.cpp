@@ -74,17 +74,16 @@ Simulation::Simulation(
     for (auto& fp_name : config.flightplan_fnames) {
         auto loaded_ship = load_ship(fp_name, --ship_code);
         if (loaded_ship) {
+            size_t action_count = loaded_ship->flight_plan.size();
             record.fleet.push_back({ loaded_ship->property, {} });
             actions.push_back(std::move(loaded_ship->flight_plan));
-            LOG_S(INFO) << "Loaded " << loaded_ship->flight_plan.size()
-                        << " actions for ship "
+            LOG_S(INFO) << "Loaded " << action_count << " actions for ship "
                         << loaded_ship->property.naif.name;
         }
     }
 
     LOG_S(INFO) << record.system.size() << " rocks in simulation.";
     LOG_S(INFO) << record.fleet.size() << " spaceships in simulation.";
-    LOG_S(INFO) << "Loaded " << actions.size() << " actions";
 }
 
 // This conveniently generates a State object for the simulator with time
