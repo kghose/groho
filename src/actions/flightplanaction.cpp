@@ -45,6 +45,8 @@ struct SET_ATTITUDE;
 struct BURN;
 struct INITIAL_ORBIT;
 struct PARK_IN_ORBIT;
+struct ORIENT;
+struct WAITTILL;
 
 std::unordered_map<
     std::string,
@@ -53,7 +55,9 @@ std::unordered_map<
                        { "set-attitude", try_construct<SET_ATTITUDE> },
                        { "burn", try_construct<BURN> },
                        { "initial-orbit", try_construct<INITIAL_ORBIT> },
-                       { "park", try_construct<PARK_IN_ORBIT> } };
+                       { "park", try_construct<PARK_IN_ORBIT> },
+                       { "orient", try_construct<ORIENT> },
+                       { "wait-till", try_construct<WAITTILL> } };
 
 std::unique_ptr<FlightPlanAction> parse_line_into_action(std::string line)
 {
