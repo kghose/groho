@@ -28,7 +28,7 @@ struct BURN : public FlightPlanAction {
         [[maybe_unused]] const Collection<SnapShotV<RockLike>>& system)
     {
         if (burn_end_time) {
-            if (*burn_end_time < this_ship.state.t_s) {
+            if (this_ship.state.t_s < *burn_end_time) {
                 return { acc, {}, {} };
             } else {
                 done = true;
