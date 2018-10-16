@@ -1,27 +1,28 @@
-; Spaceship commands are placed in a separate script file (called a "flight plan") 
-; and a reference is put in the scenario file. 
-; A line can contain a key = value pair (like the configuration file)
-; and this indicates some property that will be set for the ship
-
-; like metadata ...
+; Please see flt1.groho.txt for a fully annottaed flight plan
 
 name   = Ma Kali
 color  = 0x0000ff
 
 ; or characteristics ... 
 
-max-acceleration  = 0.1   ; km/s^2 (a)
+max-acceleration  = 0.01   ; km/s^2 (a)
 max-fuel          = 100   ; arbitrary units (u)
-fuel-cons-rate    = 0.1   ; There is no such key. groho will warn and move on 
 burn-rate         = 0.1   ; u/s/a
-burn-rate         = 0.2   ; This is a duplicate key. This value is used
-
-; Or a line can take the form
-
-; <time> <action> <key>:<value> <key>:<value> ...
-
-; This is an action line. 
-; It indicates the time an action is active from, the action and parameters
-; Action lines form the bulk of a flight plan
 
 initial-state px:23 pf:34
+
+initial-orbit id:399 alt:3000 ; Orbit 399 (Earth) at 3000 km altitude
+
+wait-till jd:2458350.0
+; This waiting state just pauses until the given time passes
+
+wait-till-phase id:399 phase:0
+; This waits until we are on the "outer side" of Earth, farthest from the sun
+; during our orbit.
+
+orient \
+    id:399 \ ; relative to our orbit round Earth
+    yaw:90 \  ; prograde
+    pitch:0 ;
+
+burn acc:0.01 for:1000 ; Burn 1G (0.01 km/s^2) for 3000s

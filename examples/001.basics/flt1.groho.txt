@@ -47,14 +47,16 @@ hi-there
 
 ; After a while in orbit, we get bored and blast off into the unknown
 
-time 2458248.5
+wait-till jd:2458300.0
 ; This waiting state just pauses until the given time passes
 
-sun-opposition id:499
-; This waits until we are on the "outer side" of Mars, farthest from the sun
+wait-till-phase id:499 phase:180
+; This waits until we are on the "inner side" of Mars, nearest to the sun
 ; during our orbit.
 
-prograde id:499
-; Orient us prograde in our orbit around Mars
+orient \
+    id:499 \ ; relative to our orbit round Mars
+    yaw:0 \  ; prograde
+    pitch:0 ;
 
-burn acc:0.01 for:3000 ; Burn 1G (0.01 km/s^2) for 3000s
+burn acc:0.01 for:300 ; Burn 1G (0.01 km/s^2) for 3000s
