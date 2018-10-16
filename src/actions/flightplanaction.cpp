@@ -14,12 +14,10 @@ Base action class and base parser for flight plan actions
 #include <optional>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 
 #include "body.hpp"
 #include "flightplanaction.hpp"
 #include "groholib.hpp"
-//#include "orrery.hpp"
 #include "scenariolib.hpp"
 #include "state.hpp"
 #include "vector.hpp"
@@ -48,7 +46,7 @@ struct PARK_IN_ORBIT;
 struct ORIENT;
 struct WAITTILL;
 
-std::unordered_map<
+std::map<
     std::string,
     std::function<std::unique_ptr<FlightPlanAction>(std::string, params_t*)>>
     available_actions{ { "initial-state", try_construct<INITIAL_STATE> },
