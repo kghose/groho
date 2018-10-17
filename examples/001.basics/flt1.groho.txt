@@ -47,7 +47,7 @@ hi-there
 
 ; After a while in orbit, we get bored and blast off into the unknown
 
-wait-till jd:2458300.0
+wait-till jd:2458167.1
 ; This waiting state just pauses until the given time passes
 
 wait-till-phase id:499 phase:180
@@ -56,7 +56,7 @@ wait-till-phase id:499 phase:180
 
 orient \
     id:499 \ ; relative to our orbit round Mars
-    yaw:0 \  ; prograde
+    yaw:14.4 \  ; prograde and rising a bit above the ecliptic
     pitch:0 ;
 
 burn acc:0.01 for:300 ; Burn 1G (0.01 km/s^2) for 3000s
