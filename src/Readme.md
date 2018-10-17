@@ -84,6 +84,8 @@ Developer notes
     - [Thinking aloud on user interfaces](#thinking-aloud-on-user-interfaces)
         - [The decision](#the-decision-1)
     - [How would annotations work?](#how-would-annotations-work)
+- [Usage notes](#usage-notes)
+    - [2018.10.16](#20181016)
 
 <!-- /TOC -->
 
@@ -1481,3 +1483,38 @@ with text just above object with small circle (also billboard) marking object po
 - Differential annotation: difference in state variables for a pair of objects.
 Rendered as billboard just above a line ending in two small circles (also billboard)
 marking object points. 
+
+# Usage notes
+
+## 2018.10.16
+- Tinkering with `001.basics` scenario after having implemented important actions
+  `wait-till`, `wait-till-phase` and `orient`
+- These three functions enable me to fairly quickly, iteratively, develop a Mars-Earth maneuver
+
+What would be nice to have:
+
+At each iteration I want to make sure that the spaceship is making a closer 
+approach to Earth so I can set up a capture phase. Every time I rerun the sim
+my view is reset to the SSB at the same zoom scale, and I have to scroll forward
+in time to the location/event I'm interested in. I have no idea how far the ship
+is from Earth at closest approach. The downsampling mismatch is so jarring, I
+need a good fix for this. I'm don't use the whole trajectory at all, perhaps to
+initially orient myself.
+
+- Distance marker between two points. Either one that travels with time cursor
+  or one that marks out minimum/maximum separation or other condition
+- Need to draw as much of trajectory as possible at high time resolution, with
+  correct interpolation.
+- It is enough to have a local neighborhood around the time cursor, stretching
+  say a day or so backward and forward in time.
+- There should be a way of pinning the cursor in space and time so I can inspect
+  the same location in space-time with reruns.
+- Color scheme should change to black on white, or white on black (I recall the
+  different colors didn't come out so well on white background). Gray is hard
+  to see. There is an issue of having the markers visible - perhaps we can make
+  the markers yellow or some color easily seen against white.
+- Changing the fractal downsampler's linear threshold to 1 gives a nice sampling
+  rate for Earth vs a space ship orbiting earth.
+- Would be nice to control the view using a view command for precision: the
+  interactive controls are nice to get a general orienting to space and time but
+  after that you want finer control
