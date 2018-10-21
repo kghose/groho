@@ -32,7 +32,15 @@ struct BURN : public FlightPlanAction {
                 return { acc, {}, {} };
             } else {
                 done = true;
-                return { 0, {}, {} };
+                return { 0,
+                         {},
+                         Event{ this_ship.state.t_s,
+                                { Thing{ this_ship.property.naif,
+                                         this_ship.state.pos,
+                                         this_ship.state.vel },
+                                  {} },
+                                Event::BURN_END,
+                                "Burn end" } };
             }
         } else {
             burn_end_time = this_ship.state.t_s + burn_duration;
@@ -42,7 +50,15 @@ struct BURN : public FlightPlanAction {
                     << this_ship.property.naif.name << " exceeds max_acc";
                 acc = this_ship.property.max_acc;
             }
-            return { acc, {}, {} };
+            return { acc,
+                     {},
+                     Event{ this_ship.state.t_s,
+                            { Thing{ this_ship.property.naif,
+                                     this_ship.state.pos,
+                                     this_ship.state.vel },
+                              {} },
+                            Event::BURN_START,
+                            "Burn start" } };
         }
     }
 

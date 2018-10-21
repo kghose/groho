@@ -89,7 +89,8 @@ void setup_actions(Simulation* simulation, State& state)
 
 void execute_actions(Simulation* simulation, State& state)
 {
-    auto [flight_plans, lock] = simulation->flightplans.borrow();
+    auto [flight_plans, fl_lock] = simulation->flightplans.borrow();
+    auto [events, ev_lock]       = simulation->events.borrow();
 
     for (size_t s = 0; s < flight_plans.size(); s++) {
         auto& ship = state.fleet[s];
@@ -100,6 +101,9 @@ void execute_actions(Simulation* simulation, State& state)
             }
             if (cmd.att) {
                 ship.state.att = *(cmd.att);
+            }
+            if (cmd.event) {
+                events.push_back(*(cmd.event));
             }
 
             if (action->is_blocking()) {
@@ -145,6 +149,9 @@ void Simulator::run()
     status  = WAITING;
 
     LOG_S(INFO) << "Saved " << simulation->point_count << " state vectors";
+    auto [events, ev_lock] = simulation->events.borrow();
+    LOG_S(INFO) << "Saved " << events.size() << " events";
+
     LOG_S(INFO) << "Stopping simulation";
 }
 

@@ -15,6 +15,7 @@ Base action class and base parser for flight plan actions
 #include <vector>
 
 #include "body.hpp"
+#include "event.hpp"
 #include "state.hpp"
 
 #define LOGURU_WITH_STREAMS 1
@@ -31,9 +32,9 @@ const double do_this_first = std::numeric_limits<double>::lowest();
 
 // These are the actions we can set
 struct ShipCommand {
-    std::optional<float>       acc;
-    std::optional<Vector>      att;
-    std::optional<std::string> signal;
+    std::optional<float>  acc;
+    std::optional<Vector> att;
+    std::optional<Event>  event;
 };
 
 // All actions are derived from this base class

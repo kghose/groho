@@ -1,71 +1,29 @@
 /*
-  Class we use to flag events with
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+
+Events are markers added - always by annotations, sometimes by flight plans -
+that carry a space-time coordinate and a display text. They are meant to
+indicate interesting points in the simulation.
 */
+
 #pragma once
 
-#include <string>
-#include <iostream>
+#include "naifbody.hpp"
+#include "vector.hpp"
 
+namespace sim {
 
-namespace sim
-{
-
-enum class EventType { 
-  Launch = 0, 
-  Landing,
-  Crash,
-  Encounter,
-  BingoFuel
+struct Thing {
+    NAIFbody naif;
+    Vector   pos;
+    Vector   vel;
 };
 
-
-struct Event
-{
-  float                  jd;
-  std::string          name;
-  std::string       remarks;
-  EventType      event_type;
-
-  Event() {}
-  Event( double jd ): jd( jd ) {}
-  Event( double jd, std::string name, EventType et ) : 
-      jd( jd ), name( name ), event_type( et ) {}
-  Event( double jd, std::string name, EventType et, std::string remarks ) : 
-      jd( jd ), name( name ), remarks( remarks ), event_type( et ) {}
-
-  std::string event_type_str() const
-  {
-    switch( event_type ) {
-      case EventType::Launch: return "Launch";
-      case EventType::Landing: return "Landing";
-      case EventType::Crash: return "Crash";
-      case EventType::Encounter: return "Encounter";
-      case EventType::BingoFuel: return "BingoFuel";
-      default: return "Unknown";
-    }
-  }
+struct Event {
+    double               t_s;
+    std::optional<Thing> thing[2];
+    enum Kind { SIGNAL, BURN_START, BURN_END, DIST, VEL } kind;
+    std::string message;
 };
-
-inline
-std::ostream& 
-operator << ( std::ostream& os, const Event& e )
-{
-  os << e.jd << ", " << e.name << ", " << e.event_type_str() << ", " << e.remarks;
-  return os;
 }
-
-
-inline bool operator == ( const Event& e, const float _jd ) { return e.jd == _jd; }
-inline bool operator == ( const float _jd, const Event& e ) { return e.jd == _jd; }
-inline bool operator != ( const Event& e, const float _jd ) { return e.jd != _jd; }
-inline bool operator != ( const float _jd, const Event& e ) { return e.jd != _jd; }
-inline bool operator <  ( const Event& e, const float _jd ) { return e.jd <  _jd; }
-inline bool operator <= ( const Event& e, const float _jd ) { return e.jd <= _jd; }
-inline bool operator >  ( const Event& e, const float _jd ) { return e.jd >  _jd; }
-inline bool operator >= ( const Event& e, const float _jd ) { return e.jd >= _jd; }
-inline bool operator <  ( const float _jd, const Event& e ) { return  _jd <  e.jd; }
-inline bool operator <= ( const float _jd, const Event& e ) { return  _jd <= e.jd; }
-inline bool operator >  ( const float _jd, const Event& e ) { return  _jd >  e.jd; }
-inline bool operator >= ( const float _jd, const Event& e ) { return  _jd >= e.jd; }
-
-} // namespace sim

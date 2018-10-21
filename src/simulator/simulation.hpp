@@ -21,6 +21,7 @@ It's important functions are:
 #include <memory>
 
 #include "configuration.hpp"
+#include "event.hpp"
 #include "flightplanaction.hpp"
 #include "lockable.hpp"
 #include "sampledhistory.hpp"
@@ -76,6 +77,9 @@ public:
 
     // The data store!
     Lockable<RocksAndShips<Record, Record>> trajectory_data;
+
+    // The stack of events (including signals) dropped by ships
+    Lockable<std::vector<Event>> events;
 
     // Flightplan actions
     Lockable<FlightPlans> flightplans;
