@@ -44,6 +44,43 @@ struct Options {
     bool        non_interactive = false;
 };
 
+Options parse_arguments(int argc, char* argv[])
+{
+    Options opt;
+    bool    show_actions_and_exit;
+
+    CLI::App cli_options{
+        "Groho: A simulator for inter-planetary travel and warfare"
+    };
+    cli_options.add_flag(
+        "--no-gui", opt.non_interactive, "Run in non-interactive mode");
+    cli_options.add_flag(
+        "--actions", show_actions_and_exit, "Show action list");
+    cli_options.add_option("scenariofile", opt.scenario_file, "Scenario file")
+        ->check(CLI::ExistingFile);
+    cli_options
+        .add_option("annotationfile", opt.annotation_file, "Annotation file")
+        ->check(CLI::ExistingFile);
+
+    try {
+        cli_options.parse(argc, argv);
+    } catch (const CLI::ParseError& e) {
+        exit(cli_options.exit(e));
+    }
+
+    if (show_actions_and_exit) {
+        std::cout << sim::list_available_actions();
+        exit(0);
+    }
+
+    if (opt.scenario_file == "") {
+        std::cout << cli_options.help("", CLI::AppFormatMode::All);
+        exit(0);
+    }
+
+    return opt;
+}
+
 // Periodically monitor scenario file and restart simulator as needed
 void simulator_loop(
     sim::Simulator& simulator, Options options, unsigned int interval_ms)
@@ -76,37 +113,7 @@ int main(int argc, char* argv[])
 {
     print_license();
 
-    Options opt;
-    bool    show_actions_and_exit;
-
-    CLI::App cli_options{
-        "Groho: A simulator for inter-planetary travel and warfare"
-    };
-    cli_options.add_flag(
-        "--no-gui", opt.non_interactive, "Run in non-interactive mode");
-    cli_options.add_flag(
-        "--actions", show_actions_and_exit, "Show action list");
-    cli_options.add_option("scenariofile", opt.scenario_file, "Scenario file")
-        ->check(CLI::ExistingFile);
-    cli_options
-        .add_option("annotationfile", opt.annotation_file, "Annotation file")
-        ->check(CLI::ExistingFile);
-
-    try {
-        cli_options.parse(argc, argv);
-    } catch (const CLI::ParseError& e) {
-        return cli_options.exit(e);
-    }
-
-    if (show_actions_and_exit) {
-        std::cout << sim::list_available_actions();
-        exit(0);
-    }
-
-    if (opt.scenario_file == "") {
-        std::cout << cli_options.help("", CLI::AppFormatMode::All);
-        exit(0);
-    }
+    Options opt = parse_arguments(argc, argv);
 
     loguru::init(argc, argv);
 
