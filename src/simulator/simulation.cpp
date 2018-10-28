@@ -112,6 +112,7 @@ void Simulation::append(const State& state)
 
     for (size_t i = 0; i < record.system.size(); i++) {
         if (!record.system[i].property.naif.is_barycenter()) {
+            raw_point_count++;
             if (record.system[i].history.append(state.system[i].state())) {
                 point_count++;
             }
@@ -127,7 +128,7 @@ void Simulation::append(const State& state)
 }
 
 // Add any unsampled data into the history
-bool Simulation::flush()
+bool Simulation::close()
 {
     auto [record, rlock] = trajectory_data.borrow();
 
@@ -144,6 +145,8 @@ bool Simulation::flush()
             point_count++;
         }
     }
+
+    done = true;
 
     return flushed;
 }

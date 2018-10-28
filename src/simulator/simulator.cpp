@@ -144,10 +144,12 @@ void Simulator::run()
 
         state.advance_t_s(simulation->config.step_s);
     }
-    simulation->flush();
+    simulation->close();
     running = false;
     status  = WAITING;
 
+    LOG_S(INFO) << "Computed " << simulation->raw_point_count
+                << " state vectors";
     LOG_S(INFO) << "Saved " << simulation->point_count << " state vectors";
     auto [events, ev_lock] = simulation->events.borrow();
     LOG_S(INFO) << "Saved " << events.size() << " events";

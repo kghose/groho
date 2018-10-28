@@ -56,8 +56,8 @@ public:
     // Add the current snapshot of simulation to the history
     void append(const State&);
 
-    // Add any unsampled data into the history
-    bool flush();
+    // Add any unsampled data into the history and mark the simulation as done
+    bool close();
 
     // This allows a reader to figure out if the simulation has been restarted
     // since their last read
@@ -66,6 +66,14 @@ public:
     // This allows a reader to figure out if the data has changed since their
     // last read
     std::atomic<size_t> point_count = 0;
+
+    // This is set once this simulation is ended by the simulator
+    std::atomic<bool> done = false;
+
+    // This is mostly for diagnostic purposes. It keeps track of the original
+    // simulation points and gives us an idea of how much downsampling is
+    // going on
+    std::atomic<size_t> raw_point_count = 0;
 
     Configuration config;
 
