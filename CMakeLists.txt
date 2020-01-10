@@ -5,13 +5,7 @@
 cmake_minimum_required( VERSION 3.0.0 )
 project( groho )
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules")
-
-# cmake -D GUI=OFF ..
-option(GUI "gui" ON)
-if(NOT GUI)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOGUI")
-endif()
+# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules")
 
 # cmake -D SANITIZE=ON ..
 option(SANITIZE "Sanitize" OFF)
@@ -24,41 +18,20 @@ message( FATAL_ERROR "Please make an out of source build: create a build directo
 endif()
 
 set(CMAKE_CXX_COMPILER "c++")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -Wpedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++17 -Wall -Wextra -Wpedantic")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 # NDEBUG will suppress some loguru outputs in Release
 
-find_package( Magnum REQUIRED 
-    GL
-    MeshTools
-    Primitives
-    Shaders
-    Text
-    Sdl2Application
-)
 
-find_package( Corrade REQUIRED
-    Containers
-)
-
-file(GLOB SOURCES 
+file(GLOB GROHO_SOURCES
     "src/*.cpp" 
     "src/actions/*.cpp" 
     "src/orrery/*.cpp"
     "src/sampling/*.cpp" 
     "src/scenario/*.cpp"
     "src/simulator/*.cpp"
-    #"src/magnumapp/*.cpp"
 )
-
-if(GUI)
-    file(GLOB GUI_SOURCES "src/magnumapp/*.cpp")
-    set(SOURCES ${SOURCES} ${GUI_SOURCES})
-endif(GUI)
-
-set(SOURCE_FILES ${SOURCES})
-corrade_add_resource(RESOURCES resources.conf)
-add_executable( groho ${SOURCE_FILES} ${RESOURCES} )
+add_executable( groho ${GROHO_SOURCES} )
 
 include_directories(
     "src/"
@@ -67,18 +40,29 @@ include_directories(
     "src/sampling" 
     "src/scenario"
     "src/simulator"
-    "src/magnumapp"
     "src/external" 
 )
 
 target_link_libraries( 
     groho
-    Magnum::Application
-    Magnum::GL
-    Magnum::Magnum
-    Magnum::MeshTools
-    Magnum::Primitives
-    Magnum::Shaders
-    Magnum::Text
     -lpthread # gcc on linux requires this
+)
+
+
+# Kernel inspector
+
+file(GLOB KERNEL_INSPECTOR_SOURCES
+    "src/kernel-inspector.cpp" 
+    "src/orrery/spk.cpp"
+)
+add_executable( kernel-inspector ${KERNEL_INSPECTOR_SOURCES} )
+
+include_directories(
+    "src/lib"
+    "src/orrery"
+    "src/external" 
+)
+
+target_link_libraries( 
+    kernel-inspector
 )

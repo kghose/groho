@@ -18,6 +18,20 @@ chebyshev coefficients stored in the SPK/DAF file to compute vector positions
 
 namespace daffile {
 
+struct SpkEphemerisSummary {
+    unsigned int target_code; // NASA/JPL code for this body
+    unsigned int center_code; // NASA/JPL code for reference body
+    double       begin_s;     // Start time
+    double       end_s;       // End time
+};
+
+struct SpkFileSummary {
+    std::string                      comment;
+    std::vector<SpkEphemerisSummary> ephemera;
+};
+
+SpkFileSummary spk_file_summary(std::ifstream& nasa_spk_file);
+
 typedef std::vector<double> dblvec;
 
 struct Elements {

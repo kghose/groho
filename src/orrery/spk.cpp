@@ -386,4 +386,28 @@ read_element_record_metadata(std::ifstream& nasa_spk_file, const Summary& s)
     nasa_spk_file.read((char*)&erm, sizeof(erm));
     return erm;
 }
+
+SpkFileSummary spk_file_summary(std::ifstream& nasa_spk_file)
+{
+    SpkFileSummary file_summary;
+
+    auto hdr = read_file_record(nasa_spk_file);
+    if (!hdr) {
+        LOG_S(ERROR) << "Problem with header";
+        return {};
+    }
+
+    file_summary.comment = read_comment_blocks(nasa_spk_file, hdr);
+
+    for (auto summary : read_summaries(nasa_spk_file, hdr)) {
+
+        file_summary.ephemera.push_back(
+            SpkEphemerisSummary{ static_cast<unsigned int>(summary.target_id),
+                                 static_cast<unsigned int>(summary.center_id),
+                                 summary.begin_second,
+                                 summary.end_second });
+    }
+
+    return file_summary;
+}
 }
