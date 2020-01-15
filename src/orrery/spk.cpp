@@ -262,7 +262,11 @@ read_comment_blocks(std::ifstream& nasa_spk_file, std::optional<FileRecord> hdr)
         }
         comment += buf;
     }
-    return comment;
+
+    const auto strEnd   = comment.find_last_not_of(" \n");
+    const auto strRange = strEnd + 1;
+
+    return comment.substr(0, strRange);
 }
 
 SummaryVec read_summaries(
