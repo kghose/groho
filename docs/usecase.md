@@ -43,10 +43,10 @@ plot them as we do.
     constructed. This is a multi-view, first-angle projection with the top view
     corresponding to the ecliptic plane.
 1. Add in the `.bsp` file for ceres and vesta
-  > `sim-groho` reruns and `vis-groho` replots
+   > `sim-groho` reruns and `vis-groho` replots
 1. Create a flight plan file for Ship1. Add metadata about the ship
 1. Add the flight plan to the scenario file
-  > Since the plan is empty, `sim-groho` produces the earlier result
+   > Since the plan is empty, `sim-groho` produces the earlier result
 1. Add an initial condition to the plan, placing the ship in orbit around the
    Earth. 
    > `sim-groho` simulates the trajectory of this ship for the duration of the
