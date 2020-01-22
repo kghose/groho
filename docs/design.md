@@ -1,11 +1,5 @@
-# Targeted user flow/use cases
-1. Setup basic scenario. 
-1. Add one spaceship and develop trajectory incrementally
-  - Develop one part of trajectory in detail. Inspect trajectory, plot it,
-    compute metrics (like closest approach to target etc.)
-  - Move on to subsequent leg of trajectory, freezing previous part
-1. Add next spaceship and repeat, keeping earlier spaceship (or others) unchanged
-1. Print high resolution trajectory plots in different ways
+
+Look here for [user story and use case](usecase.md)
 
 
 # Memoization and flight plans
@@ -16,14 +10,28 @@ initial state and all artificial accelerations are the same. The initial state
 is easy to check. The artificial accelerations are determined by all flight
 plans that are active during that section.  
 
-
+We won't enable memoization in the first version, but it is advantageous to
+think of how we can make the later addition of memoization easier.
 
 ## Some considerations for flight plan actions
 
-1. While it would be cool to have flight actions triggered by the state of other
-   ships (via messages) it would make memoization more complex. For this reason
-   we do not implement any actions that depend on anything in the simulation
-   that can be changed, like trajectories of other spacecraft, or other actions.
+1. The only thing a flight plan can do at each step is add an acceleration to
+   the ship.
+1. Each ship only has one flight action active at a time (at most). An action is
+   triggered, it runs and then is discarded. 
+1. Actions are invoked in the order they are present in the 
+
+1. Flight plans are allowed to have arbitrary state. This state is saved
+   periodically at checkpoints. This limits the granularity of our work re-use.
+   We have to restart the simulation from the most recent checkpoint, rather
+   than at an arbitrary point (which we could do if flight plans had no internal
+   state). The gain in power for flightplans from this trade-off should be
+   favorable.
+1. Flight plans can depend on the state of other ships. This will allow us to
+   simulate rendezvous, for example. For memoization this means that the two
+   trajectories are now ganged together, and recomputing one, requires the other
+   to be recomputed from the same time onwards, depending on the dependency.
+   This makes memoization more complex and challenging.
 1. Each flight plan action, including ones that are trigger based, rather than
    time based, have an activation time, which means they can not activate
    earlier than that time. This allows us to incrementally alter (add/remove)
@@ -33,6 +41,32 @@ plans that are active during that section.
    previously computed trajectory. A smarter engine will be able to re-run
    just the altered actions and only reengage the full simulation when any of
    them activate. This is more complex.
+1. Each flight plan action marks at a checkpoint if it is active i.e. it's state
+   is being actively updated and/or it is affecting the ship's acceleration.
+   This allows more efficient memoization. For example, if a flight plan action
+   is designed to insert a ship into orbit around a body, the flight plan does
+   not become active 
+
+
+
+# Simulation output
+
+## Volume estimate
+
+Assuming a simulation step of 1s, for each simulated body for a 1y simulation,
+we have: 
+
+1y * 365 day/y * 24 h/d * 60 m/h * 60 s/m * 3 points/s = 94.6 million points
+~ 756 MB/object/y
+
+
+## Chebyshev compression
+
+After looking at time series databases and my own custom down-sampling I decided
+to try compression by fitting to Chebyshev polynomials, same as how NASA stores
+the SPK data.
+
+See [chebyshev-file-format.md]
 
 
 # User interface
