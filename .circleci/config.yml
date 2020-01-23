@@ -12,9 +12,10 @@ jobs:
       - image: kghose/liftoff:latest
     steps:
       - checkout
-      - run: cd /root/project/tests 
-      - run: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
-      - run: cd ../ && ./build/tests -s
+      - run: |
+        cd /root/project/tests 
+        mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
+        cd ../ && ./build/tests -s
     
 
 workflows:
