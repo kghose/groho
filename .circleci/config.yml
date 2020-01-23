@@ -7,16 +7,19 @@ jobs:
       - checkout
       - run: cd /root/project && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j8
 
-  build_gcc_nogui:
+  tests:
     docker:
       - image: kghose/liftoff:latest
     steps:
       - checkout
-      - run: cd /root/project && mkdir -p build && cd build && cmake -DGUI=OFF -DCMAKE_BUILD_TYPE=Release .. && make -j8
+      - run: cd /root/project/tests 
+      - run: mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make
+      - run: cd ../ && ./build/tests -s
+    
 
 workflows:
   version: 2
   build:
     jobs:
-      - build_gcc
-      - build_gcc_nogui
+#      - build_gcc
+      - tests
