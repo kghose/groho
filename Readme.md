@@ -1,21 +1,26 @@
 Groho ( গ্রহ )
 =====
-Groho is a simulator for space flight, communication and warfare within the solar system.
+Groho is a simulator for space flight, communication and warfare within the
+solar system.
 
-Space is unimaginably vast. My goal is to create a simulator that will give us an 
-appreciation of just how lonely even our tiny corner of the universe is. We 
-define a solar system model (the Orrery - based on NASA's planetary data), 
-set up space craft scripts (Flight Plans), and then sit back and watch the action 
-unfold. The program makes it easy to setup, run, save, modify, inspect and 
+Space is unimaginably vast. My goal is to create a simulator that will give us
+an appreciation of just how lonely even our tiny corner of the universe is. We
+define a solar system model (the Orrery - based on NASA's planetary data), set
+up space craft scripts (Flight Plans), and then sit back and watch the action
+unfold. The program makes it easy to setup, run, save, modify, inspect and
 compose (combine together) simulations. 
 
-My hope is that we will come away with an understanding of basic orbital manuevers, 
-an intuition of the time delays in communicating and coordinating across the solar 
-system and a feel for what life will be like for our descendants who set sail away 
-from the home planet.
+My hope is that we will come away with an understanding of basic orbital
+manuevers, an intuition of the time delays in communicating and coordinating
+across the solar system and a feel for what life will be like for our
+descendants who set sail away from the home planet.
 
-*Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the word for 
-planetary system but is more of a mouthful.*
+*Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the
+word for planetary system but is more of a mouthful.*
+
+
+[![Tests](https://github.com/kghose/groho/workflows/sim-groho/badge.svg)](https://github.com/kghose/groho/actions)
+
 
 ```
 cd examples/001.basics
@@ -35,41 +40,39 @@ cd examples/002.full-solar-system
 <!-- TOC -->
 
 - [Features and use cases](#features-and-use-cases)
-    - [This is not an interactive simulation](#this-is-not-an-interactive-simulation)
-    - [This is not an n-body simulation](#this-is-not-an-n-body-simulation)
-    - [Relativistic effects](#relativistic-effects)
+  - [This is not an interactive simulation](#this-is-not-an-interactive-simulation)
+  - [This is not an n-body simulation](#this-is-not-an-n-body-simulation)
+  - [Relativistic effects](#relativistic-effects)
 - [Compilation/building](#compilationbuilding)
-    - [Dependencies](#dependencies)
-        - [[Magnum/Corrade][magnum]](#magnumcorrademagnum)
-    - [Compile](#compile)
+  - [Compile](#compile)
 - [Manual/Tutorial](#manualtutorial)
-    - [Getting the data](#getting-the-data)
-    - [Simulation files](#simulation-files)
-        - [Actions](#actions)
-        - [Signals](#signals)
-        - [Restarts](#restarts)
-    - [What does a ship know about the world?](#what-does-a-ship-know-about-the-world)
-    - [Orbit view interactions](#orbit-view-interactions)
-    - [Meta](#meta)
-        - [Why is the tutorial/manual in the form of commented examples?](#why-is-the-tutorialmanual-in-the-form-of-commented-examples)
-        - [Why do you have stuff in the manual/examples that isn't implemented yet?](#why-do-you-have-stuff-in-the-manualexamples-that-isnt-implemented-yet)
+  - [Getting the data](#getting-the-data)
+  - [Simulation files](#simulation-files)
+    - [Actions](#actions)
+    - [Signals](#signals)
+    - [Restarts](#restarts)
+  - [What does a ship know about the world?](#what-does-a-ship-know-about-the-world)
+  - [Orbit view interactions](#orbit-view-interactions)
+  - [Meta](#meta)
+    - [Why is the tutorial/manual in the form of commented examples?](#why-is-the-tutorialmanual-in-the-form-of-commented-examples)
+    - [Why do you have stuff in the manual/examples that isn't implemented yet?](#why-do-you-have-stuff-in-the-manualexamples-that-isnt-implemented-yet)
 - [Physics/astronautics word salad](#physicsastronautics-word-salad)
 - [Related software](#related-software)
-    - [NASA's GMAT](#nasas-gmat)
-    - [Solar System Voyager (SSVG)](#solar-system-voyager-ssvg)
-    - [NASA Ames Research Center Trajectory Browser](#nasa-ames-research-center-trajectory-browser)
-    - [Rebound by Hanno Rein](#rebound-by-hanno-rein)
-    - [Orbiter by Martin Schweiger](#orbiter-by-martin-schweiger)
-    - [Bussard by Phil Hagelberg](#bussard-by-phil-hagelberg)
-    - [SolarSystemOrbiter](#solarsystemorbiter)
-    - [Poliastro by Juan Luis Cano Rodríguez](#poliastro-by-juan-luis-cano-rodríguez)
-    - [Celestia](#celestia)
-    - [Asterank](#asterank)
+  - [NASA's GMAT](#nasas-gmat)
+  - [Solar System Voyager (SSVG)](#solar-system-voyager-ssvg)
+  - [NASA Ames Research Center Trajectory Browser](#nasa-ames-research-center-trajectory-browser)
+  - [Rebound by Hanno Rein](#rebound-by-hanno-rein)
+  - [Orbiter by Martin Schweiger](#orbiter-by-martin-schweiger)
+  - [Bussard by Phil Hagelberg](#bussard-by-phil-hagelberg)
+  - [SolarSystemOrbiter](#solarsystemorbiter)
+  - [Poliastro by Juan Luis Cano Rodríguez](#poliastro-by-juan-luis-cano-rodríguez)
+  - [Celestia](#celestia)
+  - [Asterank](#asterank)
 - [Thanks](#thanks)
-    - [Components](#components)
-    - [Dev tooling](#dev-tooling)
+  - [Components](#components)
+  - [Dev tooling](#dev-tooling)
 - [Meta: Why did you put everything in this one document?](#meta-why-did-you-put-everything-in-this-one-document)
-    - [Developer notes](#developer-notes)
+  - [Developer notes](#developer-notes)
 
 <!-- /TOC -->
 
@@ -87,8 +90,8 @@ flight within the solar system would look like. To this end it allows us to:
 
 ## This is not an interactive simulation
 
-The simulation works by setting up a scenario and then letting everything evolve 
-according to physical law and scripted events. The experimenter influences the 
+The simulation works by setting up a scenario and then letting everything evolve
+according to physical law and scripted events. The experimenter influences the
 simulation only through the choice of scenario and script parameters.
 
 
@@ -104,14 +107,13 @@ into account.
 
 ## Relativistic effects
 
-Communications over solar-system distances are interestingly affected by
-the finite speed of light. The simulation enables the calculation of when an event 
+Communications over solar-system distances are interestingly affected by the
+finite speed of light. The simulation enables the calculation of when an event
 at one location is detected at other locations/ships.
 
 
 # Compilation/building
 
-[![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master)
 
 
 **This code requires a C++17 compiler.** In case you need it, there is a 
@@ -122,20 +124,6 @@ following creature comforts from C++17
 - [typename in a template template parameter](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4051.html)
 - [`[[maybe_unused]]` attribute](https://en.cppreference.com/w/cpp/language/attributes/maybe_unused)
 
-## Dependencies
-
-### [Magnum/Corrade][magnum]
-
-You should follow the instructions on the [Magnum project page][magnum-install], 
-but in brief:
-
-For macOS:
-
-* For the base: `brew install mosra/magnum/magnum` and `brew install mosra/magnum/corrade`
-* For the plugins (required for text rendering): `brew install mosra/magnum/magnum-plugins`
-
-[magnum]: http://magnum.graphics/
-[magnum-install]: http://doc.magnum.graphics/magnum/building.html
 
 ## Compile
 
@@ -203,11 +191,11 @@ happen in sequence.
 ### Signals
 
 A flight plan can create signals on behalf of a ship. Signals travel radially 
-out at the speed of light from their point of origin and can be recieved by
+out at the speed of light from their point of origin and can be received by
 other ships once they are within the sphere. Once the signal has spread past 
-the furthest simulation object it is removed, since all ships have recieved
+the furthest simulation object it is removed, since all ships have received
 the signal by that time. Signals can be shaped, such that they have different 
-amplitudes in different directions. Ship recievers can have different 
+amplitudes in different directions. Ship receivers can have different 
 sensitivities to signal intensity.
 
 ### Restarts
