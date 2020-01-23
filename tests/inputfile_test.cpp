@@ -4,7 +4,13 @@
 
 using namespace groho;
 
-TEST_CASE("Basic parsing", "[Basic]")
+TEST_CASE("Missing input file parsing", "[InputFile]")
+{
+    groho::InputFile in("non-existent.txt");
+    auto             lines = in.load();
+}
+
+TEST_CASE("Input file parsing", "[InputFile]")
 {
     groho::InputFile in("test-input.txt");
     auto             lines = in.load();

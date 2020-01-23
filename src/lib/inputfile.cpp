@@ -3,6 +3,9 @@
 
 #include "inputfile.hpp"
 
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
+
 namespace groho {
 
 InputFile::InputFile(const std::string& path)
@@ -52,7 +55,7 @@ Lines InputFile::load() const
     std::string   line, key, value;
 
     if (cfile.fail()) {
-        std::cout << "Hello!";
+        LOG_S(ERROR) << "Input file '" << path << "' not found";
     } else {
         while (std::getline(cfile, line)) {
             line = trim_whitespace(trim_comment(line));
