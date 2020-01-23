@@ -1,0 +1,17 @@
+; comment at start
+
+; blank lines
+
+  ;
+;
+    ; comment in middle
+
+key1   value1
+key2  2050.01.15:0.5 ; Comment at end  
+
+key3   value with space
+
+key4 this is tight spacing
+
+    key5
+;
