@@ -10,6 +10,10 @@ because that is what the JPL SPK files use
 
 #include <cmath>
 #include <ostream>
+#include <stdexcept>
+#include <string>
+
+#include "parseerror.hpp"
 
 namespace groho {
 
@@ -29,6 +33,32 @@ std::ostream& operator<<(std::ostream& os, const GregorianDate& cd)
 {
     os << cd.Y << "." << cd.M << "." << cd.D << "." << cd.H;
     return os;
+}
+
+// We are very strict about the format. It has to look like
+// YYYY.MM.DD.X
+auto as_gregorian_date(std::string s, size_t line)
+{
+    GregorianDate date;
+    ParseError    err;
+    try {
+
+        if (s[4] != '.' | s[7] != '.' | s[10] != '.') {
+            throw std::invalid_argument("Invalid date");
+        }
+
+        date.Y = std::stoi(s.substr(0, 4));
+        date.M = std::stoi(s.substr(5, 2));
+        date.D = std::stoi(s.substr(8, 2));
+        date.H = std::stof(s.substr(11));
+
+    } catch (const std::exception& e) {
+        err.error   = true;
+        err.line    = line;
+        err.message = e.what();
+    }
+
+    return std::make_pair(date, err);
 }
 
 bool leap_gregorian(int year)

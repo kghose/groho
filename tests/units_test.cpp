@@ -1,3 +1,8 @@
+/*
+This file is part of Groho, a simulator for inter-planetary travel and warfare.
+Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE.
+*/
+
 #include "catch.hpp"
 
 #include "units.hpp"
@@ -84,4 +89,24 @@ TEST_CASE("JD to J2000", "[JD to J2000]")
     REQUIRE(gd.M == 1);
     REQUIRE(gd.D == 1);
     REQUIRE(gd.H == 0.5);
+}
+
+TEST_CASE("Parse Gregorian Date from string", "[ParseDate]")
+{
+    std::string d   = "2050.02.29.0.5";
+    auto[date, err] = as_gregorian_date(d, 1);
+
+    REQUIRE(date.Y == 2050);
+    REQUIRE(date.H == 0.5);
+    REQUIRE(!err.error);
+}
+
+TEST_CASE("Parse Gregorian Date from string with error", "[ParseDate]")
+{
+    std::string d   = "2050.0229.0.5";
+    auto[date, err] = as_gregorian_date(d, 1);
+
+    REQUIRE(err.error);
+    REQUIRE(err.line == 1);
+    REQUIRE(err.message == "Invalid date");
 }
