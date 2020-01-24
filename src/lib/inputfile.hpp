@@ -2,7 +2,7 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE.
 
-This file contains some common functions used in parsing input files
+Some utilities for parsing input files.
 */
 #pragma once
 
@@ -27,4 +27,6 @@ public:
 private:
     std::string path;
 };
+
+std::vector<std::string> split_string(const std::string s);
 }

@@ -31,3 +31,12 @@ TEST_CASE("Input file parsing", "[InputFile]")
     REQUIRE(lines.at(4).key == "key5");
     REQUIRE(lines.at(4).value == "");
 }
+
+TEST_CASE("String split", "[StringSplit]")
+{
+    auto split = split_string(" The quick     brown fox   ");
+
+    REQUIRE(split.at(0) == "The");
+    REQUIRE(split.at(3) == "fox");
+    REQUIRE(split.size() == 4);
+}
