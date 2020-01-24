@@ -29,7 +29,7 @@ struct GregorianDate {
     double H;
 };
 
-std::ostream& operator<<(std::ostream& os, const GregorianDate& cd)
+inline std::ostream& operator<<(std::ostream& os, const GregorianDate& cd)
 {
     os << cd.Y << "." << cd.M << "." << cd.D << "." << cd.H;
     return os;
@@ -37,13 +37,12 @@ std::ostream& operator<<(std::ostream& os, const GregorianDate& cd)
 
 // We are very strict about the format. It has to look like
 // YYYY.MM.DD.X
-auto as_gregorian_date(std::string s, size_t line)
+inline auto as_gregorian_date(std::string s, size_t line)
 {
     GregorianDate date;
     ParseError    err;
     try {
-
-        if (s[4] != '.' | s[7] != '.' | s[10] != '.') {
+        if (s[4] != '.' | s[7] != '.' | s[10] != ':') {
             throw std::invalid_argument("Invalid date");
         }
 
@@ -61,7 +60,7 @@ auto as_gregorian_date(std::string s, size_t line)
     return std::make_pair(date, err);
 }
 
-bool leap_gregorian(int year)
+inline bool leap_gregorian(int year)
 {
     return ((year % 4) == 0) && (!(((year % 100) == 0) && ((year % 400) != 0)));
 }
@@ -155,7 +154,7 @@ private:
 // (SPK frame_id == 1)
 class J2000_s {
 public:
-    J2000_s(const double j) { j2000_s = j; }
+    J2000_s(const double j = 0) { j2000_s = j; }
     J2000_s(const GregorianDate& cd) { j2000_s = J2000_s(JulianDate(cd)); }
     J2000_s(const JulianDate& jd) { j2000_s = (jd - T0) * S_PER_DAY; }
 
@@ -172,9 +171,9 @@ private:
     double j2000_s;
 };
 
-double from_km(double km) { return 1000 * km; }
-double from_AU(double au) { return 149597870700 * au; }
+inline double from_km(double km) { return 1000 * km; }
+inline double from_AU(double au) { return 149597870700 * au; }
 
-double operator""_km(long double km) { return from_km(km); }
-double operator""_AU(long double au) { return from_AU(au); }
+inline double operator""_km(long double km) { return from_km(km); }
+inline double operator""_AU(long double au) { return from_AU(au); }
 }

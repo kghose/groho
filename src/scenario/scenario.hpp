@@ -1,33 +1,34 @@
 /*
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
-Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-Code to parse scneario files and flight plans and load in the Orrery and Ship
-definitions.
+Stores the main scenario file
 */
 
 #pragma once
 
-#include <forward_list>
-#include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
-#include "configuration.hpp"
-#include "flightplanaction.hpp"
-#include "spkorrery.hpp"
+#include "naifbody.hpp"
+#include "parseerror.hpp"
+#include "units.hpp"
 
-namespace sim {
+namespace groho {
 
-std::shared_ptr<const SpkOrrery> load_orrery(
-    const Configuration&,
-    const Configuration&,
-    std::shared_ptr<const SpkOrrery>);
+struct Scenario {
+    std::string name;
+    J2000_s     begin;
+    J2000_s     end;
 
-struct LoadedShip {
-    ShipLike::Property property;
-    FlightPlan         flight_plan;
+    std::unordered_set<std::string> orrery_files;
+    std::unordered_set<std::string> ship_files;
+
+    std::unordered_set<NAIFbody> include_set;
+
+    std::vector<ParseError> errors;
 };
 
-std::optional<LoadedShip> load_ship(std::string fp_name, int ship_code);
+Scenario load_scenario(const std::string& path);
 }

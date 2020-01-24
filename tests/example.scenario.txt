@@ -1,0 +1,45 @@
+; A scenario file tells Groho 
+; - what Orrery model to use 
+;   The Orrery is the thing that simulates the solar system 
+; - what range of dates to run the simulation for and 
+; - what flight plan files to include in the simulation. 
+;   Flight plans are the biggest part of the simulation. 
+;   Each spaceship has its own flight plan which governs what it 
+;   does in the simulation.
+
+; This scenario file sets up an orrery containing the Earth and moon, and
+; Mars and it's moons. It adds one spaceship
+
+; Some notes on scenario file syntax:
+
+; Anything from a semi-colon onward is ignored
+    ; Leading and trailing whitespace is trimmed
+    ; Empty lines are ignored
+
+name   Earth to Mars
+begin  2050.01.15:0.5 ; YYYY.MM.DD:H  H is a fraction of a day  
+end    2060.01.15:0 ; 
+; sim-groho's job is to compute an appropriate time step for the simulation
+
+begin  20500115  ; a malformed date will be skipped
+
+
+; Both orrery and flightplan can have multiple entries
+
+; Orrery refers to a NASA/JPL SPK file (called a "kernel") that 
+; stores ephemeris data
+
+; You can have multiple orrery files like this:
+orrery   ../de430.bsp   ; Sun, Earth + Moon, Barycenters for all planets
+orrery   ../mar097.bsp  ; Mars + moons
+;orrery   ../ast343de430.bsp
+; If a body is repeated across two or more files only the last instance will be taken
+
+; You can mark out only some bodies for inclusion in the simulation
+use-only 10 AG 399 ; only include SSB and Earth. AG is an error and will be flagged
+
+
+; You can have multiple flightplans like this:
+ship  flt1.groho.txt
+ship  flt2.groho.txt
+ship  flt1.groho.txt ; a repeated flight plan is ignored

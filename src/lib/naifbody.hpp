@@ -1,6 +1,6 @@
 /*
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
-Copyright (c) 2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+Copyright (c) 2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 Type for NAIF IDs
 */
@@ -9,7 +9,7 @@ Type for NAIF IDs
 
 #include <string>
 
-namespace sim {
+namespace groho {
 
 struct NAIFbody {
     int         code;
@@ -42,8 +42,8 @@ struct NAIFbody {
 }
 
 namespace std {
-template <> struct hash<sim::NAIFbody> {
-    size_t operator()(const sim::NAIFbody& body) const
+template <> struct hash<groho::NAIFbody> {
+    size_t operator()(const groho::NAIFbody& body) const
     {
         return hash<int>()((int)body);
     }
