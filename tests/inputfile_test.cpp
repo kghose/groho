@@ -32,11 +32,21 @@ TEST_CASE("Input file parsing", "[InputFile]")
     REQUIRE(lines.at(4).value == "");
 }
 
-TEST_CASE("String split", "[StringSplit]")
+TEST_CASE("String split on white space", "[StringSplit]")
 {
     auto split = split_string(" The quick     brown fox   ");
 
     REQUIRE(split.at(0) == "The");
     REQUIRE(split.at(3) == "fox");
     REQUIRE(split.size() == 4);
+}
+
+TEST_CASE("String split on comma", "[StringSplit]")
+{
+    auto split = split_string(
+        "Mercury BC,  2.2031780000000021E+04,            0", ",");
+
+    REQUIRE(split.at(0) == "Mercury BC");
+    REQUIRE(split.at(1) == "2.2031780000000021E+04");
+    REQUIRE(split.at(2) == "0");
 }

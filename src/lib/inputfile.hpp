@@ -28,5 +28,8 @@ private:
     std::string path;
 };
 
-std::vector<std::string> split_string(const std::string s);
+const std::string wspace = " \t\n\r\f\v";
+
+std::vector<std::string>
+split_string(const std::string& s, const std::string& sep = wspace);
 }
