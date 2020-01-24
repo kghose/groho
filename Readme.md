@@ -19,7 +19,7 @@ descendants who set sail away from the home planet.
 word for planetary system but is more of a mouthful.*
 
 
-[![Tests](https://github.com/kghose/groho/workflows/sim-groho/badge.svg)](https://github.com/kghose/groho/actions)
+[![Tests](https://github.com/kghose/groho/workflows/Tests/badge.svg)](https://github.com/kghose/groho/actions)
 
 
 ```

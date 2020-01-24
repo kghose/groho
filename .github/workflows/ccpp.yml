@@ -1,4 +1,4 @@
-name: sim-groho
+name: Tests
 
 on: [push]
 
