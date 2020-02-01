@@ -1,28 +1,4 @@
 ; Please see flt1.groho.txt for a fully annottaed flight plan
 
-name   = Ma Kali
-color  = 0x0000ff
-
-; or characteristics ... 
-
-max-acceleration  = 0.01   ; km/s^2 (a)
-max-fuel          = 100   ; arbitrary units (u)
-burn-rate         = 0.1   ; u/s/a
-
-initial-state px:23 pf:34
-
-initial-orbit id:399 alt:3000 ; Orbit 399 (Earth) at 3000 km altitude
-
-wait-till jd:2458350.0
-; This waiting state just pauses until the given time passes
-
-wait-till-phase id:399 phase:0
-; This waits until we are on the "outer side" of Earth, farthest from the sun
-; during our orbit.
-
-orient \
-    id:399 \ ; relative to our orbit round Earth
-    yaw:90 \  ; prograde
-    pitch:0 ;
-
-burn acc:0.01 for:1000 ; Burn 1G (0.01 km/s^2) for 3000s
+name   Ma Kali
+initially orbiting 399 100x100

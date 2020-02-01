@@ -1,62 +1,30 @@
 ; Spaceship commands are placed in a separate script file (called a "flight plan") 
 ; and a reference is put in the scenario file. 
-; A line can contain a key = value pair (like the configuration file)
-; and this indicates some property that will be set for the ship
 
-; like metadata ...
+; Like the scenario file, each line takes the form of a <key> <value> pair 
+; The key is separated from value by whitespace. 
+; While keys (which have reserved meanings) can not have spaces
+; values can have spaces
 
-name   = Ma Durga
-color  = 0x0000ff
+; There are a few non-numeric keys for flight plans that set up
+; spaceship metadata and initial state
 
-; or characteristics ... 
+name   Ma Durga
+initially orbiting 399 100x100
+; This sets the ship up in an 100x100km orbit around the earth
 
-max-acceleration  = 0.1   ; km/s^2 (a)
-max-fuel          = 100   ; arbitrary units (u)
-fuel-cons-rate    = 0.1   ; There is no such key. groho will warn and move on 
-burn-rate         = 0.1   ; u/s/a
-burn-rate         = 0.2   ; This is a duplicate key. This value is used
+; The remaining lines are plan actions.
+; Each line starts with a activation time specified as a Gregorian date 
+; followed by a plan action.
+; A given plan will start no sooner than the activation time and will block
+; until finished.
+; The plans are sorted by activation time when they are loaded. If two plans
+; have the same activation time their order of activation is undefined.
 
-; Or a line can take the form
+2050.01.01:0.5 orbit 200x200
+; This plan raises the orbit to 200x200 leaving the orbital plane unchanged
+; This is a two stage maneuver: One part of the orbit is modified and then
+; half an orbit later, the next part is modified.
 
-; <action> <key>:<value> <key>:<value> ...
-
-; This is an action line.
-;
-; Actions can be
-; - commands for a ship to orient or fire it's engines
-; - a waiting state that holds up execution until a particular ship state is achieved
-; - commands to send out signals
-;
-; Action lines form the bulk of a flight plan
-
-initial-orbit id:499 alt:3000 ; Orbit 499 (Mars) at 3000 km altitude
-; Some actions (like this one) operate at the setup phase. It is best to put
-; them at the start of the script: they will have the same effect wherever they
-; are put, but it can be confusing to see them later
-
-; You can break a command across multiple lines for readability
-initial-orbit \ ; and add comments
-    id:499 \ ; This is Mars
-    alt:8000 ; This is km from the surface
-
-; You'll notice that in order to show off my fancy multi-line command I 
-; repeated the command. In this case the second one over-writes the first one
-
-hi-there
-; An un-recognized action is marked out in the log and ignored
-
-; After a while in orbit, we get bored and blast off into the unknown
-
-wait-till jd:2458167.1
-; This waiting state just pauses until the given time passes
-
-wait-till-phase id:499 phase:180
-; This waits until we are on the "inner side" of Mars, nearest to the sun
-; during our orbit.
-
-orient \
-    id:499 \ ; relative to our orbit round Mars
-    yaw:14.4 \  ; prograde and rising a bit above the ecliptic
-    pitch:0 ;
-
-burn acc:0.01 for:300 ; Burn 1G (0.01 km/s^2) for 3000s
+2050.01.01:0.5001 plane +20.0
+; 
