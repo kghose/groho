@@ -25,7 +25,7 @@ Scenario load_scenario(const std::string& path)
         }
 
         if (line.key == "begin" | line.key == "end") {
-            auto[date, err] = as_gregorian_date(line.value, line.line);
+            auto [date, err] = as_gregorian_date(line.value, line.line);
             if (!err.error) {
                 if (line.key == "begin") {
                     scenario.begin = date;
@@ -67,6 +67,10 @@ Scenario load_scenario(const std::string& path)
             }
             continue;
         }
+
+        ParseError err{ true, line.line, "Unknown key \"" + line.key + "\"" };
+        scenario.errors.push_back(err);
+        LOG_S(ERROR) << path << ": L" << err.line << ": " << err.message;
     }
     return scenario;
 }

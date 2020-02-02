@@ -43,3 +43,6 @@ use-only 10 AG 399 ; only include SSB and Earth. AG is an error and will be flag
 ship  flt1.groho.txt
 ship  flt2.groho.txt
 ship  flt1.groho.txt ; a repeated flight plan is ignored
+
+; An unexpected key will flag an error and be ignored
+this key does not exist

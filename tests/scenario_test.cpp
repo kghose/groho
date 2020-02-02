@@ -18,7 +18,8 @@ TEST_CASE("Parse sample scenario", "[Scenario]")
         scenario.include_set.find(groho::NAIFbody(10))
         != scenario.include_set.end());
 
-    REQUIRE(scenario.errors.size() == 2);
+    REQUIRE(scenario.errors.size() == 3);
     REQUIRE(scenario.errors.at(0).line == 24);
     REQUIRE(scenario.errors.at(1).line == 39);
+    REQUIRE(scenario.errors.at(2).line == 48);
 }
