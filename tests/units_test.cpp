@@ -93,7 +93,7 @@ TEST_CASE("JD to J2000", "[JD to J2000]")
 
 TEST_CASE("Parse Gregorian Date from string", "[ParseDate]")
 {
-    std::string d   = "2050.02.29.0.5";
+    std::string d   = "2050.02.29:0.5";
     auto[date, err] = as_gregorian_date(d, 1);
 
     REQUIRE(date.Y == 2050);
