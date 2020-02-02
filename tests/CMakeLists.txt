@@ -32,4 +32,8 @@ set( SOURCES
 )
 
 add_executable( tests ${TEST_SOURCES} ${SOURCES} )
-target_link_libraries( tests Catch )
+target_link_libraries( 
+  tests 
+  Catch 
+  -ldl 
+)
