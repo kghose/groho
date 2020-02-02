@@ -31,7 +31,7 @@ file(GLOB GROHO_SOURCES
     "src/scenario/*.cpp"
     "src/simulator/*.cpp"
 )
-add_executable( groho ${GROHO_SOURCES} )
+add_executable( sim-groho ${GROHO_SOURCES} )
 
 include_directories(
     "src/"
@@ -44,8 +44,8 @@ include_directories(
 )
 
 target_link_libraries( 
-    groho
-    -lpthread # gcc on linux requires this
+    sim-groho
+    -lpthread # gcc on linux requires this for loguru
 )
 
 
@@ -55,7 +55,7 @@ file(GLOB KERNEL_INSPECTOR_SOURCES
     "src/kernel-inspector.cpp" 
     "src/orrery/spk.cpp"
 )
-add_executable( kernel-inspector ${KERNEL_INSPECTOR_SOURCES} )
+add_executable( inspect-kernel ${KERNEL_INSPECTOR_SOURCES} )
 
 include_directories(
     "src/lib"
@@ -64,5 +64,6 @@ include_directories(
 )
 
 target_link_libraries( 
-    kernel-inspector
+    inspect-kernel
+    -lpthread # gcc on linux requires this for loguru
 )
