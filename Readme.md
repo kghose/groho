@@ -20,9 +20,7 @@ word for planetary system but is more of a mouthful.*
 
 
 [![Tests](https://github.com/kghose/groho/workflows/Tests/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ATests)
-
 [![Simulator](https://github.com/kghose/groho/workflows/Simulator/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ASimulator)
-
 [![Util](https://github.com/kghose/groho/workflows/Utils/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3AUtils)
 
 ```

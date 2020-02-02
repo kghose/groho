@@ -2,7 +2,7 @@ cmake_minimum_required( VERSION 3.0.0 )
 
 project( groho_tests )
 
-set(CMAKE_CXX_COMPILER "clang++")
+set(CMAKE_CXX_COMPILER "c++")
 set(CMAKE_CXX_FLAGS "-std=c++17 -fsanitize=address -Wall")
 
 
@@ -14,17 +14,21 @@ include_directories(
   ../src
   ../src/lib 
   ../src/external
-  ../src/orrery )
+  ../src/orrery
+  ../src/scenario
+)
 
 # Make test executable
 set( TEST_SOURCES
   main.cpp
   units_test.cpp
   inputfile_test.cpp
+  scenario_test.cpp
 )
 
 set( SOURCES
   ../src/lib/inputfile.cpp
+  ../src/scenario/scenario.cpp
 )
 
 add_executable( tests ${TEST_SOURCES} ${SOURCES} )

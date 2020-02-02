@@ -3,7 +3,7 @@ name: Simulator
 on: [push]
 
 jobs:
-  tests:
+  Simulator:
 
     runs-on: ubuntu-latest
     

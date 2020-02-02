@@ -3,7 +3,7 @@ name: Utils
 on: [push]
 
 jobs:
-  tests:
+  Inspector:
 
     runs-on: ubuntu-latest
     
