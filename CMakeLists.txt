@@ -45,6 +45,7 @@ include_directories(
 
 target_link_libraries( 
     sim-groho
+    -ldl
     -lpthread # gcc on linux requires this for loguru
 )
 
@@ -65,5 +66,6 @@ include_directories(
 
 target_link_libraries( 
     inspect-kernel
+    -ldl
     -lpthread # gcc on linux requires this for loguru
 )
