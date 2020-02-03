@@ -51,6 +51,8 @@ inline auto as_gregorian_date(std::string s, size_t line)
         date.D = std::stoi(s.substr(8, 2));
         date.H = std::stof(s.substr(11));
 
+        err.error = false;
+
     } catch (const std::exception& e) {
         err.error   = true;
         err.line    = line;
