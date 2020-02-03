@@ -2,7 +2,7 @@
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
 Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
-Stores the main scenario file
+Store bare information from Scenario file.
 */
 
 #pragma once
@@ -23,9 +23,10 @@ struct Scenario {
     J2000_s     end;
 
     std::unordered_set<std::string> orrery_files;
+    std::unordered_set<NAIFbody>    include_set;
     std::unordered_set<std::string> ship_files;
 
-    std::unordered_set<NAIFbody> include_set;
+    std::string path; // all linked files are relative to this
 
     std::vector<ParseError> errors;
 };
