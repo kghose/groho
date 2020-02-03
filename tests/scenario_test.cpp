@@ -7,6 +7,7 @@ TEST_CASE("Parse sample scenario", "[Scenario]")
     groho::Scenario scenario = groho::load_scenario("example.scenario.txt");
 
     REQUIRE(scenario.name == "Earth to Mars");
+    REQUIRE(scenario.path == "example.scenario.txt");
     REQUIRE(
         double(scenario.begin)
         == double(groho::J2000_s(groho::GregorianDate{ 2050, 1, 15, 0.5 })));

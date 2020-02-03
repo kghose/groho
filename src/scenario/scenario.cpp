@@ -17,6 +17,7 @@ namespace groho {
 Scenario load_scenario(const std::string& path)
 {
     Scenario scenario;
+    scenario.path = path;
     for (auto line : InputFile(path).load()) {
 
         if (line.key == "name") {
@@ -25,7 +26,7 @@ Scenario load_scenario(const std::string& path)
         }
 
         if (line.key == "begin" | line.key == "end") {
-            auto [date, err] = as_gregorian_date(line.value, line.line);
+            auto[date, err] = as_gregorian_date(line.value, line.line);
             if (!err.error) {
                 if (line.key == "begin") {
                     scenario.begin = date;

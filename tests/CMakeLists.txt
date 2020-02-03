@@ -35,6 +35,6 @@ add_executable( tests ${TEST_SOURCES} ${SOURCES} )
 target_link_libraries( 
   tests 
   Catch 
-  -ldl
+  -ldl # gcc on linux requires this for loguru
   -lpthread # gcc on linux requires this for loguru
 )
