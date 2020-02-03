@@ -165,7 +165,7 @@ public:
 
     GregorianDate as_ut() const { return as_jd().as_ut(); }
 
-    constexpr operator double() { return j2000_s; }
+    constexpr operator double() const { return j2000_s; }
 
 private:
     double j2000_s;
