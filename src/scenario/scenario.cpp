@@ -25,7 +25,7 @@ Scenario load_scenario(const std::string& path)
             continue;
         }
 
-        if (line.key == "begin" | line.key == "end") {
+        if ((line.key == "begin") | (line.key == "end")) {
             auto[date, err] = as_gregorian_date(line.value, line.line);
             if (!err.error) {
                 if (line.key == "begin") {

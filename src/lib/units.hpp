@@ -42,7 +42,7 @@ inline auto as_gregorian_date(std::string s, size_t line)
     GregorianDate date;
     ParseError    err;
     try {
-        if (s[4] != '.' | s[7] != '.' | s[10] != ':') {
+        if ((s[4] != '.') | (s[7] != '.') | (s[10] != ':')) {
             throw std::invalid_argument("Invalid date");
         }
 

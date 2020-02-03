@@ -96,5 +96,5 @@ FlightPlan load_flight_plan(const std::string& path)
         flight_plan.route.begin(), flight_plan.route.end(), compare_plan_t);
 
     return flight_plan;
-};
+}
 }
