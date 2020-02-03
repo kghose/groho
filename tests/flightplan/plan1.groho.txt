@@ -1,0 +1,12 @@
+name   Ma Durga
+initially orbiting 399 100x100
+this key does not exist
+
+2050.01.02:0.5 orbit 200x200 ; though not advisable, out of order commands will
+                             ; be sorted on loading
+
+2050.01.01:0.5 orbit 200x200
+
+2050.01.01:0.5001 plane +20.0
+
+2050.01.01: mal-formed date will give an error

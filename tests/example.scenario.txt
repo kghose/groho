@@ -40,9 +40,9 @@ use-only 10 AG 399 ; only include SSB and Earth. AG is an error and will be flag
 
 
 ; You can have multiple flightplans like this:
-ship  flt1.groho.txt
+ship  flightplan/plan1.groho.txt
 ship  flt2.groho.txt
-ship  flt1.groho.txt ; a repeated flight plan is ignored
+ship  flt2.groho.txt ; a repeated flight plan is ignored
 
 ; An unexpected key will flag an error and be ignored
 this key does not exist

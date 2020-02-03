@@ -3,7 +3,7 @@ cmake_minimum_required( VERSION 3.0.0 )
 project( groho_tests )
 
 set(CMAKE_CXX_COMPILER "c++")
-set(CMAKE_CXX_FLAGS "-std=c++17 -fsanitize=address -Wall")
+set(CMAKE_CXX_FLAGS "-g -std=c++17 -fsanitize=address -Wall")
 
 
 # Prepare "Catch" library for other executables
@@ -24,11 +24,13 @@ set( TEST_SOURCES
   units_test.cpp
   inputfile_test.cpp
   scenario_test.cpp
+  flightplan_test.cpp
 )
 
 set( SOURCES
   ../src/lib/inputfile.cpp
   ../src/scenario/scenario.cpp
+  ../src/scenario/flightplan.cpp
 )
 
 add_executable( tests ${TEST_SOURCES} ${SOURCES} )
