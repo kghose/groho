@@ -12,12 +12,10 @@ Type for NAIF IDs
 namespace groho {
 
 struct NAIFbody {
-    int         code;
-    std::string name;
+    int code;
 
-    NAIFbody(int a = 0, std::string _name = "undefined")
+    NAIFbody(int a = 0)
         : code(a)
-        , name(_name)
     {
     }
 
