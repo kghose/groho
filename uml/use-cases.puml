@@ -1,0 +1,11 @@
+@startuml Use Cases
+
+User -> (Create scenario)
+(Create scenario) <|-- (Change scenario)
+
+User --> (Visualize simulation)
+(Visualize simulation) <|-- (Add sub-views)
+
+User --> (Print visualization)
+
+@enduml
