@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "catch.hpp"
 
 #include "scenario.hpp"
@@ -16,11 +18,15 @@ TEST_CASE("Parse sample scenario", "[Scenario]")
     REQUIRE(scenario.ship_files.size() == 2);
     REQUIRE(scenario.include_set.size() == 2);
     REQUIRE(
-        scenario.include_set.find(groho::NAIFbody(10))
+        std::find_if(
+            scenario.include_set.begin(),
+            scenario.include_set.end(),
+            [](const groho::NAIFParam& p) { return p.value.code == 10; })
         != scenario.include_set.end());
 
-    REQUIRE(scenario.errors.size() == 3);
-    REQUIRE(scenario.errors.at(0).line == 24);
-    REQUIRE(scenario.errors.at(1).line == 39);
-    REQUIRE(scenario.errors.at(2).line == 48);
+    REQUIRE(scenario.issues.size() == 4);
+    REQUIRE(scenario.issues.at(0).line == 24);
+    REQUIRE(scenario.issues.at(1).line == 39);
+    REQUIRE(scenario.issues.at(2).line == 45);
+    REQUIRE(scenario.issues.at(3).line == 48);
 }

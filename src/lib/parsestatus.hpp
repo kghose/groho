@@ -12,9 +12,21 @@ this structure.
 
 namespace groho {
 
-struct ParseError {
-    bool        error;
+struct ParseStatus {
+    enum StatusCode { OK = 0, WARNING, ERROR };
     size_t      line;
+    StatusCode  code;
     std::string message;
+};
+
+template <typename T> struct Parsed {
+    T           value;
+    ParseStatus status;
+    Parsed() {}
+    Parsed(const T value, const ParseStatus status)
+        : value(value)
+        , status(status)
+    {
+    }
 };
 }

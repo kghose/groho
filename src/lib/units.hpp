@@ -13,7 +13,7 @@ because that is what the JPL SPK files use
 #include <stdexcept>
 #include <string>
 
-#include "parseerror.hpp"
+#include "parsestatus.hpp"
 
 namespace groho {
 
@@ -29,6 +29,8 @@ struct GregorianDate {
     double H;
 };
 
+typedef Parsed<GregorianDate> ParsedGregorianDate;
+
 inline std::ostream& operator<<(std::ostream& os, const GregorianDate& cd)
 {
     os << cd.Y << "." << cd.M << "." << cd.D << "." << cd.H;
@@ -39,27 +41,24 @@ inline std::ostream& operator<<(std::ostream& os, const GregorianDate& cd)
 // YYYY.MM.DD.X
 inline auto as_gregorian_date(std::string s, size_t line)
 {
-    GregorianDate date;
-    ParseError    err;
+    ParsedGregorianDate date;
     try {
         if ((s[4] != '.') | (s[7] != '.') | (s[10] != ':')) {
             throw std::invalid_argument("Invalid date");
         }
 
-        date.Y = std::stoi(s.substr(0, 4));
-        date.M = std::stoi(s.substr(5, 2));
-        date.D = std::stoi(s.substr(8, 2));
-        date.H = std::stof(s.substr(11));
+        date.value.Y = std::stoi(s.substr(0, 4));
+        date.value.M = std::stoi(s.substr(5, 2));
+        date.value.D = std::stoi(s.substr(8, 2));
+        date.value.H = std::stof(s.substr(11));
 
-        err.error = false;
+        date.status.code = ParseStatus::OK;
 
     } catch (const std::exception& e) {
-        err.error   = true;
-        err.line    = line;
-        err.message = e.what();
+        date.status = { line, ParseStatus::ERROR, e.what() };
     }
 
-    return std::make_pair(date, err);
+    return date;
 }
 
 inline bool leap_gregorian(int year)

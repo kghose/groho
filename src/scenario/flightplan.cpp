@@ -20,27 +20,26 @@ namespace groho {
 auto from_line(const J2000_s& t, const Line& line)
 {
     PlanElement plan_element;
-    ParseError  err;
+    ParseStatus status;
 
     auto arguments = split_string(line.value);
     if (arguments.size() > 0) {
         plan_element.t         = t;
         plan_element.command   = arguments[0];
         plan_element.arguments = arguments;
-        plan_element.line      = line.line;
-        err.error              = false;
+
+        status = { line.line, ParseStatus::OK };
+
     } else {
-        err.error   = true;
-        err.line    = line.line;
-        err.message = "Command missing";
+        status = { line.line, ParseStatus::ERROR, "Command missing" };
     }
 
-    return std::pair{ plan_element, err };
+    return PlanElementParam{ plan_element, status };
 }
 
-bool compare_plan_t(const PlanElement& p0, const PlanElement& p1)
+bool compare_plan_t(const PlanElementParam& p0, const PlanElementParam& p1)
 {
-    return p0.t < p1.t;
+    return p0.value.t < p1.value.t;
 }
 
 FlightPlan load_flight_plan(const std::string& path)
@@ -48,8 +47,8 @@ FlightPlan load_flight_plan(const std::string& path)
     FlightPlan flight_plan;
     flight_plan.path = path;
 
-    auto flag_error = [&](const ParseError& err) {
-        flight_plan.errors.push_back(err);
+    auto flag_error = [&](const ParseStatus& err) {
+        flight_plan.issues.push_back(err);
         LOG_S(ERROR) << path << ": L" << err.line << ": " << err.message;
     };
 
@@ -61,34 +60,33 @@ FlightPlan load_flight_plan(const std::string& path)
         }
 
         if (line.key == "initially") {
-            auto[plan_element, err] = from_line(0, line);
-            if (!err.error) {
+            auto plan_element = from_line(0, line);
+            if (plan_element.status.code == ParseStatus::OK) {
                 flight_plan.initial_condition = plan_element;
             } else {
-                flag_error(err);
+                flag_error(plan_element.status);
             }
             continue;
         }
 
         if (!std::isdigit(line.key[0])) {
-            ParseError err{ true,
-                            line.line,
-                            "Unknown key \"" + line.key + "\"" };
-            flag_error(err);
+            flag_error({ line.line,
+                         ParseStatus::ERROR,
+                         "Unknown key \"" + line.key + "\"" });
             continue;
         }
 
-        auto[date, date_err] = as_gregorian_date(line.key, line.line);
-        if (date_err.error) {
-            flag_error(date_err);
+        auto date = as_gregorian_date(line.key, line.line);
+        if (date.status.code != ParseStatus::OK) {
+            flag_error(date.status);
             continue;
         }
 
-        auto[plan_element, err] = from_line(date, line);
-        if (!err.error) {
+        auto plan_element = from_line(date.value, line);
+        if (plan_element.status.code == ParseStatus::OK) {
             flight_plan.route.push_back(plan_element);
         } else {
-            flag_error(err);
+            flag_error(plan_element.status);
         }
     }
 

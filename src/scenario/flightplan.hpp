@@ -7,27 +7,31 @@ Store bare information from flightplan file.
 
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
-#include "parseerror.hpp"
+#include "parsestatus.hpp"
 #include "units.hpp"
 
 namespace groho {
+
+namespace fs = std::filesystem;
 
 struct PlanElement {
     J2000_s                  t;
     std::string              command;
     std::vector<std::string> arguments;
-    size_t                   line;
 };
 
+typedef Parsed<PlanElement> PlanElementParam;
+
 struct FlightPlan {
-    std::string              name;
-    PlanElement              initial_condition;
-    std::vector<PlanElement> route;
-    std::string              path;
-    std::vector<ParseError>  errors;
+    std::string                   name;
+    PlanElementParam              initial_condition;
+    std::vector<PlanElementParam> route;
+    fs::path                      path;
+    std::vector<ParseStatus>      issues;
 };
 
 FlightPlan load_flight_plan(const std::string& path);

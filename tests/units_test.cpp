@@ -98,7 +98,7 @@ TEST_CASE("Parse Gregorian Date from string", "[ParseDate]")
 
     REQUIRE(date.Y == 2050);
     REQUIRE(date.H == 0.5);
-    REQUIRE(!err.error);
+    REQUIRE(err.code == ParseStatus::OK);
 }
 
 TEST_CASE("Parse Gregorian Date from string with error", "[ParseDate]")
@@ -106,7 +106,7 @@ TEST_CASE("Parse Gregorian Date from string with error", "[ParseDate]")
     std::string d   = "2050.0229.0.5";
     auto[date, err] = as_gregorian_date(d, 1);
 
-    REQUIRE(err.error);
+    REQUIRE(err.code != ParseStatus::OK);
     REQUIRE(err.line == 1);
     REQUIRE(err.message == "Invalid date");
 }

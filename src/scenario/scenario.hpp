@@ -7,28 +7,34 @@ Store bare information from Scenario file.
 
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
 #include "naifbody.hpp"
-#include "parseerror.hpp"
+#include "parsestatus.hpp"
 #include "units.hpp"
 
 namespace groho {
+
+namespace fs = std::filesystem;
+
+typedef Parsed<fs::path> PathParam;
+typedef Parsed<NAIFbody> NAIFParam;
 
 struct Scenario {
     std::string name;
     J2000_s     begin;
     J2000_s     end;
 
-    std::unordered_set<std::string> orrery_files;
-    std::unordered_set<NAIFbody>    include_set;
-    std::unordered_set<std::string> ship_files;
+    std::vector<PathParam> orrery_files; // Order matters
+    std::vector<NAIFParam> include_set;
+    std::vector<PathParam> ship_files;
 
-    std::string path; // all linked files are relative to this
+    fs::path path; // all linked files are relative to this
 
-    std::vector<ParseError> errors;
+    std::vector<ParseStatus> issues;
 };
 
 Scenario load_scenario(const std::string& path);
