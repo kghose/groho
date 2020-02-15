@@ -54,6 +54,7 @@ cd examples/002.full-solar-system
     - [Restarts](#restarts)
   - [What does a ship know about the world?](#what-does-a-ship-know-about-the-world)
   - [Orbit view interactions](#orbit-view-interactions)
+  - [[Developer documentation](docs/Readme.md)](#developer-documentationdocsreadmemd)
   - [Meta](#meta)
     - [Why is the tutorial/manual in the form of commented examples?](#why-is-the-tutorialmanual-in-the-form-of-commented-examples)
     - [Why do you have stuff in the manual/examples that isn't implemented yet?](#why-do-you-have-stuff-in-the-manualexamples-that-isnt-implemented-yet)
@@ -238,6 +239,8 @@ Whatever view you can get to using the mouse/keyboard, you can also get to using
 the `view` annotation and in a much more effective way. Check out the documentation.
 
 *Eventually the [tutorial here](docs/tutorial.md) will be copied over into this space.*
+
+## [Developer documentation](docs/Readme.md)
 
 ## Meta 
 

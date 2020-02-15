@@ -1,20 +1,11 @@
-Documentation for me, users and developers
-==========================================
+# Developer documentation
 
-User documentation
-------------------
+## Use case diagram
 
-* [Tutorial][tut] - I also use the tutorial to constrain the scope of the
-  program, plan out the interface for the code, and to determine what kind of 
-  results I expect and in what form.
-* [FlightPlan file format][fp]
+![](../uml/use-cases.png)
 
 
-[tut]: tutorial.md
-[fp]: flight-plan.md
+## Sequence diagram
 
+![](../uml/sequence.png)
 
-Developer documentation
------------------------
-Developer documentation is found one level down. 
-Please see the [readme](dev/Readme.md) there
