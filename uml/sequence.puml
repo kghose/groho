@@ -1,0 +1,52 @@
+@startuml Sequence
+participant User
+collections Scenario
+collections Plotfile
+entity Simulator
+entity Simulation
+entity Plotter
+
+collections Plot
+
+User -> Scenario: edit
+
+Plotter -> Simulation: Data?
+Plotter <-- Simulation: No
+
+Scenario -> Simulator: start
+activate Simulator
+
+Simulator -> Simulation: create
+activate Simulation
+
+Plotter -> Simulation: Data?
+Plotter <-- Simulation: Yes
+
+Plotter -> Plot: Update
+
+User -> Plotfile: edit
+Plotfile -> Plotter: Update
+Plotter -> Plot: Update
+
+
+User -> Scenario: edit
+
+Simulator -> Simulation: stop
+deactivate Simulation
+
+Plotter -> Simulation: Data?
+Plotter <-- Simulation: No
+
+
+Scenario -> Simulator: stop
+deactivate Simulator
+
+Scenario -> Simulator: start
+activate Simulator
+
+
+Simulator -> Simulation: create
+activate Simulation
+
+
+@enduml
