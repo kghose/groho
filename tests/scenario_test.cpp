@@ -6,7 +6,7 @@
 
 TEST_CASE("Parse sample scenario", "[Scenario]")
 {
-    groho::Scenario scenario = groho::load_scenario("example.scenario.txt");
+    groho::Scenario scenario("example.scenario.txt");
 
     REQUIRE(scenario.name == "Earth to Mars");
     REQUIRE(scenario.path == "example.scenario.txt");

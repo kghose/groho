@@ -33,15 +33,15 @@ bool duplicate(const std::vector<NAIFParam>& p, const int c)
         != p.end();
 }
 
-Scenario load_scenario(const std::string& path)
+Scenario::Scenario(const std::string& path)
+    : path(path)
 {
-    Scenario scenario;
-    scenario.path = path;
+    set_last_write_time();
 
     for (auto line : InputFile(path).load()) {
 
         if (line.key == "name") {
-            scenario.name = line.value;
+            name = line.value;
             continue;
         }
 
@@ -49,12 +49,12 @@ Scenario load_scenario(const std::string& path)
             auto[date, status] = as_gregorian_date(line.value, line.line);
             if (status.code == ParseStatus::OK) {
                 if (line.key == "begin") {
-                    scenario.begin = date;
+                    begin = date;
                 } else {
-                    scenario.end = date;
+                    end = date;
                 }
             } else {
-                scenario.issues.push_back(status);
+                issues.push_back(status);
                 LOG_S(ERROR)
                     << path << ": L" << status.line << ": " << status.message;
             }
@@ -62,14 +62,13 @@ Scenario load_scenario(const std::string& path)
         }
 
         if (line.key == "orrery") {
-            if (!duplicate(scenario.orrery_files, line.value)) {
-                scenario.orrery_files.emplace_back(
-                    line.value, ParseStatus{ line.line });
+            if (!duplicate(orrery_files, line.value)) {
+                orrery_files.emplace_back(line.value, ParseStatus{ line.line });
             } else {
                 ParseStatus err{ line.line,
                                  ParseStatus::WARNING,
                                  "Duplicate orrery" };
-                scenario.issues.push_back(err);
+                issues.push_back(err);
                 LOG_S(ERROR)
                     << path << ": L" << err.line << ": " << err.message;
             }
@@ -77,14 +76,13 @@ Scenario load_scenario(const std::string& path)
         }
 
         if (line.key == "ship") {
-            if (!duplicate(scenario.ship_files, line.value)) {
-                scenario.ship_files.emplace_back(
-                    line.value, ParseStatus{ line.line });
+            if (!duplicate(ship_files, line.value)) {
+                ship_files.emplace_back(line.value, ParseStatus{ line.line });
             } else {
                 ParseStatus err{ line.line,
                                  ParseStatus::WARNING,
                                  "Duplicate flight plan" };
-                scenario.issues.push_back(err);
+                issues.push_back(err);
                 LOG_S(ERROR)
                     << path << ": L" << err.line << ": " << err.message;
             }
@@ -102,20 +100,20 @@ Scenario load_scenario(const std::string& path)
                         ParseStatus::ERROR,
                         "Invalid NAIF code. Needs to be an integer."
                     };
-                    scenario.issues.push_back(err);
+                    issues.push_back(err);
                     LOG_S(ERROR)
                         << path << ": L" << err.line << ": " << err.message;
                     continue;
                 }
 
-                if (!duplicate(scenario.include_set, code)) {
-                    scenario.include_set.emplace_back(
+                if (!duplicate(include_set, code)) {
+                    include_set.emplace_back(
                         NAIFbody{ code }, ParseStatus{ line.line });
                 } else {
                     ParseStatus err{ line.line,
                                      ParseStatus::WARNING,
                                      "Duplicate NAIF code." };
-                    scenario.issues.push_back(err);
+                    issues.push_back(err);
                     LOG_S(ERROR)
                         << path << ": L" << err.line << ": " << err.message;
                     continue;
@@ -127,9 +125,30 @@ Scenario load_scenario(const std::string& path)
         ParseStatus err{ line.line,
                          ParseStatus::ERROR,
                          "Unknown key \"" + line.key + "\"" };
-        scenario.issues.push_back(err);
+        issues.push_back(err);
         LOG_S(ERROR) << path << ": L" << err.line << ": " << err.message;
     }
-    return scenario;
+}
+
+fs::file_time_type last_write(fs::path path)
+{
+    bool _ok = fs::exists(path) && !fs::is_directory(path);
+    if (_ok) {
+        return fs::last_write_time(path);
+    } else {
+        return fs::file_time_type::min();
+    }
+}
+
+fs::file_time_type Scenario::current_last_write() const
+{
+    auto max_t = last_write(path);
+    for (const auto& p : ship_files) {
+        if (max_t == fs::file_time_type::min()) {
+            break;
+        }
+        max_t = std::max(max_t, last_write(p.value));
+    }
+    return max_t;
 }
 }

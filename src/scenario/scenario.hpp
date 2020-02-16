@@ -24,6 +24,9 @@ typedef Parsed<fs::path> PathParam;
 typedef Parsed<NAIFbody> NAIFParam;
 
 struct Scenario {
+
+    Scenario(const std::string& path);
+
     std::string name;
     J2000_s     begin;
     J2000_s     end;
@@ -35,6 +38,14 @@ struct Scenario {
     fs::path path; // all linked files are relative to this
 
     std::vector<ParseStatus> issues;
+
+    bool changed() const { return current_last_write() > _previous_last_write; }
+
+private:
+    void set_last_write_time() { _previous_last_write = current_last_write(); }
+    fs::file_time_type current_last_write() const;
+
+    fs::file_time_type _previous_last_write;
 };
 
 Scenario load_scenario(const std::string& path);
