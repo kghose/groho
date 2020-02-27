@@ -1,4 +1,4 @@
-@startuml Use Cases
+@startuml usecases
 
 User -> (Create scenario)
 (Create scenario) <|-- (Change scenario)

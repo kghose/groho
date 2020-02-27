@@ -1,52 +1,77 @@
 @startuml Sequence
-participant User
-collections Scenario
-collections Plotfile
-entity Simulator
-entity Simulation
-entity Plotter
 
+actor User
+participant "Scenario file" as scnf
+participant Simulator
+participant Simulation
+
+participant "Plotting file" as plotf
+participant Plotter
 collections Plot
 
-User -> Scenario: edit
-
-Plotter -> Simulation: Data?
-Plotter <-- Simulation: No
-
-Scenario -> Simulator: start
-activate Simulator
-
-Simulator -> Simulation: create
+Simulator -> scnf: Load scenario
+scnf --> Simulator: scenario
+Simulator -> Simulation: restart
 activate Simulation
 
-Plotter -> Simulation: Data?
-Plotter <-- Simulation: Yes
+Simulator -> scnf: Changed?
+scnf --> Simulator: No
 
+
+Plotter -> plotf: Changed?
+Plotter <-- plotf: No
+
+User --> scnf: edit
+
+
+Plotter -> Simulation: Fresh Data?
+Plotter <-- Simulation: Data
 Plotter -> Plot: Update
 
-User -> Plotfile: edit
-Plotfile -> Plotter: Update
+
+User --> plotf: edit
+Plotter -> plotf: Changed?
+Plotter <-- plotf: plot info
+Plotter -> Simulation: Fetch data
+Simulation --> Plotter: Data
 Plotter -> Plot: Update
 
-
-User -> Scenario: edit
+Simulator -> scnf: Changed?
+scnf --> Simulator: scenario
 
 Simulator -> Simulation: stop
 deactivate Simulation
 
-Plotter -> Simulation: Data?
+
+Plotter -> Simulation: Fresh Data?
+Plotter <- Simulation: Restarting
+
+
+Simulator -> Simulation: restart
+activate Simulation
+
+
+Plotter -> Simulation: Fresh Data?
+Plotter <-- Simulation: Data
+Plotter -> Plot: Update
+
+Simulator -> Simulation: done
+deactivate Simulation
+
+Plotter -> Simulation: Fresh Data?
+Plotter <-- Simulation: Data
+Plotter -> Plot: Update
+
+
+Plotter -> Simulation: Fresh Data?
 Plotter <-- Simulation: No
 
 
-Scenario -> Simulator: stop
-deactivate Simulator
-
-Scenario -> Simulator: start
-activate Simulator
-
-
-Simulator -> Simulation: create
-activate Simulation
-
+User --> plotf: edit
+Plotter -> plotf: Changed?
+Plotter <-- plotf: plot info
+Plotter -> Simulation: Fetch data
+Plotter <-- Simulation: Data
+Plotter -> Plot: Update
 
 @enduml
