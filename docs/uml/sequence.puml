@@ -4,74 +4,92 @@ actor User
 participant "Scenario file" as scnf
 participant Simulator
 participant Simulation
-
+participant "Simulation file" as simf
 participant "Plotting file" as plotf
 participant Plotter
 collections Plot
 
-Simulator -> scnf: Load scenario
+Simulator -> scnf: load_scenario()
 scnf --> Simulator: scenario
-Simulator -> Simulation: restart
+Simulator -> Simulation: restart(scenario)
 activate Simulation
 
-Simulator -> scnf: Changed?
-scnf --> Simulator: No
+Plotter -> plotf: load_plotfile()
+Plotter <-- plotf: plotfile
+Plotter -> Simulation: load_data()
+Plotter <-- Simulation: data
+Plotter -> Plot: plot(data)
 
+Simulation -> simf: save(data)
 
-Plotter -> plotf: Changed?
-Plotter <-- plotf: No
-
-User --> scnf: edit
-
-
-Plotter -> Simulation: Fresh Data?
-Plotter <-- Simulation: Data
-Plotter -> Plot: Update
-
-
-User --> plotf: edit
-Plotter -> plotf: Changed?
-Plotter <-- plotf: plot info
-Plotter -> Simulation: Fetch data
-Simulation --> Plotter: Data
-Plotter -> Plot: Update
-
-Simulator -> scnf: Changed?
+Simulator -> scnf: load_scenario()
 scnf --> Simulator: scenario
-
 Simulator -> Simulation: stop
 deactivate Simulation
-
-
-Plotter -> Simulation: Fresh Data?
-Plotter <- Simulation: Restarting
-
-
-Simulator -> Simulation: restart
+Simulator -> Simulation: restart(scenario)
 activate Simulation
 
 
-Plotter -> Simulation: Fresh Data?
-Plotter <-- Simulation: Data
-Plotter -> Plot: Update
+User -> scnf: edit
+
+
+Plotter -> plotf: load_plotfile()
+Plotter <-- plotf: plotfile
+Plotter -> Simulation: load_data()
+Plotter <-- Simulation: data
+Plotter -> Plot: plot(data)
+
+Simulation -> simf: save(data)
+
+User -> plotf: edit
+Plotter -> plotf: load_plotfile()
+Plotter <-- plotf: plotfile
+Plotter -> Simulation: load_data()
+Plotter <-- Simulation: data
+Plotter -> Plot: plot(data)
+
+
+Simulator -> scnf: load_scenario()
+scnf --> Simulator: scenario
+Simulator -> Simulation: stop
+deactivate Simulation
+Simulation -> simf: save(data)
+
+
+Plotter -> plotf: load_plotfile()
+Plotter <-- plotf: plotfile
+Plotter -> Simulation: load_data()
+Plotter <-- Simulation: <no data>
+
+
+Simulator -> Simulation: restart(scenario)
+activate Simulation
+
+
+Plotter -> plotf: load_plotfile()
+Plotter <-- plotf: plotfile
+Plotter -> Simulation: load_data()
+Plotter <-- Simulation: data
+Plotter -> Plot: plot(data)
 
 Simulator -> Simulation: done
 deactivate Simulation
+Simulation -> simf: save(data)
 
-Plotter -> Simulation: Fresh Data?
-Plotter <-- Simulation: Data
-Plotter -> Plot: Update
+Plotter -> plotf: load_plotfile()
+Plotter <-- plotf: plotfile
+Plotter -> Simulation: load_data()
+Plotter <-- Simulation: data
+Plotter -> Plot: plot(data)
 
-
-Plotter -> Simulation: Fresh Data?
-Plotter <-- Simulation: No
 
 
 User --> plotf: edit
-Plotter -> plotf: Changed?
-Plotter <-- plotf: plot info
-Plotter -> Simulation: Fetch data
-Plotter <-- Simulation: Data
-Plotter -> Plot: Update
+
+Plotter -> plotf: load_plotfile()
+Plotter <-- plotf: plotfile
+Plotter -> Simulation: load_data()
+Plotter <-- Simulation: data
+Plotter -> Plot: plot(data)
 
 @enduml
