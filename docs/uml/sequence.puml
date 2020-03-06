@@ -1,95 +1,112 @@
 @startuml Sequence
 
 actor User
-participant "Scenario file" as scnf
-participant Simulator
-participant Simulation
-participant "Simulation file" as simf
-participant "Plotting file" as plotf
-participant Plotter
-collections Plot
+boundary Scenario
+control Simulator
+boundary "simulation file" as simf
+boundary "PlotFile" as plotf
+control Plotter
+boundary Plot
 
-Simulator -> scnf: load_scenario()
-scnf --> Simulator: scenario
-Simulator -> Simulation: restart(scenario)
-activate Simulation
+' Inital run
 
-Plotter -> plotf: load_plotfile()
-Plotter <-- plotf: plotfile
-Plotter -> Simulation: load_data()
-Plotter <-- Simulation: data
+activate Scenario
+Scenario -> Simulator: restart(scenario)
+deactivate Scenario
+activate Simulator
+
+Plotter <-- plotf: plot(plotfile)
+activate Plotter
+Plotter -> Simulator: load_data()
+Plotter <-- Simulator: data
 Plotter -> Plot: plot(data)
+deactivate Plotter
 
-Simulation -> simf: save(data)
+Simulator -> simf: save(data)
 
-Simulator -> scnf: load_scenario()
-scnf --> Simulator: scenario
-Simulator -> Simulation: stop
-deactivate Simulation
-Simulator -> Simulation: restart(scenario)
-activate Simulation
-
-
-User -> scnf: edit
-
-
-Plotter -> plotf: load_plotfile()
-Plotter <-- plotf: plotfile
-Plotter -> Simulation: load_data()
-Plotter <-- Simulation: data
+Plotter -> Plotter: poll
+activate Plotter
+Plotter -> Simulator: load_data()
+Plotter <-- Simulator: data
 Plotter -> Plot: plot(data)
+deactivate Plotter
 
-Simulation -> simf: save(data)
+
+' Restart after scenario edit
+
+User -> Scenario: edit
+activate Scenario
+
+Simulator -> simf: save(data)
+
+Scenario -> Simulator: stop
+deactivate Simulator
+Scenario -> Simulator: restart(scenario)
+deactivate Scenario
+activate Simulator
+
+
+' User edits plot file
 
 User -> plotf: edit
-Plotter -> plotf: load_plotfile()
-Plotter <-- plotf: plotfile
-Plotter -> Simulation: load_data()
-Plotter <-- Simulation: data
+activate plotf
+Plotter <-- plotf: plot(plotfile)
+deactivate plotf
+activate Plotter
+Plotter -> Simulator: load_data()
+Plotter <-- Simulator: data
 Plotter -> Plot: plot(data)
+deactivate Plotter
 
 
-Simulator -> scnf: load_scenario()
-scnf --> Simulator: scenario
-Simulator -> Simulation: stop
-deactivate Simulation
-Simulation -> simf: save(data)
+' User edits scenario, plotter tries to plot at the same time
+User -> Scenario: edit
+activate Scenario
+Scenario -> Simulator: stop
+deactivate Simulator
+
+' Plotter poll returns no data
+Plotter -> Plotter: poll
+activate Plotter
+Plotter -> Simulator: load_data()
+Plotter <-- Simulator: < no data >
+deactivate Plotter
 
 
-Plotter -> plotf: load_plotfile()
-Plotter <-- plotf: plotfile
-Plotter -> Simulation: load_data()
-Plotter <-- Simulation: <no data>
+Scenario -> Simulator: restart(scenario)
+deactivate Scenario
+activate Simulator
 
 
-Simulator -> Simulation: restart(scenario)
-activate Simulation
-
-
-Plotter -> plotf: load_plotfile()
-Plotter <-- plotf: plotfile
-Plotter -> Simulation: load_data()
-Plotter <-- Simulation: data
+Plotter -> Plotter: poll
+activate Plotter
+Plotter -> Simulator: load_data()
+Plotter <-- Simulator: data
 Plotter -> Plot: plot(data)
+deactivate Plotter
 
-Simulator -> Simulation: done
-deactivate Simulation
-Simulation -> simf: save(data)
+Scenario -> Simulator: done
+deactivate Simulator
+Simulator -> simf: save(data)
 
-Plotter -> plotf: load_plotfile()
-Plotter <-- plotf: plotfile
-Plotter -> Simulation: load_data()
-Plotter <-- Simulation: data
+Plotter -> Plotter: poll
+activate Plotter
+Plotter -> Simulator: load_data()
+Plotter <-- Simulator: data
 Plotter -> Plot: plot(data)
+deactivate Plotter
 
 
+' User edits plot file
 
-User --> plotf: edit
-
-Plotter -> plotf: load_plotfile()
-Plotter <-- plotf: plotfile
-Plotter -> Simulation: load_data()
-Plotter <-- Simulation: data
+User -> plotf: edit
+activate plotf
+Plotter <-- plotf: plot(plotfile)
+deactivate plotf
+activate Plotter
+Plotter -> Simulator: load_data()
+Plotter <-- Simulator: data
 Plotter -> Plot: plot(data)
+deactivate Plotter
 
 @enduml
