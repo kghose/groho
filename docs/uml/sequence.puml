@@ -2,111 +2,123 @@
 
 actor User
 boundary Scenario
-control Simulator
-boundary "simulation file" as simf
-boundary "PlotFile" as plotf
-control Plotter
-boundary Plot
+control "Simulator" as sim
+control Drafter
+participant Chart
+boundary "View" as plotf
+actor "User" as u2
 
 ' Inital run
 
 activate Scenario
-Scenario -> Simulator: restart(scenario)
+activate plotf
+plotf ->> Drafter: update(viewfile)
+deactivate plotf
+Drafter -> sim: load_data()
+Drafter <-- sim: < no data >
+
+
+Scenario ->> sim: restart(scenario)
 deactivate Scenario
-activate Simulator
+activate sim
 
-Plotter <-- plotf: plot(plotfile)
-activate Plotter
-Plotter -> Simulator: load_data()
-Plotter <-- Simulator: data
-Plotter -> Plot: plot(data)
-deactivate Plotter
 
-Simulator -> simf: save(data)
+Drafter -> Drafter: poll
+activate Drafter
+Drafter -> sim: load_data()
+Drafter <-- sim: data
+Drafter -> Chart: plot(data)
+deactivate Drafter
 
-Plotter -> Plotter: poll
-activate Plotter
-Plotter -> Simulator: load_data()
-Plotter <-- Simulator: data
-Plotter -> Plot: plot(data)
-deactivate Plotter
+
+Drafter -> Drafter: poll
+activate Drafter
+Drafter -> sim: load_data()
+Drafter <-- sim: data
+Drafter -> Chart: plot(data)
+deactivate Drafter
 
 
 ' Restart after scenario edit
 
+activate User
 User -> Scenario: edit
+deactivate User
 activate Scenario
 
-Simulator -> simf: save(data)
-
-Scenario -> Simulator: stop
-deactivate Simulator
-Scenario -> Simulator: restart(scenario)
+Scenario -> sim: stop
+deactivate sim
+Scenario -> sim: restart(scenario)
 deactivate Scenario
-activate Simulator
-
+activate sim
 
 ' User edits plot file
 
-User -> plotf: edit
+activate u2
+u2 -> plotf: edit
+deactivate u2
+
 activate plotf
-Plotter <-- plotf: plot(plotfile)
+Drafter <- plotf: update(viewfile)
 deactivate plotf
-activate Plotter
-Plotter -> Simulator: load_data()
-Plotter <-- Simulator: data
-Plotter -> Plot: plot(data)
-deactivate Plotter
+activate Drafter
+Drafter -> sim: load_data()
+Drafter <-- sim: data
+Drafter -> Chart: plot(data)
+deactivate Drafter
 
 
 ' User edits scenario, plotter tries to plot at the same time
+activate User
 User -> Scenario: edit
+deactivate User
 activate Scenario
-Scenario -> Simulator: stop
-deactivate Simulator
+Scenario -> sim: stop
+deactivate sim
 
-' Plotter poll returns no data
-Plotter -> Plotter: poll
-activate Plotter
-Plotter -> Simulator: load_data()
-Plotter <-- Simulator: < no data >
-deactivate Plotter
+' Drafter poll returns no data
+Drafter -> Drafter: poll
+activate Drafter
+Drafter -> sim: load_data()
+Drafter <-- sim: < no data >
+deactivate Drafter
 
 
-Scenario -> Simulator: restart(scenario)
+Scenario -> sim: restart(scenario)
 deactivate Scenario
-activate Simulator
+activate sim
+
+Drafter -> Drafter: poll
+activate Drafter
+Drafter -> sim: load_data()
+Drafter <-- sim: data
+Drafter -> Chart: plot(data)
+deactivate Drafter
 
 
-Plotter -> Plotter: poll
-activate Plotter
-Plotter -> Simulator: load_data()
-Plotter <-- Simulator: data
-Plotter -> Plot: plot(data)
-deactivate Plotter
+sim -> sim: done
+deactivate sim
 
-Scenario -> Simulator: done
-deactivate Simulator
-Simulator -> simf: save(data)
-
-Plotter -> Plotter: poll
-activate Plotter
-Plotter -> Simulator: load_data()
-Plotter <-- Simulator: data
-Plotter -> Plot: plot(data)
-deactivate Plotter
+Drafter -> Drafter: poll
+activate Drafter
+Drafter -> sim: load_data()
+Drafter <-- sim: data
+Drafter -> Chart: plot(data)
+deactivate Drafter
 
 
-' User edits plot file
-
-User -> plotf: edit
+' User edits plot file again
+activate u2
+u2 -> plotf: edit
+deactivate u2
 activate plotf
-Plotter <-- plotf: plot(plotfile)
+Drafter <- plotf: update(viewfile)
 deactivate plotf
-activate Plotter
-Plotter -> Simulator: load_data()
-Plotter <-- Simulator: data
-Plotter -> Plot: plot(data)
-deactivate Plotter
+
+activate Drafter
+Drafter -> sim: load_data()
+Drafter <-- sim: data
+Drafter -> Chart: plot(data)
+deactivate Drafter
 
 @enduml
