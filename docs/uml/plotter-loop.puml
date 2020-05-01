@@ -1,0 +1,13 @@
+@startuml plotterloop
+
+:update(viewfile)>
+
+if (viewfile or data changed?) then (yes)
+  :plot(data);
+  :save(plot);
+else (no)
+endif
+
+stop
+
+@enduml

@@ -1,0 +1,46 @@
+@startuml simulatorloop
+
+:restart(scenario)>
+
+while (scenario_changed?) is (yes)
+  :checkpoint_from(scenario);
+  :state_from_checkpoint(checkpoint);
+  repeat
+    :advance_simulation(state);
+    :save(state, checkpoint);
+  repeat while (interrupted? or done?) is (no)
+  -> yes;
+  
+endwhile (no)
+  stop
+
+@enduml
+
+@startuml simulationstep
+
+|#Cyan|File IO|
+
+|Simulation|
+
+start
+
+:advance_simulation(state);
+
+|Simulation|
+
+if (save?) then (yes)
+
+|File IO|
+  :save_data;
+  if (save checkpoint?) then (yes)
+    :save_checkpoint;
+  else (no)
+  endif
+
+|Simulation|
+else (no)
+endif
+
+stop
+
+@enduml

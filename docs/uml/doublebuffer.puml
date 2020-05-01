@@ -1,0 +1,42 @@
+@startuml persistentdoublebuffer
+
+concise "Main Thread" as MT
+concise "Writer Thread" as WT
+
+@0
+MT is "Write to Buffer 1"
+WT is init
+
+@1
+WT is {-}
+
+@4
+MT is {-}
+MT -> WT : Save
+
+@4.3
+WT -> MT : Buffer 2 ready
+MT is "Write to Buffer 2"
+WT is "save Buffer 1"
+
+@8
+MT -> WT : Save
+MT is {-}
+
+@10
+WT -> MT : Buffer 1 ready
+MT is "Write to Buffer 1"
+WT is "save Buffer 2"
+
+
+@14
+MT -> WT : Save
+MT is {-}
+
+@16
+WT -> MT : Buffer 2 ready
+WT is save
+MT is "Write to buffer 2"
+
+
+@enduml
