@@ -3,7 +3,7 @@
 actor User
 boundary Scenario
 control "Simulator" as sim
-control Drafter
+control Plotter
 participant Chart
 boundary "View" as plotf
 actor "User" as u2
@@ -12,10 +12,10 @@ actor "User" as u2
 
 activate Scenario
 activate plotf
-plotf ->> Drafter: update(viewfile)
+plotf ->> Plotter: update(viewfile)
 deactivate plotf
-Drafter -> sim: load_data()
-Drafter <-- sim: < no data >
+Plotter -> sim: load_data()
+Plotter <-- sim: < no data >
 
 
 Scenario ->> sim: restart(scenario)
@@ -23,20 +23,20 @@ deactivate Scenario
 activate sim
 
 
-Drafter -> Drafter: poll
-activate Drafter
-Drafter -> sim: load_data()
-Drafter <-- sim: data
-Drafter -> Chart: plot(data)
-deactivate Drafter
+Plotter -> Plotter: poll
+activate Plotter
+Plotter -> sim: load_data()
+Plotter <-- sim: data
+Plotter -> Chart: plot(data)
+deactivate Plotter
 
 
-Drafter -> Drafter: poll
-activate Drafter
-Drafter -> sim: load_data()
-Drafter <-- sim: data
-Drafter -> Chart: plot(data)
-deactivate Drafter
+Plotter -> Plotter: poll
+activate Plotter
+Plotter -> sim: load_data()
+Plotter <-- sim: data
+Plotter -> Chart: plot(data)
+deactivate Plotter
 
 
 ' Restart after scenario edit
@@ -59,13 +59,13 @@ u2 -> plotf: edit
 deactivate u2
 
 activate plotf
-Drafter <- plotf: update(viewfile)
+Plotter <- plotf: update(viewfile)
 deactivate plotf
-activate Drafter
-Drafter -> sim: load_data()
-Drafter <-- sim: data
-Drafter -> Chart: plot(data)
-deactivate Drafter
+activate Plotter
+Plotter -> sim: load_data()
+Plotter <-- sim: data
+Plotter -> Chart: plot(data)
+deactivate Plotter
 
 
 ' User edits scenario, plotter tries to plot at the same time
@@ -76,35 +76,35 @@ activate Scenario
 Scenario -> sim: stop
 deactivate sim
 
-' Drafter poll returns no data
-Drafter -> Drafter: poll
-activate Drafter
-Drafter -> sim: load_data()
-Drafter <-- sim: < no data >
-deactivate Drafter
+' Plotter poll returns no data
+Plotter -> Plotter: poll
+activate Plotter
+Plotter -> sim: load_data()
+Plotter <-- sim: < no data >
+deactivate Plotter
 
 
 Scenario -> sim: restart(scenario)
 deactivate Scenario
 activate sim
 
-Drafter -> Drafter: poll
-activate Drafter
-Drafter -> sim: load_data()
-Drafter <-- sim: data
-Drafter -> Chart: plot(data)
-deactivate Drafter
+Plotter -> Plotter: poll
+activate Plotter
+Plotter -> sim: load_data()
+Plotter <-- sim: data
+Plotter -> Chart: plot(data)
+deactivate Plotter
 
 
 sim -> sim: done
 deactivate sim
 
-Drafter -> Drafter: poll
-activate Drafter
-Drafter -> sim: load_data()
-Drafter <-- sim: data
-Drafter -> Chart: plot(data)
-deactivate Drafter
+Plotter -> Plotter: poll
+activate Plotter
+Plotter -> sim: load_data()
+Plotter <-- sim: data
+Plotter -> Chart: plot(data)
+deactivate Plotter
 
 
 ' User edits plot file again
@@ -112,13 +112,13 @@ activate u2
 u2 -> plotf: edit
 deactivate u2
 activate plotf
-Drafter <- plotf: update(viewfile)
+Plotter <- plotf: update(viewfile)
 deactivate plotf
 
-activate Drafter
-Drafter -> sim: load_data()
-Drafter <-- sim: data
-Drafter -> Chart: plot(data)
-deactivate Drafter
+activate Plotter
+Plotter -> sim: load_data()
+Plotter <-- sim: data
+Plotter -> Chart: plot(data)
+deactivate Plotter
 
 @enduml
