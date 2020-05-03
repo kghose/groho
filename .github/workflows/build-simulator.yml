@@ -13,4 +13,4 @@ jobs:
       run: |
         mkdir build && cd build
         cmake .. 
-        make sim-groho
+        make groho
