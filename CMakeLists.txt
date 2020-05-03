@@ -25,14 +25,14 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 file(GLOB GROHO_SOURCES
     "src/main.cpp"
-    "src/lib/*.cpp" 
+#    "src/lib/*.cpp" 
 #    "src/actions/*.cpp" 
-    "src/orrery/spk.cpp"
+#    "src/orrery/spk.cpp"
 #    "src/sampling/*.cpp" 
-    "src/scenario/*.cpp"
-    "src/simulator/simulator.cpp"
+#    "src/scenario/*.cpp"
+#    "src/simulator/simulator.cpp"
 )
-add_executable( sim-groho ${GROHO_SOURCES} )
+add_executable( groho ${GROHO_SOURCES} )
 
 include_directories(
     "src/"
@@ -45,7 +45,7 @@ include_directories(
 )
 
 target_link_libraries( 
-    sim-groho
+    groho
     -ldl # gcc on linux requires this for loguru
     -lpthread # gcc on linux requires this for loguru
 )
