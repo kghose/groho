@@ -1,5 +1,14 @@
+_This code is in the middle of a rewrite. For the last working version please
+see the [master branch](https://github.com/kghose/groho/tree/master) and
+[releases](https://github.com/kghose/groho/releases)._
+
 Groho ( গ্রহ )
 =====
+
+[![Tests](https://github.com/kghose/groho/workflows/Tests/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ATests)
+[![Simulator](https://github.com/kghose/groho/workflows/Simulator/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ASimulator)
+[![Util](https://github.com/kghose/groho/workflows/Utils/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3AUtils)
+
 Groho is a simulator for space flight, communication and warfare within the
 solar system.
 
@@ -18,10 +27,30 @@ descendants who set sail away from the home planet.
 *Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the
 word for planetary system but is more of a mouthful.*
 
+## Quick start
 
-[![Tests](https://github.com/kghose/groho/workflows/Tests/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ATests)
-[![Simulator](https://github.com/kghose/groho/workflows/Simulator/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ASimulator)
-[![Util](https://github.com/kghose/groho/workflows/Utils/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3AUtils)
+Simulator loop: monitor changes in scenario and plot files and rerun and replot
+simulation continuously
+```
+groho loop scn-file.txt plot-file.txt sim-folder chart.pdf
+```
+
+Simulate scenario and exit
+```
+groho sim scn-file.txt sim-folder
+```
+
+Chart simulation and exit
+```
+groho chart plot-file.txt sim-folder chart.pdf
+```
+
+
+# Developer
+- [Design](docs/Readme.md)
+- [High level roadmap](docs/roadmap.md)
+
+
 
 ```
 cd examples/001.basics
@@ -40,6 +69,8 @@ cd examples/002.full-solar-system
 
 <!-- TOC -->
 
+  - [Quick start](#quick-start)
+- [Developer](#developer)
 - [Features and use cases](#features-and-use-cases)
   - [This is not an interactive simulation](#this-is-not-an-interactive-simulation)
   - [This is not an n-body simulation](#this-is-not-an-n-body-simulation)
