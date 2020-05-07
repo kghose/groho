@@ -35,8 +35,7 @@ void loop(
 
 void sim(std::string scn_file, std::string sim_folder)
 {
-    bool keep_running = true;
-    auto simulation   = Simulation(scn_file, sim_folder);
+    auto simulation = Simulation(scn_file, sim_folder);
     simulation.wait_until_done();
 }
 
@@ -45,5 +44,7 @@ void chart(std::string plot_file, std::string sim_folder, std::string chart_pdf)
     auto plotter = Plotter(plot_file, sim_folder, chart_pdf);
     plotter.wait_until_done();
 }
+
+void inspect(std::string kernel_file) {}
 
 }

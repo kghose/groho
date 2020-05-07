@@ -27,29 +27,32 @@ int main(int argc, char* argv[])
     CLI::App app{ "Groho: A simulator for inter-planetary travel" };
     app.require_subcommand(1);
 
-    std::string scn_file, plot_file, sim_folder, chart_pdf;
+    std::string scn_file, plot_file, sim_folder, chart_pdf, kernel_file;
 
     auto loop = app.add_subcommand(
         "loop",
         "Monitor changes in scenario and plot files,\n"
         "rerun and rechart simulation continuously");
-    loop->add_option("simfile", scn_file, "Scenario file");
-    loop->add_option("plotfile", plot_file, "Plot file");
-    loop->add_option("simfolder", sim_folder, "Simulation folder");
-    loop->add_option("chart", chart_pdf, "Chart PDF");
+    loop->add_option("simfile", scn_file, "Scenario file")->required();
+    loop->add_option("plotfile", plot_file, "Plot file")->required();
+    loop->add_option("simfolder", sim_folder, "Simulation folder")->required();
+    loop->add_option("chart", chart_pdf, "Chart PDF")->required();
     loop->callback(
         [&]() { groho::loop(scn_file, plot_file, sim_folder, chart_pdf); });
 
     auto sim = app.add_subcommand("sim", "Simulate scenario and exit");
-    sim->add_option("simfile", scn_file, "Scenario file");
-    sim->add_option("simfolder", sim_folder, "Simulation folder");
+    sim->add_option("simfile", scn_file, "Scenario file")->required();
+    sim->add_option("simfolder", sim_folder, "Simulation folder")->required();
     sim->callback([&]() { groho::sim(scn_file, sim_folder); });
 
     auto chart = app.add_subcommand("chart", "Chart simulation and exit");
-    chart->add_option("plotfile", plot_file, "Plot file");
-    chart->add_option("simfolder", sim_folder, "Simulation folder");
-    chart->add_option("chart", chart_pdf, "Chart PDF");
+    chart->add_option("plotfile", plot_file, "Plot file")->required();
+    chart->add_option("simfolder", sim_folder, "Simulation folder")->required();
+    chart->add_option("chart", chart_pdf, "Chart PDF")->required();
     chart->callback([&]() { groho::chart(plot_file, sim_folder, chart_pdf); });
+
+    auto inspect = app.add_subcommand("inspect", "Inspect kernel file");
+    inspect->add_option("spk", kernel_file, "Kernel file")->required();
 
     CLI11_PARSE(app, argc, argv);
 
