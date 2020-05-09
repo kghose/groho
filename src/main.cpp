@@ -53,6 +53,7 @@ int main(int argc, char* argv[])
 
     auto inspect = app.add_subcommand("inspect", "Inspect kernel file");
     inspect->add_option("spk", kernel_file, "Kernel file")->required();
+    inspect->callback([&]() { groho::inspect(kernel_file); });
 
     CLI11_PARSE(app, argc, argv);
 

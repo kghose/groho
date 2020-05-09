@@ -10,6 +10,12 @@ Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 #include "entrypoints.hpp"
 #include "pdfplotter.hpp"
 #include "simulation.hpp"
+#include "spk.hpp"
+#include "units.hpp"
+
+#define LOGURU_IMPLEMENTATION 1
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
 
 namespace groho {
 
@@ -45,6 +51,17 @@ void chart(std::string plot_file, std::string sim_folder, std::string chart_pdf)
     plotter.wait_until_done();
 }
 
-void inspect(std::string kernel_file) {}
+void inspect(std::string kernel_file)
+{
+    SpkFile spk(kernel_file, {});
+    std::cout << "File comment:\n\n";
+    std::cout << spk.comment << std::endl;
+    std::cout << "\nBodies and centers:\n\n";
+    for (auto summary : spk.summaries) {
+        std::cout << "    " << summary.target_id << " -> " << summary.center_id
+                  << "\t" << J2000_s{ summary.begin_second }.as_ut() << " to "
+                  << J2000_s{ summary.end_second }.as_ut() << std::endl;
+    }
+}
 
 }

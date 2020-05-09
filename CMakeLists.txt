@@ -26,8 +26,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 file(GLOB GROHO_SOURCES
     "src/main.cpp"
     "src/lib/entrypoints.cpp"
+    "src/orrery/spk.cpp"
 #    "src/actions/*.cpp" 
-#    "src/orrery/spk.cpp"
 #    "src/sampling/*.cpp" 
 #    "src/scenario/*.cpp"
 #    "src/simulator/simulator.cpp"
@@ -36,39 +36,19 @@ add_executable( groho ${GROHO_SOURCES} )
 
 include_directories(
     "src/"
+    "src/external" 
+    "src/lib"
+    "src/orrery"
     "src/simulation"
     "src/plotting"
 #    "src/actions" 
-#    "src/orrery"
 #    "src/sampling" 
 #    "src/scenario"
 #    "src/simulator"
-#    "src/external" 
 )
 
 target_link_libraries( 
     groho
-    -ldl # gcc on linux requires this for loguru
-    -lpthread # gcc on linux requires this for loguru
-)
-
-
-# Kernel inspector
-
-file(GLOB KERNEL_INSPECTOR_SOURCES
-    "src/kernel-inspector.cpp" 
-    "src/orrery/spk.cpp"
-)
-add_executable( inspect-kernel ${KERNEL_INSPECTOR_SOURCES} )
-
-include_directories(
-    "src/lib"
-    "src/orrery"
-    "src/external" 
-)
-
-target_link_libraries( 
-    inspect-kernel
     -ldl # gcc on linux requires this for loguru
     -lpthread # gcc on linux requires this for loguru
 )
