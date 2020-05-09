@@ -7,7 +7,6 @@ Groho ( গ্রহ )
 
 [![Tests](https://github.com/kghose/groho/workflows/Tests/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ATests)
 [![Simulator](https://github.com/kghose/groho/workflows/Simulator/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ASimulator)
-[![Util](https://github.com/kghose/groho/workflows/Utils/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3AUtils)
 
 Groho is a simulator for space flight, communication and warfare within the
 solar system.
@@ -313,6 +312,7 @@ And, from [poliastro]
 
 # Related software
 
+There is a big list at https://github.com/orbitalindex/awesome-space
 
 ## NASA's GMAT
 
