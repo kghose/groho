@@ -12,6 +12,7 @@ chebyshev coefficients stored in the SPK/DAF file to compute vector positions
 
 #include <fstream>
 #include <memory>
+#include <optional>
 #include <stdlib.h>
 #include <string>
 #include <vector>
@@ -36,15 +37,13 @@ struct Elements {
 typedef std::vector<Elements> elem_vec_t;
 
 struct Ephemeris {
-    int    target_code;   // NASA/JPL code for this body
-    int    center_code;   // NASA/JPL code for reference body
-    double begin_s;       // Start time
-    double interval_s;    // Length of interval
-    size_t reference_idx; // Point to which body in body list is the center
-                          // reference
+    int        target_code; // NASA/JPL code for this body
+    int        center_code; // NASA/JPL code for reference body
+    double     begin_s;     // Start time
+    double     interval_s;  // Length of interval
     elem_vec_t elements; // coefficients for just the epoch we are interested in
 
-    void eval(double t, double& x, double& y, double& z);
+    void eval(double t, V3d& pos);
 };
 
 typedef std::vector<Ephemeris> ephem_vec_t;
@@ -69,14 +68,8 @@ struct SpkFile {
     std::string      comment;
     sumry_vec_t      summaries;
 
-    SpkFile(std::string file_name, std::vector<int> bodies)
-        : file_name(file_name)
-        , bodies(bodies)
-    {
-        read_abstract();
-    }
-
-    void read_abstract();
+    static std::optional<SpkFile>
+    load(std::string file_name, std::vector<int> bodies);
 };
 
 typedef std::vector<SpkFile> spk_vec_t;

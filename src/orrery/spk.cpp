@@ -1,6 +1,6 @@
 /*
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
-Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 The following code handles loading of NASA/JPL SPK/DAF files that carry
 information for planetary ephemerides.
@@ -13,7 +13,6 @@ information for planetary ephemerides.
 
 #include <cmath>
 #include <fstream>
-#include <optional>
 
 #include "spk.hpp"
 
@@ -54,13 +53,13 @@ inline double Elements::cheby_eval_one(double t, size_t i0, size_t i1) const
     return b;
 }
 
-inline void Ephemeris::eval(double t, double& x, double& y, double& z)
+inline void Ephemeris::eval(double t, V3d& pos)
 {
     const auto& element = elements[std::floor((t - begin_s) / interval_s)];
 
-    x = element.cheby_eval_one(t, 0, element.off1);
-    y = element.cheby_eval_one(t, element.off1, element.off2);
-    z = element.cheby_eval_one(t, element.off2, element.off3);
+    pos.x = element.cheby_eval_one(t, 0, element.off1);
+    pos.y = element.cheby_eval_one(t, element.off1, element.off2);
+    pos.z = element.cheby_eval_one(t, element.off2, element.off3);
 }
 
 // In the following section all structures that closely reflect some part of
@@ -175,18 +174,25 @@ struct ElementRecordMetadata {
 ElementRecordMetadata
 read_element_record_metadata(std::ifstream& nasa_spk_file, const Summary& s);
 
-void SpkFile::read_abstract()
+std::optional<SpkFile>
+SpkFile::load(std::string file_name, std::vector<int> bodies)
 {
     std::ifstream nasa_spk_file(file_name, std::ios::binary);
 
     auto hdr = read_file_record(nasa_spk_file);
     if (!hdr) {
-        LOG_S(ERROR) << "Problem with header";
-        return;
+        LOG_S(ERROR) << file_name;
+        LOG_S(ERROR) << "Not loading because of errors.";
+        return {};
     }
 
-    comment   = read_comment_blocks(nasa_spk_file, hdr);
-    summaries = read_summaries(nasa_spk_file, hdr);
+    SpkFile spk_file;
+    spk_file.file_name = file_name;
+    spk_file.bodies    = bodies;
+    spk_file.comment   = read_comment_blocks(nasa_spk_file, hdr);
+    spk_file.summaries = read_summaries(nasa_spk_file, hdr);
+
+    return spk_file;
 }
 
 //
@@ -201,6 +207,11 @@ std::optional<FileRecord> read_file_record(std::ifstream& nasa_spk_file)
     nasa_spk_file.seekg(0);
     nasa_spk_file.read((char*)&hdr, sizeof(hdr));
 
+    if (integrity_check_template.compare(hdr.integrity_string) != 0) {
+        LOG_S(ERROR) << "Header integrity check fail.";
+        return {};
+    }
+
     DLOG_S(INFO) << "File architecture: " << hdr.file_architecture;
     DLOG_S(INFO) << "Internal name: " << hdr.internal_name;
     DLOG_S(INFO) << "Numeric format: " << hdr.numeric_format;
@@ -208,11 +219,6 @@ std::optional<FileRecord> read_file_record(std::ifstream& nasa_spk_file)
     if ((hdr.n_double_precision != 2) & (hdr.n_integers != 6)) {
         LOG_S(ERROR) << "Expected ND = 2, NI = 6, but got "
                      << hdr.n_double_precision << ", " << hdr.n_integers;
-        return {};
-    }
-
-    if (integrity_check_template.compare(hdr.integrity_string) != 0) {
-        LOG_S(ERROR) << "This file is likely corrupted: FTP validation fails";
         return {};
     }
 

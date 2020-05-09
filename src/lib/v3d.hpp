@@ -43,6 +43,8 @@ struct V3d {
     }
 };
 
+typedef std::vector<V3d> v3d_vec_t;
+
 inline double dot(const V3d& u, const V3d& v)
 {
     return u.x * v.x + u.y * v.y + u.z * v.z;

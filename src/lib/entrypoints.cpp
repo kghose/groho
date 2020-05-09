@@ -53,7 +53,12 @@ void chart(std::string plot_file, std::string sim_folder, std::string chart_pdf)
 
 void inspect(std::string kernel_file)
 {
-    SpkFile spk(kernel_file, {});
+    auto _spk = SpkFile::load(kernel_file, {});
+    if (!_spk) {
+        return;
+    }
+
+    SpkFile spk = *_spk;
     std::cout << "File comment:\n\n";
     std::cout << spk.comment << std::endl;
     std::cout << "\nBodies and centers:\n\n";
