@@ -63,13 +63,11 @@ struct Summary {
 typedef std::vector<Summary> sumry_vec_t;
 
 struct SpkFile {
-    std::string      file_name;
-    std::vector<int> bodies;
-    std::string      comment;
-    sumry_vec_t      summaries;
+    std::string file_name;
+    std::string comment;
+    sumry_vec_t summaries;
 
-    static std::optional<SpkFile>
-    load(std::string file_name, std::vector<int> bodies);
+    static std::optional<SpkFile> load(std::string file_name);
 };
 
 typedef std::vector<SpkFile> spk_vec_t;

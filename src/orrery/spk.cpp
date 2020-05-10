@@ -174,8 +174,7 @@ struct ElementRecordMetadata {
 ElementRecordMetadata
 read_element_record_metadata(std::ifstream& nasa_spk_file, const Summary& s);
 
-std::optional<SpkFile>
-SpkFile::load(std::string file_name, std::vector<int> bodies)
+std::optional<SpkFile> SpkFile::load(std::string file_name)
 {
     std::ifstream nasa_spk_file(file_name, std::ios::binary);
 
@@ -188,7 +187,6 @@ SpkFile::load(std::string file_name, std::vector<int> bodies)
 
     SpkFile spk_file;
     spk_file.file_name = file_name;
-    spk_file.bodies    = bodies;
     spk_file.comment   = read_comment_blocks(nasa_spk_file, hdr);
     spk_file.summaries = read_summaries(nasa_spk_file, hdr);
 
