@@ -63,7 +63,7 @@ void inspect(std::string kernel_file)
     std::cout << "File comment:\n\n";
     std::cout << spk.comment << std::endl;
     std::cout << "\nBodies and centers:\n\n";
-    for (auto summary : spk.summaries) {
+    for (auto [k, summary] : spk.summaries) {
         std::string target = get_body_name(summary.target_id);
         std::string center = get_body_name(summary.center_id);
         std::cout << "    " << target << " -> " << center << "\t"

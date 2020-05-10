@@ -122,7 +122,7 @@ struct SummaryRecordBlockHeader {
     double n_summaries;             // number of element summaries here
 } __attribute__((__packed__));
 
-sumry_vec_t read_summaries(
+sumry_map_t read_summaries(
     std::ifstream& nasa_spk_file, std::optional<const FileRecord> hdr);
 
 // The start_i and end_i pointers of a summary point to a block of element
@@ -263,11 +263,11 @@ read_comment_blocks(std::ifstream& nasa_spk_file, std::optional<FileRecord> hdr)
     return comment.substr(0, strRange);
 }
 
-sumry_vec_t read_summaries(
+sumry_map_t read_summaries(
     std::ifstream& nasa_spk_file, std::optional<const FileRecord> hdr)
 {
     SummaryRecordBlockHeader srbh;
-    sumry_vec_t              sv;
+    sumry_map_t              sv;
 
     if (!hdr) {
         return sv;
@@ -283,7 +283,7 @@ sumry_vec_t read_summaries(
         for (size_t j = 0; j < srbh.n_summaries; j++) {
             Summary es;
             nasa_spk_file.read((char*)&es, sizeof(es));
-            sv.push_back(es);
+            sv[es.target_id] = es;
             DLOG_S(INFO) << "Summary " << j + 1 << "/" << srbh.n_summaries;
         }
 

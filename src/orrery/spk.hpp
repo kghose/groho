@@ -15,6 +15,7 @@ chebyshev coefficients stored in the SPK/DAF file to compute vector positions
 #include <optional>
 #include <stdlib.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "body.hpp"
@@ -60,12 +61,12 @@ struct Summary {
     u_int32_t end_i;        // index (8 byte blocks) where segment data ends
 } __attribute__((__packed__));
 
-typedef std::vector<Summary> sumry_vec_t;
+typedef std::unordered_map<NAIFbody, Summary> sumry_map_t;
 
 struct SpkFile {
     std::string file_name;
     std::string comment;
-    sumry_vec_t summaries;
+    sumry_map_t summaries;
 
     static std::optional<SpkFile> load(std::string file_name);
 };
