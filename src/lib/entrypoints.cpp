@@ -67,8 +67,8 @@ void inspect(std::string kernel_file)
         std::string target = get_body_name(summary.target_id);
         std::string center = get_body_name(summary.center_id);
         std::cout << "    " << target << " -> " << center << "\t"
-                  << J2000_s{ summary.begin_second }.as_ut() << " to "
-                  << J2000_s{ summary.end_second }.as_ut() << std::endl;
+                  << summary.begin_second.as_ut() << " to "
+                  << summary.end_second.as_ut() << std::endl;
     }
 }
 
