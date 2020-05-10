@@ -7,6 +7,7 @@ Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 #include <signal.h>
 #include <thread>
 
+#include "bodyconstant.hpp"
 #include "entrypoints.hpp"
 #include "pdfplotter.hpp"
 #include "simulation.hpp"
@@ -53,7 +54,7 @@ void chart(std::string plot_file, std::string sim_folder, std::string chart_pdf)
 
 void inspect(std::string kernel_file)
 {
-    auto _spk = SpkFile::load(kernel_file, {});
+    auto _spk = SpkFile::load(kernel_file);
     if (!_spk) {
         return;
     }
@@ -63,8 +64,10 @@ void inspect(std::string kernel_file)
     std::cout << spk.comment << std::endl;
     std::cout << "\nBodies and centers:\n\n";
     for (auto summary : spk.summaries) {
-        std::cout << "    " << summary.target_id << " -> " << summary.center_id
-                  << "\t" << J2000_s{ summary.begin_second }.as_ut() << " to "
+        std::string target = get_body_name(summary.target_id);
+        std::string center = get_body_name(summary.center_id);
+        std::cout << "    " << target << " -> " << center << "\t"
+                  << J2000_s{ summary.begin_second }.as_ut() << " to "
                   << J2000_s{ summary.end_second }.as_ut() << std::endl;
     }
 }
