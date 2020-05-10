@@ -1,0 +1,3 @@
+[submodule "tests/groho-test-data"]
+	path = tests/groho-test-data
+	url = https://github.com/kghose/groho-test-data
