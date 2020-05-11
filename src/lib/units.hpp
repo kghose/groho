@@ -170,7 +170,7 @@ public:
 
 private:
     double j2000_s;
-};
+} __attribute__((__packed__));
 
 inline double from_km(double km) { return 1000 * km; }
 inline double from_AU(double au) { return 149597870700 * au; }

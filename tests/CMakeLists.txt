@@ -22,12 +22,14 @@ include_directories(
 set( TEST_SOURCES
   main.cpp
   units_test.cpp
+  spk_test.cpp
   inputfile_test.cpp
   scenario_test.cpp
   flightplan_test.cpp
 )
 
 set( SOURCES
+  ../src/orrery/spk.cpp
   ../src/lib/inputfile.cpp
   ../src/scenario/scenario.cpp
   ../src/scenario/flightplan.cpp
