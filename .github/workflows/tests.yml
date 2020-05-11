@@ -11,9 +11,11 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: 'true'
+    - name: build tests and run
       run: |
-        cd tests && mkdir build && cd build
-        cmake .. 
+        cd tests
+        mkdir build && cd build
+        cmake ..
         make
-    - name: run tests
-      run: cd tests && ./build/tests -s
+        cd ../
+        ./build/tests -s
