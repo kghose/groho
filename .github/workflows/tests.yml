@@ -12,6 +12,9 @@ jobs:
       with:
         submodules: 'true'
     - name: build tests and run
+      env:
+        CC: gcc-9
+        CXX: g++-9    
       run: |
         cd tests
         mkdir build && cd build
