@@ -22,3 +22,29 @@ TEST_CASE("Load a regular BSP file", "[SPK]")
     REQUIRE(earth.begin_second == J2000_s(GregorianDate{ 1949, 12, 14, 0 }));
     REQUIRE(earth.center_id == 3);
 }
+
+TEST_CASE("Load an ephemeris from BSP file", "[SPK]")
+{
+    auto _spk = SpkFile::load("groho-test-data/de432s.bsp");
+    auto spk  = *_spk;
+
+    auto eph1 = spk.load_ephemeris(
+        NAIFbody(301),
+        J2000_s(GregorianDate{ 2000, 01, 01 }),
+        J2000_s(GregorianDate{ 2010, 01, 01 }));
+    REQUIRE(eph1);
+
+    // Non existent body
+    auto eph2 = spk.load_ephemeris(
+        NAIFbody(302),
+        J2000_s(GregorianDate{ 2000, 01, 01 }),
+        J2000_s(GregorianDate{ 2010, 01, 01 }));
+    REQUIRE(!eph2);
+
+    // Out of range
+    auto eph3 = spk.load_ephemeris(
+        NAIFbody(301),
+        J2000_s(GregorianDate{ 2100, 01, 01 }),
+        J2000_s(GregorianDate{ 2110, 01, 01 }));
+    REQUIRE(!eph3);
+}

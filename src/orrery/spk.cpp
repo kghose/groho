@@ -193,6 +193,70 @@ std::optional<SpkFile> SpkFile::load(std::string file_name)
     return spk_file;
 }
 
+std::optional<Ephemeris>
+SpkFile::load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end)
+{
+    std::ifstream nasa_spk_file(file_name, std::ios::binary);
+
+    auto i = summaries.find(code);
+    if (i == summaries.end()) {
+        LOG_S(ERROR) << file_name << ": " << std::to_string(int(code));
+        LOG_S(ERROR) << "No such body in file.";
+        return {};
+    }
+    auto summary = summaries[code];
+
+    if ((begin < summary.begin_second) || (end > summary.end_second)) {
+        LOG_S(ERROR) << file_name << ": " << std::to_string(int(code));
+        LOG_S(ERROR) << "Requested range: " << begin.as_ut() << " to "
+                     << end.as_ut();
+        LOG_S(ERROR) << "Available range: " << summary.begin_second.as_ut()
+                     << " to " << summary.end_second.as_ut();
+        LOG_S(ERROR) << "Requested time range out of bounds.";
+        return {};
+    }
+
+    ElementRecordMetadata erm
+        = read_element_record_metadata(nasa_spk_file, summary);
+
+    size_t begin_element = std::floor((begin - erm.init) / erm.intlen);
+    size_t end_element   = std::floor((end - erm.init) / erm.intlen);
+
+    size_t n_coeff;
+    switch (summary.data_type) {
+    case 2:
+        n_coeff = (int(erm.rsize) - 2) / 3; // Type II - has one sets of coeffs
+        break;
+    case 3:
+        n_coeff = (int(erm.rsize) - 2) / 6; // Type III - has two sets of coeffs
+        break;
+    default:
+        LOG_S(ERROR) << "Body " << summary.target_id
+                     << ": Data is neither Type II or Type III: Skipping";
+        return {};
+    }
+
+    Ephemeris eph;
+    eph.target_code = summary.target_id;
+    eph.center_code = summary.center_id;
+    eph.begin_s     = erm.init + begin_element * erm.intlen;
+    eph.interval_s  = erm.intlen;
+    eph.elements.resize(end_element - begin_element + 1);
+
+    size_t internal_offset_byte
+        = (begin_element * erm.rsize + summary.start_i - 1) * size_of_double;
+    nasa_spk_file.seekg(internal_offset_byte);
+    for (size_t i = 0; i < end_element - begin_element + 1; i++) {
+        eph.elements[i].read(nasa_spk_file, n_coeff, summary.data_type);
+    }
+
+    DLOG_S(INFO) << "Ephemeris for " << summary.target_id << ": " << n_coeff - 1
+                 << " order polynomial, " << eph.elements.size()
+                 << " elements, ";
+
+    return eph;
+}
+
 //
 // Function definitions follow /////////////////////////////////////////
 //

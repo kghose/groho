@@ -69,6 +69,9 @@ struct SpkFile {
     std::string comment;
     sumry_map_t summaries;
 
+    std::optional<Ephemeris>
+    load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end_s);
+
     static std::optional<SpkFile> load(std::string file_name);
 };
 
