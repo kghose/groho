@@ -44,9 +44,85 @@ Starting from the root (which is 0, SSB):
 */
 
 struct Node {
-    SpkFile*                            spk_file = nullptr;
+    const SpkFile*                      spk_file = nullptr;
     std::unordered_map<NAIFbody, Node*> children;
 };
+
+typedef std::unordered_map<NAIFbody, Node> Tree;
+
+Tree initialize_tree(const std::vector<NAIFbody>& codes)
+{
+    Tree tree;
+    tree[NAIFbody(0)] = Node();
+    for (const auto& code : codes) {
+        tree[code] = Node();
+    }
+    return tree;
+}
+
+spk_vec_t load_spk(const std::vector<std::string>& file_names)
+{
+    spk_vec_t spk_files;
+    for (const auto& kernel_file : file_names) {
+        auto _spk = SpkFile::load(kernel_file);
+        if (_spk) {
+            spk_files.push_back(*_spk);
+        }
+    }
+    return spk_files;
+}
+
+std::optional<Node&> node_to_attach_to(const Summary& summary, Tree& tree)
+{
+    NAIFbody _target_code = NAIFbody(summary.target_id);
+    auto     _ti          = tree.find(_target_code);
+    if (_ti != tree.end()) {
+        if (_ti->second.spk_file == nullptr) {
+            return _ti->second;
+        }
+    }
+    return {};
+}
+
+bool inserted_parent_in_tree(const Summary& summary, Tree& tree)
+{
+    bool     inserted     = false;
+    NAIFbody _target_code = NAIFbody(summary.target_id);
+    NAIFbody _center_code = NAIFbody(summary.center_id);
+
+    auto _ci = tree.find(_center_code);
+    if (_ci == tree.end()) {
+        tree[_center_code] = Node();
+        inserted           = true;
+    }
+    tree[_center_code].children[_target_code] = &tree[_target_code];
+    return inserted;
+}
+
+bool arrange_tree(
+    const spk_vec_t& spk_files, Tree& tree, J2000_s begin, J2000_s end)
+{
+    bool make_another_pass = true, error = false;
+    while (make_another_pass) {
+        for (auto& spk : spk_files) {
+            for (auto [_, summary] : spk.summaries) {
+                auto target_node = node_to_attach_to(summary, tree);
+                if (target_node) {
+                    if (summary.valid_time_range(begin, end)) {
+                        (*target_node).spk_file = &spk;
+                        if (inserted_parent_in_tree(summary, tree)) {
+                            make_another_pass = false;
+                        }
+                    } else {
+                        LOG_S(ERROR) << spk.file_name;
+                        error = true;
+                    }
+                }
+            }
+        }
+    }
+    return error;
+}
 
 std::optional<Orrery> Orrery::load(
     std::vector<NAIFbody>    codes,
@@ -54,51 +130,11 @@ std::optional<Orrery> Orrery::load(
     J2000_s                  begin,
     J2000_s                  end)
 {
+    Tree tree = initialize_tree(codes);
 
-    std::unordered_map<NAIFbody, Node> tree;
-    tree[NAIFbody(0)] = Node();
-    for (const auto& code : codes) {
-        tree[code] = Node();
-    }
-
-    std::vector<SpkFile> spk_files;
-    for (const auto& kernel_file : file_names) {
-        auto _spk = SpkFile::load(kernel_file);
-        if (_spk) {
-            spk_files.push_back(*_spk);
-        }
-    }
-
-    bool make_pass = true;
-    while (make_pass) {
-        make_pass = false;
-        for (auto& spk : spk_files) {
-            for (auto [_, summary] : spk.summaries) {
-                NAIFbody _target_code = NAIFbody(summary.target_id);
-                auto     _ti          = tree.find(_target_code);
-                if (_ti != tree.end()) {
-                    if (_ti->second.spk_file == nullptr) {
-                        if ((summary.begin_second <= begin)
-                            && (summary.end_second >= end)) {
-                            _ti->second.spk_file = &spk;
-
-                        } else {
-                            LOG_S(ERROR) << spk.file_name + ": "
-                                    + get_body_name(_target_code)
-                                    + ": time range out of bounds";
-                            return {};
-                        }
-                    }
-                }
-                NAIFbody _center_code = NAIFbody(summary.center_id);
-                auto     _ci          = tree.find(_center_code);
-                if (_ci == tree.end()) {
-                    tree[_center_code] = Node();
-                    make_pass          = true;
-                }
-                tree[_center_code].children[_target_code] = &tree[_target_code];
-            }
-        }
+    spk_vec_t spk_files = load_spk(file_names);
+    if (!arrange_tree(spk_files, tree, begin, end)) {
+        return {};
     }
 
     Orrery orrery;
