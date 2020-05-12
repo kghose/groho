@@ -62,6 +62,20 @@ inline void Ephemeris::eval(double t, V3d& pos)
     pos.z = element.cheby_eval_one(t, element.off2, element.off3);
 }
 
+bool Summary::valid_time_range(J2000_s begin, J2000_s end)
+{
+    if ((begin_second <= begin) && (end_second >= end)) {
+        return true;
+    } else {
+        LOG_S(ERROR) << "Requested range: " << begin.as_ut() << " to "
+                     << end.as_ut();
+        LOG_S(ERROR) << "Available range: " << begin_second.as_ut() << " to "
+                     << end_second.as_ut();
+        LOG_S(ERROR) << "Requested time range out of bounds.";
+        return false;
+    }
+}
+
 std::optional<SpkFile> SpkFile::load(std::string file_name)
 {
     std::ifstream nasa_spk_file(file_name, std::ios::binary);
@@ -94,13 +108,8 @@ SpkFile::load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end)
     }
     auto summary = summaries[code];
 
-    if ((begin < summary.begin_second) || (end > summary.end_second)) {
+    if (!summary.valid_time_range(begin, end)) {
         LOG_S(ERROR) << file_name << ": " << std::to_string(int(code));
-        LOG_S(ERROR) << "Requested range: " << begin.as_ut() << " to "
-                     << end.as_ut();
-        LOG_S(ERROR) << "Available range: " << summary.begin_second.as_ut()
-                     << " to " << summary.end_second.as_ut();
-        LOG_S(ERROR) << "Requested time range out of bounds.";
         return {};
     }
 

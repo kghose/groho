@@ -60,6 +60,9 @@ struct Summary {
     u_int32_t data_type;    // data type identifier (we handle II or III)
     u_int32_t start_i;      // index (8 byte blocks) where segment data starts
     u_int32_t end_i;        // index (8 byte blocks) where segment data ends
+
+    bool valid_time_range(J2000_s begin, J2000_s end);
+
 } __attribute__((__packed__));
 
 typedef std::unordered_map<NAIFbody, Summary> sumry_map_t;
