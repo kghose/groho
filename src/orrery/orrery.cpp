@@ -109,14 +109,17 @@ bool arrange_tree(
 {
     bool make_another_pass = true, ok = true;
     while (make_another_pass) {
+        make_another_pass = false;
         for (auto& spk : spk_files) {
             for (auto [_, summary] : spk.summaries) {
                 auto target_node = node_to_attach_to(summary, tree);
                 if (target_node != nullptr) {
                     if (summary.valid_time_range(begin, end)) {
                         (*target_node).spk_file = &spk;
+                        LOG_S(INFO) << (*target_node).spk_file->file_name
+                                    << " (" << summary.target_id << ")";
                         if (inserted_parent_in_tree(summary, tree)) {
-                            make_another_pass = false;
+                            make_another_pass = true;
                         }
                     } else {
                         LOG_S(ERROR) << spk.file_name;
@@ -148,15 +151,13 @@ std::optional<Orrery> Orrery::load(
 
     std::deque<Node*> q       = { root };
     size_t            eph_idx = 0;
-    LOG_S(INFO) << q.size();
-
     while (!q.empty()) {
         auto this_node = q.front();
         q.pop_front();
         for (auto [code, child] : this_node->children) {
             LOG_S(INFO) << "Loading " << child->spk_file->file_name << ": "
                         << std::to_string(int(code));
-            orrery.ephemera[eph_idx]
+            orrery.ephemera[eph_idx++]
                 = *(child->spk_file->load_ephemeris(code, begin, end));
             q.push_back(child);
         }
