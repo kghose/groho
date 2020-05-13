@@ -26,7 +26,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 file(GLOB GROHO_SOURCES
     "src/main.cpp"
     "src/lib/entrypoints.cpp"
-    "src/orrery/spk.cpp"
+    "src/orrery/*.cpp"
 #    "src/actions/*.cpp" 
 #    "src/sampling/*.cpp" 
 #    "src/scenario/*.cpp"

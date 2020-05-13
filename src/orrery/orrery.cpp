@@ -5,6 +5,7 @@ Copyright (c) 2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 Orrery built with SPK files
 */
 
+#include <deque>
 #include <unordered_map>
 
 #include "bodyconstant.hpp"
@@ -43,9 +44,13 @@ Starting from the root (which is 0, SSB):
     Read in ephemera into the array in order.
 */
 
+struct Node;
+typedef std::unordered_map<NAIFbody, Node>  Tree;
+typedef std::unordered_map<NAIFbody, Node*> Children;
+
 struct Node {
-    const SpkFile*                      spk_file = nullptr;
-    std::unordered_map<NAIFbody, Node*> children;
+    const SpkFile* spk_file = nullptr;
+    Children       children;
 };
 
 typedef std::unordered_map<NAIFbody, Node> Tree;
@@ -72,16 +77,16 @@ spk_vec_t load_spk(const std::vector<std::string>& file_names)
     return spk_files;
 }
 
-std::optional<Node&> node_to_attach_to(const Summary& summary, Tree& tree)
+Node* node_to_attach_to(const Summary& summary, Tree& tree)
 {
     NAIFbody _target_code = NAIFbody(summary.target_id);
     auto     _ti          = tree.find(_target_code);
     if (_ti != tree.end()) {
         if (_ti->second.spk_file == nullptr) {
-            return _ti->second;
+            return &(_ti->second);
         }
     }
-    return {};
+    return nullptr;
 }
 
 bool inserted_parent_in_tree(const Summary& summary, Tree& tree)
@@ -102,12 +107,12 @@ bool inserted_parent_in_tree(const Summary& summary, Tree& tree)
 bool arrange_tree(
     const spk_vec_t& spk_files, Tree& tree, J2000_s begin, J2000_s end)
 {
-    bool make_another_pass = true, error = false;
+    bool make_another_pass = true, ok = true;
     while (make_another_pass) {
         for (auto& spk : spk_files) {
             for (auto [_, summary] : spk.summaries) {
                 auto target_node = node_to_attach_to(summary, tree);
-                if (target_node) {
+                if (target_node != nullptr) {
                     if (summary.valid_time_range(begin, end)) {
                         (*target_node).spk_file = &spk;
                         if (inserted_parent_in_tree(summary, tree)) {
@@ -115,13 +120,13 @@ bool arrange_tree(
                         }
                     } else {
                         LOG_S(ERROR) << spk.file_name;
-                        error = true;
+                        ok = false;
                     }
                 }
             }
         }
     }
-    return error;
+    return ok;
 }
 
 std::optional<Orrery> Orrery::load(
@@ -138,7 +143,26 @@ std::optional<Orrery> Orrery::load(
     }
 
     Orrery orrery;
-    orrery.ephemera.reserve(tree.size());
+    orrery.ephemera.resize(tree.size() - 1);
+    Node* root = &tree[NAIFbody(0)];
+
+    std::deque<Node*> q       = { root };
+    size_t            eph_idx = 0;
+    LOG_S(INFO) << q.size();
+
+    while (!q.empty()) {
+        auto this_node = q.front();
+        q.pop_front();
+        for (auto [code, child] : this_node->children) {
+            LOG_S(INFO) << "Loading " << child->spk_file->file_name << ": "
+                        << std::to_string(int(code));
+            orrery.ephemera[eph_idx]
+                = *(child->spk_file->load_ephemeris(code, begin, end));
+            q.push_back(child);
+        }
+    }
+
+    return orrery;
 }
 
 void Orrery::set_to(J2000_s t, v3d_vec_t& pos) {}

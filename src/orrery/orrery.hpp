@@ -25,7 +25,7 @@ public:
         std::vector<NAIFbody>    codes,
         std::vector<std::string> file_names,
         J2000_s                  begin,
-        J2000_s                  end_s);
+        J2000_s                  end);
 
     void set_to(J2000_s t, v3d_vec_t& pos);
 

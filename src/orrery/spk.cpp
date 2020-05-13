@@ -62,7 +62,7 @@ inline void Ephemeris::eval(double t, V3d& pos)
     pos.z = element.cheby_eval_one(t, element.off2, element.off3);
 }
 
-bool Summary::valid_time_range(J2000_s begin, J2000_s end)
+bool Summary::valid_time_range(J2000_s begin, J2000_s end) const
 {
     if ((begin_second <= begin) && (end_second >= end)) {
         return true;
@@ -95,8 +95,9 @@ std::optional<SpkFile> SpkFile::load(std::string file_name)
     return spk_file;
 }
 
+// TODO: Some of the more low level byte reading code could be pushed to spklib?
 std::optional<Ephemeris>
-SpkFile::load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end)
+SpkFile::load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end) const
 {
     std::ifstream nasa_spk_file(file_name, std::ios::binary);
 
@@ -106,7 +107,7 @@ SpkFile::load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end)
         LOG_S(ERROR) << "No such body in file.";
         return {};
     }
-    auto summary = summaries[code];
+    const auto summary = summaries.at(code);
 
     if (!summary.valid_time_range(begin, end)) {
         LOG_S(ERROR) << file_name << ": " << std::to_string(int(code));

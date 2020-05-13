@@ -61,7 +61,7 @@ struct Summary {
     u_int32_t start_i;      // index (8 byte blocks) where segment data starts
     u_int32_t end_i;        // index (8 byte blocks) where segment data ends
 
-    bool valid_time_range(J2000_s begin, J2000_s end);
+    bool valid_time_range(J2000_s begin, J2000_s end) const;
 
 } __attribute__((__packed__));
 
@@ -73,7 +73,7 @@ struct SpkFile {
     sumry_map_t summaries;
 
     std::optional<Ephemeris>
-    load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end_s);
+    load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end_s) const;
 
     static std::optional<SpkFile> load(std::string file_name);
 };
