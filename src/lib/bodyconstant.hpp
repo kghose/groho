@@ -124,7 +124,7 @@ const std::unordered_map<NAIFbody, BodyConstant> body_library = {
 
 // clang-format on
 
-std::string get_body_name(NAIFbody naif)
+inline std::string get_body_name(NAIFbody naif)
 {
     std::string name = std::to_string(naif.code);
     auto        i    = body_library.find(naif);
@@ -134,6 +134,9 @@ std::string get_body_name(NAIFbody naif)
     return name;
 }
 
-std::string get_body_name(int code) { return get_body_name(NAIFbody(code)); }
+inline std::string get_body_name(int code)
+{
+    return get_body_name(NAIFbody(code));
+}
 
 }
