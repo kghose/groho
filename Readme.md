@@ -26,8 +26,17 @@ descendants who set sail away from the home planet.
 *Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the
 word for planetary system but is more of a mouthful.*
 
-## Quick start
+# Quick start
 
+The simulator uses two input files: a **scenario file** and a **plot file**. The
+scenario file lists out the initial conditions for the simulation, the orrery
+model and the flight plans for any spacecraft in the simulation. The plot file
+lists instructions for how to plot the simulation data.
+
+_For the restless, you can jump to this annotated
+[example](examples/001.basics/scn.groho.txt) to get started_ 
+
+## Invocations
 Simulator loop: monitor changes in scenario and plot files and rerun and replot
 simulation continuously
 ```
@@ -44,8 +53,110 @@ Chart simulation and exit
 groho chart plot-file.txt sim-folder chart.pdf
 ```
 
+# Scenario file manual
+
+The easiest way to learn about scenario files is to look at the annotated
+[example](examples/001.basics/scn.groho.txt)
+
+To get a list of spacecraft programs and how to use them do
+```
+groho programs
+```
+
+## Orrery model
+You pass a list of kernel files to the simulator. Optionally, you can indicate a
+subset of NAIF codes that the simulator should load for the kernel file.
+
+```
+spk de432s.bsp
+
+pick 809 899
+spk nep086.bsp 
+```
+The first `spk` command tells the simulator to load everything in the
+`de432.bsp` kernel. The `pick` prepares the simulator to load only `809` and
+`899` from the next `spk` kernel.
+
+A SPK file contains barycenters as well as physical bodies. Often ephemeris are
+stored relative a barycenter. For example:
+```
+301 -> 3 -> 0
+299 -> 2 -> 0
+809 -> 8 -> 0
+899 -> 8 -> 0
+```
+
+When loading objects the simulator follows the following rules
+
+1. If a body is picked but the body is referenced to an object that has not been
+   loaded, this reference object is also loaded and so on, recursively.
+1. If a barycenter and the main body of the barycenter are both loaded, the
+   barycenter is used for coordinate transforms but is not used for gravity
+   computations: the main body is used. The trajectory of the barycenter is
+   also, in this case, not saved.
+
+In the given example, the barycenter 8 is not used for gravity computations
+since 899 is loaded. 
+
+
+## Flight plans
+
+Flight plans start with a line indicating the name of the spacecraft
+
+```
+plan Durga
+```
+
+This is followed by a list of **events**. Each event specifies a time, a
+spacecraft **program** and how it should run. For example the line:
+
+```
+2050.01.01:0.5 orbit 301 200x200
+```
+
+will turn on a program that thrusts the spaceship till it achieves a 200x200 km
+orbit around the moon. Programs terminate once their goal has been achieved or,
+if they are a timed program, once their time runs out.
+
+Each program has access to the state of the solarsystem (modeling a perfect IMU
+and perfect knowledge of the solar system) and produces only one output: a
+thrust vector for the spaceship.
+
+Multiple programs can not run at the same time. If a program's event time occurs
+before the previous program has terminated, it will be put into a
+queue, so that they will run as soon as the earlier program has finished.
+
+To describe another spacecraft's flight plan, simply use another `plan`
+statement. All events coming after this, will be associated with this new
+spacecraft. 
+
+## The `insert` directive
+Multiple files can be combined to form the complete scenario file. For example
+
+```
+start 2050.01.01:0.5
+end 2055.01.01:0.5
+
+spk de432s.bsp
+
+pick 809 899
+spk nep086.bsp 
+
+insert flightplan1.txt
+insert flightplan2.txt
+```
+is a neat way of splitting out the flightplans of the two spacecraft in the
+simulation into two additional files. This can make the writing of the
+simulation more manageable.
+
+# Plot file manual
+
 
 # Developer
+
+The code needs a c++17 compiler.
+
+## Docs
 - [Design](docs/Readme.md)
 - [High level roadmap](docs/roadmap.md)
 
@@ -68,8 +179,15 @@ cd examples/002.full-solar-system
 
 <!-- TOC -->
 
-  - [Quick start](#quick-start)
+- [Quick start](#quick-start)
+  - [Invocations](#invocations)
+- [Scenario file manual](#scenario-file-manual)
+  - [Orrery model](#orrery-model)
+  - [Flight plans](#flight-plans)
+  - [The `insert` directive](#the-insert-directive)
+- [Plot file manual](#plot-file-manual)
 - [Developer](#developer)
+  - [Docs](#docs)
 - [Features and use cases](#features-and-use-cases)
   - [This is not an interactive simulation](#this-is-not-an-interactive-simulation)
   - [This is not an n-body simulation](#this-is-not-an-n-body-simulation)
