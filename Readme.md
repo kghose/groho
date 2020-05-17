@@ -131,14 +131,15 @@ statement. All events coming after this, will be associated with this new
 spacecraft. 
 
 ## The `insert` directive
-Multiple files can be combined to form the complete scenario file. For example
+`insert` followed by a file path inserts the text of that file into the original
+file at that point. This can be done recursively. In this manner, multiple files
+can be combined to form the complete scenario file. For example 
 
 ```
 start 2050.01.01:0.5
 end 2055.01.01:0.5
 
 spk de432s.bsp
-
 pick 809 899
 spk nep086.bsp 
 
@@ -150,7 +151,7 @@ simulation into two additional files. This can make the writing of the
 simulation more manageable.
 
 # Plot file manual
-
+**WIP**
 
 # Developer
 
