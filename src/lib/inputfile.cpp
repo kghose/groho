@@ -15,9 +15,17 @@ Some utilities for parsing input files.
 
 namespace groho {
 
-InputFile::InputFile(const std::string& path)
-    : path(path)
+bool lines_have_error(const Lines& lines, bool warnings_as_error = false)
 {
+    for (auto& line : lines) {
+        if (line.status.code == ParseStatus::ERROR) {
+            return true;
+        }
+        if ((line.status.code == ParseStatus::WARNING) && (warnings_as_error)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 inline std::string trim_whitespace(const std::string& line)
@@ -52,7 +60,8 @@ void split_key_value(
     value    = trim_whitespace(line.substr(p));
 }
 
-Lines InputFile::load() const
+// How to do relative file paths?
+std::optional<Lines> load_input_file(const std::string& path)
 {
     Lines         lines;
     std::ifstream cfile(path);
@@ -61,12 +70,31 @@ Lines InputFile::load() const
 
     if (cfile.fail()) {
         LOG_S(ERROR) << "Input file '" << path << "' not found";
+        return {};
     } else {
         while (std::getline(cfile, line)) {
             line = trim_whitespace(trim_comment(line));
             if (line.length() > 0) {
                 split_key_value(line, key, value);
-                lines.push_back(Line{ line_no, key, value });
+                if (key == "insert") {
+                    auto inserted_lines = load_input_file(value);
+                    if (!inserted_lines) {
+                        lines.push_back(
+                            Line{ path,
+                                  line_no,
+                                  key,
+                                  value,
+                                  ParseStatus{ ParseStatus::ERROR,
+                                               "Missing insert file" } });
+                    } else {
+                        lines.insert(
+                            std::end(lines),
+                            std::begin(*inserted_lines),
+                            std::end(*inserted_lines));
+                    }
+                } else {
+                    lines.push_back(Line{ path, line_no, key, value });
+                }
             }
             line_no++;
         }

@@ -6,27 +6,29 @@ Some utilities for parsing input files.
 */
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace groho {
 
+struct ParseStatus {
+    enum StatusCode { OK = 0, WARNING, ERROR };
+    StatusCode  code = StatusCode::OK;
+    std::string message;
+};
+
 struct Line {
+    std::string file_name;
     size_t      line;
     std::string key;
     std::string value;
+    ParseStatus status;
 };
 
 typedef std::vector<Line> Lines;
 
-class InputFile {
-public:
-    InputFile(const std::string& path);
-    Lines load() const;
-
-private:
-    std::string path;
-};
+std::optional<Lines> load_input_file(const std::string& path);
 
 const std::string wspace = " \t\n\r\f\v";
 
