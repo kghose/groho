@@ -53,7 +53,7 @@ inline double Elements::cheby_eval_one(double t, size_t i0, size_t i1) const
     return b;
 }
 
-inline void Ephemeris::eval(double t, V3d& pos)
+inline void Ephemeris::eval(double t, V3d& pos) const
 {
     const auto& element = elements[std::floor((t - begin_s) / interval_s)];
 

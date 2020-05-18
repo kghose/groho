@@ -48,7 +48,7 @@ struct Ephemeris {
     J2000_s    interval_s;  // Length of interval
     elem_vec_t elements; // coefficients for just the epoch we are interested in
 
-    void eval(double t, V3d& pos);
+    void eval(double t, V3d& pos) const;
 };
 
 typedef std::vector<Ephemeris> ephem_vec_t;
