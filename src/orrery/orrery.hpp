@@ -30,21 +30,23 @@ struct Kernel {
 
 typedef std::vector<Kernel> Kernels;
 
+struct OrreryObject {
+    std::shared_ptr<Ephemeris> ephemeris;
+    size_t                     parent_idx;
+};
+
 class Orrery {
 
 public:
     static std::optional<Orrery>
-    load(J2000_s begin, J2000_s end, const Kernels& kernels);
-
+         load(J2000_s begin, J2000_s end, const Kernels& kernels);
     void set_to(J2000_s t, v3d_vec_t& pos);
 
 private:
-    struct Body {
-        Ephemeris                           ephemeris;
-        std::unordered_map<NAIFbody, Body*> children;
-        NAIFbody                            parent;
-    };
-
-    std::unordered_map<NAIFbody, Body> bodies;
+    std::vector<OrreryObject> objects;
 };
+
+std::vector<OrreryObject>
+load_orrery_objects(J2000_s begin, J2000_s end, const Kernels& kernels);
+
 }

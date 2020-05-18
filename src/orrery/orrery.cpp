@@ -44,12 +44,41 @@ Starting from the root (which is 0, SSB):
     Read in ephemera into the array in order.
 */
 
+void print_objects_to_debug(const std::vector<OrreryObject>& objects)
+{
+    for (size_t i = 1; i < objects.size(); i++) {
+        auto& obj    = objects[i];
+        auto  center = obj.parent_idx == 0
+            ? "SSB"
+            : std::to_string(objects[obj.parent_idx].ephemeris->target_code);
+
+        LOG_S(INFO) << "[" << i << "]" << obj.ephemeris->target_code << " -> "
+                    << "[" << obj.parent_idx << "]" << center;
+    }
+}
+
 std::optional<Orrery>
 Orrery::load(J2000_s begin, J2000_s end, const Kernels& kernels)
 {
-    Orrery orrery;
 
-    orrery.bodies[NAIFbody(0)] = Body{};
+    Orrery orrery;
+    orrery.objects = load_orrery_objects(begin, end, kernels);
+    print_objects_to_debug(orrery.objects);
+
+    return orrery;
+}
+
+struct _Body {
+    std::shared_ptr<Ephemeris>           ephemeris;
+    std::unordered_map<NAIFbody, _Body*> children;
+    NAIFbody                             parent;
+};
+
+std::vector<OrreryObject>
+load_orrery_objects(J2000_s begin, J2000_s end, const Kernels& kernels)
+{
+    std::unordered_map<NAIFbody, _Body> bodies;
+    bodies[NAIFbody(0)] = _Body();
 
     for (const auto& kernel : kernels) {
         auto _spk = SpkFile::load(kernel.path);
@@ -60,7 +89,7 @@ Orrery::load(J2000_s begin, J2000_s end, const Kernels& kernels)
 
         auto& spk = *_spk;
         for (auto [code, summary] : spk.summaries) {
-            if (orrery.bodies.find(code) != orrery.bodies.end()) {
+            if (bodies.find(code) != bodies.end()) {
                 continue;
             }
             if ((kernel.codes.size() > 0)
@@ -72,21 +101,44 @@ Orrery::load(J2000_s begin, J2000_s end, const Kernels& kernels)
                 continue;
             }
 
-            orrery.bodies[code] = Body{ *(spk.load_ephemeris(code, begin, end)),
-                                        {},
-                                        NAIFbody(summary.center_id) };
+            // todo: return ephemeris as shared pointer
+            bodies[code] = _Body{ std::make_shared<Ephemeris>(
+                                      *(spk.load_ephemeris(code, begin, end))),
+                                  {},
+                                  NAIFbody(summary.center_id) };
         }
     }
 
-    for (auto& [code, body] : orrery.bodies) {
-        if (orrery.bodies.find(body.parent) == orrery.bodies.end()) {
+    for (auto& [code, body] : bodies) {
+        if (int(code) == 0) {
+            continue;
+        }
+        if (bodies.find(body.parent) == bodies.end()) {
             LOG_S(ERROR) << "Could not find center for " << int(code);
             continue;
         }
-        orrery.bodies[body.parent].children[code] = &body;
+        bodies[body.parent].children[code] = &bodies[code];
     }
 
-    return orrery;
+    std::vector<OrreryObject> objects;
+    objects.push_back({ nullptr, 0 });
+
+    std::unordered_map<NAIFbody, size_t> map_code_to_index;
+    map_code_to_index[NAIFbody(0)] = 0;
+
+    std::deque<_Body*> q = { &bodies[NAIFbody(0)] };
+    while (!q.empty()) {
+        auto this_node = q.front();
+        q.pop_front();
+        for (auto [code, child] : this_node->children) {
+            map_code_to_index[code] = objects.size();
+            objects.push_back(
+                { child->ephemeris, map_code_to_index[child->parent] });
+            q.push_back(child);
+        }
+    }
+
+    return objects;
 }
 
 void Orrery::set_to(J2000_s t, v3d_vec_t& pos) {}
