@@ -56,6 +56,8 @@ std::vector<OrreryObject> load_orrery_objects(
             continue;
         }
 
+        auto objects_to_find = kernel.codes;
+
         auto& spk = *_spk;
         for (auto [code, summary] : spk.summaries) {
             if (bodies.find(code) != bodies.end()) {
@@ -63,6 +65,7 @@ std::vector<OrreryObject> load_orrery_objects(
             }
             if ((kernel.codes.size() > 0)
                 && (kernel.codes.find(code) == kernel.codes.end())) {
+                objects_to_find.erase(code);
                 continue;
             }
             if (!summary.valid_time_range(begin, end)) {
@@ -76,6 +79,16 @@ std::vector<OrreryObject> load_orrery_objects(
                                       *(spk.load_ephemeris(code, begin, end))),
                                   {},
                                   NAIFbody(summary.center_id) };
+            objects_to_find.erase(code);
+        }
+
+        if (objects_to_find.size() > 0) {
+            LOG_S(ERROR) << "Could not find following objects";
+            LOG_S(ERROR) << spk.path;
+            for (auto& code : objects_to_find) {
+                LOG_S(ERROR) << int(code);
+            }
+            status = Orrery::StatusCode::WARNING;
         }
     }
 

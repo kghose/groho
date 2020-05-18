@@ -25,3 +25,44 @@ TEST_CASE("Load orrery", "[ORRERY]")
 
     auto orrery = Orrery(begin, end, kernels);
 }
+
+TEST_CASE("Missing kernel file", "[ORRERY]")
+{
+    Kernels kernels = { { { 909, 999 }, "groho-test-data/non-existent.bsp" } };
+    J2000_s begin   = GregorianDate{ 2000, 1, 1, 0 };
+    J2000_s end     = GregorianDate{ 2010, 1, 1, 0 };
+
+    auto orrery = Orrery(begin, end, kernels);
+    REQUIRE(orrery.status() == Orrery::StatusCode::WARNING);
+}
+
+TEST_CASE("Load orrery with date problems", "[ORRERY]")
+{
+    Kernels kernels = { { {}, "groho-test-data/de432s.bsp" },
+                        { { 809, 899 }, "groho-test-data/nep086.bsp" } };
+    J2000_s begin   = GregorianDate{ 1000, 1, 1, 0 };
+    J2000_s end     = GregorianDate{ 1010, 1, 1, 0 };
+
+    auto orrery = Orrery(begin, end, kernels);
+    REQUIRE(orrery.status() == Orrery::StatusCode::ERROR);
+}
+
+TEST_CASE("Load orrery with center problems", "[ORRERY]")
+{
+    Kernels kernels = { { { 809, 899 }, "groho-test-data/nep086.bsp" } };
+    J2000_s begin   = GregorianDate{ 2000, 1, 1, 0 };
+    J2000_s end     = GregorianDate{ 2010, 1, 1, 0 };
+
+    auto orrery = Orrery(begin, end, kernels);
+    REQUIRE(orrery.status() == Orrery::StatusCode::ERROR);
+}
+
+TEST_CASE("Load orrery with missing bodies", "[ORRERY]")
+{
+    Kernels kernels = { { { 909, 999 }, "groho-test-data/nep086.bsp" } };
+    J2000_s begin   = GregorianDate{ 2000, 1, 1, 0 };
+    J2000_s end     = GregorianDate{ 2010, 1, 1, 0 };
+
+    auto orrery = Orrery(begin, end, kernels);
+    REQUIRE(orrery.status() == Orrery::StatusCode::WARNING);
+}
