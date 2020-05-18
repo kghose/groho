@@ -10,6 +10,7 @@ chebyshev coefficients stored in the SPK/DAF file to compute vector positions
 
 #pragma once
 
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <optional>
@@ -23,6 +24,8 @@ chebyshev coefficients stored in the SPK/DAF file to compute vector positions
 #include "v3d.hpp"
 
 namespace groho {
+
+namespace fs = std::filesystem;
 
 typedef std::vector<double> dbl_vec_t;
 
@@ -68,14 +71,14 @@ struct Summary {
 typedef std::unordered_map<NAIFbody, Summary> sumry_map_t;
 
 struct SpkFile {
-    std::string file_name;
+    fs::path    path;
     std::string comment;
     sumry_map_t summaries;
 
     std::optional<Ephemeris>
     load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end_s) const;
 
-    static std::optional<SpkFile> load(std::string file_name);
+    static std::optional<SpkFile> load(const fs::path& path);
 };
 
 typedef std::vector<SpkFile> spk_vec_t;

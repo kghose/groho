@@ -76,19 +76,19 @@ bool Summary::valid_time_range(J2000_s begin, J2000_s end) const
     }
 }
 
-std::optional<SpkFile> SpkFile::load(std::string file_name)
+std::optional<SpkFile> SpkFile::load(const fs::path& path)
 {
-    std::ifstream nasa_spk_file(file_name, std::ios::binary);
+    std::ifstream nasa_spk_file(path, std::ios::binary);
 
     auto hdr = read_file_record(nasa_spk_file);
     if (!hdr) {
-        LOG_S(ERROR) << file_name;
+        LOG_S(ERROR) << path;
         LOG_S(ERROR) << "Not loading because of errors.";
         return {};
     }
 
     SpkFile spk_file;
-    spk_file.file_name = file_name;
+    spk_file.path      = path;
     spk_file.comment   = read_comment_blocks(nasa_spk_file, hdr);
     spk_file.summaries = read_summaries(nasa_spk_file, hdr);
 
@@ -99,18 +99,18 @@ std::optional<SpkFile> SpkFile::load(std::string file_name)
 std::optional<Ephemeris>
 SpkFile::load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end) const
 {
-    std::ifstream nasa_spk_file(file_name, std::ios::binary);
+    std::ifstream nasa_spk_file(path, std::ios::binary);
 
     auto i = summaries.find(code);
     if (i == summaries.end()) {
-        LOG_S(ERROR) << file_name << ": " << std::to_string(int(code));
+        LOG_S(ERROR) << path << ": " << std::to_string(int(code));
         LOG_S(ERROR) << "No such body in file.";
         return {};
     }
     const auto summary = summaries.at(code);
 
     if (!summary.valid_time_range(begin, end)) {
-        LOG_S(ERROR) << file_name << ": " << std::to_string(int(code));
+        LOG_S(ERROR) << path << ": " << std::to_string(int(code));
         return {};
     }
 
