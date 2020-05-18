@@ -45,6 +45,7 @@ namespace groho {
 const std::unordered_map<NAIFbody, BodyConstant> body_library = {
     //                                            GM                   R
     //                                          km^3 s^−2              k     
+    {       0, {       0, "System BC",   1.3271244004193938E+11,   696342.000 }},
     {       1, {       1, "Mercury BC",  2.2031780000000021E+04,            0 }},
     {       2, {       2, "Venus BC",    3.2485859200000006E+05,            0 }},
     {       3, {       3, "Earth BC",    4.0350323550225981E+05,            0 }},
