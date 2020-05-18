@@ -1,0 +1,4 @@
+plan Kali
+orbiting 301 100x200 
+
+2050.01.02:0.5 orbit 301 200x200 

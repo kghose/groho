@@ -6,9 +6,12 @@ Some utilities for parsing input files.
 */
 #pragma once
 
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <vector>
+
+namespace fs = std::filesystem;
 
 namespace groho {
 
@@ -28,7 +31,7 @@ struct Line {
 
 typedef std::vector<Line> Lines;
 
-std::optional<Lines> load_input_file(const std::string& path);
+std::optional<Lines> load_input_file(const fs::path& path);
 
 const std::string wspace = " \t\n\r\f\v";
 

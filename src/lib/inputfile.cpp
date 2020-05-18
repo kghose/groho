@@ -60,8 +60,7 @@ void split_key_value(
     value    = trim_whitespace(line.substr(p));
 }
 
-// How to do relative file paths?
-std::optional<Lines> load_input_file(const std::string& path)
+std::optional<Lines> load_input_file(const fs::path& path)
 {
     Lines         lines;
     std::ifstream cfile(path);
@@ -77,7 +76,8 @@ std::optional<Lines> load_input_file(const std::string& path)
             if (line.length() > 0) {
                 split_key_value(line, key, value);
                 if (key == "insert") {
-                    auto inserted_lines = load_input_file(value);
+                    auto inserted_lines
+                        = load_input_file(path.parent_path() / value);
                     if (!inserted_lines) {
                         lines.push_back(
                             Line{ path,

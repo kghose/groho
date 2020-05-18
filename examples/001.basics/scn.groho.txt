@@ -7,36 +7,20 @@
 ;   Each spaceship has its own flight plan which governs what it 
 ;   does in the simulation.
 
-; This scenario file sets up an orrery containing the Earth and moon, and
-; Mars and it's moons. It adds one spaceship
+start 2050.01.01:0.5 ; Times are given as a Gregorian dates
+end 2055.01.01:0.5
 
-; Some notes on scenario file syntax:
+spk de432s.bsp  ; load a spice kernel
+pick 809 899    ; for the next spice kernel load the following bodies
+spk nep086.bsp 
 
-; Anything from a semi-colon onward is ignored
-    ; Leading and trailing whitespace is trimmed
-    ; Empty lines are ignored
+plan Durga ; This starts a plan
+orbiting 399 1000x500 ; Every spacecraft starts out orbiting a body 
 
-name   Earth to Mars
-begin  2050.01.15:0.5 ; YYYY.MM.DD:H  H is a fraction of a day  
-end    2060.01.15:0 ; 
-; sim-groho's job is to compute an appropriate time step for the simulation
+2050.01.01:0.5 orbit 301 200x200 ; Starting at this time try and orbit 301 
+                                 ; at this altitude 
 
-; Both orrery and flightplan can have multiple entries
+insert plan.kali.txt ; The insert command inserts the text from another file
+                       ; into this once
 
-; Orrery refers to a NASA/JPL SPK file (called a "kernel") that 
-; stores ephemeris data
-
-; You can have multiple orrery files like this:
-orrery   ../de430.bsp   ; Sun, Earth + Moon, Barycenters for all planets
-orrery   ../mar097.bsp  ; Mars + moons
-;orrery   ../ast343de430.bsp
-; If a body is repeated across two or more files only the last instance will be taken
-
-; You can mark out only some bodies for inclusion in the simulation
-use-only 10 399 ; only include SSB and Earth
-
-
-; You can have multiple flightplans like this:
-ship  flt1.groho.txt
-ship  flt2.groho.txt
-ship  flt1.groho.txt ; a repeated flight plan is ignored
+insert non-existent.txt ; A non existent file will raise an error

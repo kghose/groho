@@ -6,30 +6,20 @@ using namespace groho;
 
 TEST_CASE("Missing input file parsing", "[InputFile]")
 {
-    groho::InputFile in("non-existent.txt");
-    auto             lines = in.load();
+    auto lines = load_input_file("non-existent.txt");
+    REQUIRE(!lines);
 }
 
 TEST_CASE("Input file parsing", "[InputFile]")
 {
-    groho::InputFile in("test-input.txt");
-    auto             lines = in.load();
+    auto lines = load_input_file("../examples/001.basics/scn.groho.txt");
 
-    REQUIRE(lines.at(0).line == 9);
-    REQUIRE(lines.at(0).key == "key1");
-    REQUIRE(lines.at(0).value == "value1");
+    // 9 lines from scn.groho.txt and 3 from plan.kali.txt
+    REQUIRE((*lines).size() == 12);
 
-    REQUIRE(lines.at(1).line == 10);
-    REQUIRE(lines.at(1).key == "key2");
-    REQUIRE(lines.at(1).value == "2050.01.15:0.5");
-
-    REQUIRE(lines.at(3).line == 14);
-    REQUIRE(lines.at(3).key == "key4");
-    REQUIRE(lines.at(3).value == "this is tight spacing");
-
-    REQUIRE(lines.at(4).line == 16);
-    REQUIRE(lines.at(4).key == "key5");
-    REQUIRE(lines.at(4).value == "");
+    REQUIRE((*lines)[0].key == "start");
+    REQUIRE((*lines)[8].key == "plan");
+    REQUIRE((*lines)[11].status.code == ParseStatus::ERROR);
 }
 
 TEST_CASE("String split on white space", "[StringSplit]")
