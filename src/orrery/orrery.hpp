@@ -7,11 +7,13 @@ Orrery built with SPK files
 
 #pragma once
 
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <optional>
 #include <stdlib.h>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "spk.hpp"
@@ -19,17 +21,30 @@ Orrery built with SPK files
 
 namespace groho {
 
+namespace fs = std::filesystem;
+
+struct Kernel {
+    std::unordered_set<NAIFbody> codes;
+    fs::path                     path;
+};
+
+typedef std::vector<Kernel> Kernels;
+
 class Orrery {
+
 public:
-    static std::optional<Orrery> load(
-        std::vector<NAIFbody>    codes,
-        std::vector<std::string> file_names,
-        J2000_s                  begin,
-        J2000_s                  end);
+    static std::optional<Orrery>
+    load(J2000_s begin, J2000_s end, const Kernels& kernels);
 
     void set_to(J2000_s t, v3d_vec_t& pos);
 
 private:
-    ephem_vec_t ephemera;
+    struct Body {
+        Ephemeris                           ephemeris;
+        std::unordered_map<NAIFbody, Body*> children;
+        NAIFbody                            parent;
+    };
+
+    std::unordered_map<NAIFbody, Body> bodies;
 };
 }

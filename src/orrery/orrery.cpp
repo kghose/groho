@@ -44,123 +44,46 @@ Starting from the root (which is 0, SSB):
     Read in ephemera into the array in order.
 */
 
-struct Node;
-typedef std::unordered_map<NAIFbody, Node>  Tree;
-typedef std::unordered_map<NAIFbody, Node*> Children;
-
-struct Node {
-    const SpkFile* spk_file = nullptr;
-    Children       children;
-};
-
-typedef std::unordered_map<NAIFbody, Node> Tree;
-
-Tree initialize_tree(const std::vector<NAIFbody>& codes)
+std::optional<Orrery>
+Orrery::load(J2000_s begin, J2000_s end, const Kernels& kernels)
 {
-    Tree tree;
-    tree[NAIFbody(0)] = Node();
-    for (const auto& code : codes) {
-        tree[code] = Node();
-    }
-    return tree;
-}
-
-spk_vec_t load_spk(const std::vector<std::string>& file_names)
-{
-    spk_vec_t spk_files;
-    for (const auto& kernel_file : file_names) {
-        auto _spk = SpkFile::load(kernel_file);
-        if (_spk) {
-            spk_files.push_back(*_spk);
-        }
-    }
-    return spk_files;
-}
-
-Node* node_to_attach_to(const Summary& summary, Tree& tree)
-{
-    NAIFbody _target_code = NAIFbody(summary.target_id);
-    auto     _ti          = tree.find(_target_code);
-    if (_ti != tree.end()) {
-        if (_ti->second.spk_file == nullptr) {
-            return &(_ti->second);
-        }
-    }
-    return nullptr;
-}
-
-bool inserted_parent_in_tree(const Summary& summary, Tree& tree)
-{
-    bool     inserted     = false;
-    NAIFbody _target_code = NAIFbody(summary.target_id);
-    NAIFbody _center_code = NAIFbody(summary.center_id);
-
-    auto _ci = tree.find(_center_code);
-    if (_ci == tree.end()) {
-        tree[_center_code] = Node();
-        inserted           = true;
-    }
-    tree[_center_code].children[_target_code] = &tree[_target_code];
-    return inserted;
-}
-
-bool arrange_tree(
-    const spk_vec_t& spk_files, Tree& tree, J2000_s begin, J2000_s end)
-{
-    bool make_another_pass = true, ok = true;
-    while (make_another_pass) {
-        make_another_pass = false;
-        for (auto& spk : spk_files) {
-            for (auto [_, summary] : spk.summaries) {
-                auto target_node = node_to_attach_to(summary, tree);
-                if (target_node != nullptr) {
-                    if (summary.valid_time_range(begin, end)) {
-                        (*target_node).spk_file = &spk;
-                        LOG_S(INFO) << (*target_node).spk_file->file_name
-                                    << " (" << summary.target_id << ")";
-                        if (inserted_parent_in_tree(summary, tree)) {
-                            make_another_pass = true;
-                        }
-                    } else {
-                        LOG_S(ERROR) << spk.file_name;
-                        ok = false;
-                    }
-                }
-            }
-        }
-    }
-    return ok;
-}
-
-std::optional<Orrery> Orrery::load(
-    std::vector<NAIFbody>    codes,
-    std::vector<std::string> file_names,
-    J2000_s                  begin,
-    J2000_s                  end)
-{
-    Tree tree = initialize_tree(codes);
-
-    spk_vec_t spk_files = load_spk(file_names);
-    if (!arrange_tree(spk_files, tree, begin, end)) {
-        return {};
-    }
-
     Orrery orrery;
-    orrery.ephemera.resize(tree.size() - 1);
-    Node* root = &tree[NAIFbody(0)];
 
-    std::deque<Node*> q       = { root };
-    size_t            eph_idx = 0;
-    while (!q.empty()) {
-        auto this_node = q.front();
-        q.pop_front();
-        for (auto [code, child] : this_node->children) {
-            LOG_S(INFO) << "Loading " << child->spk_file->file_name << ": "
-                        << std::to_string(int(code));
-            orrery.ephemera[eph_idx++]
-                = *(child->spk_file->load_ephemeris(code, begin, end));
-            q.push_back(child);
+    orrery.bodies[NAIFbody(0)] = Body{};
+
+    for (const auto& kernel : kernels) {
+        auto _spk = SpkFile::load(kernel.path);
+        if (!_spk) {
+            LOG_S(ERROR) << "Unable to load " << kernel.path;
+            continue;
         }
+
+        auto& spk = *_spk;
+        for (auto [code, summary] : spk.summaries) {
+            if (orrery.bodies.find(code) != orrery.bodies.end()) {
+                continue;
+            }
+            if ((kernel.codes.size() > 0)
+                && (kernel.codes.find(code) == kernel.codes.end())) {
+                continue;
+            }
+            if (!summary.valid_time_range(begin, end)) {
+                LOG_S(ERROR) << spk.path;
+                continue;
+            }
+
+            orrery.bodies[code] = Body{ *(spk.load_ephemeris(code, begin, end)),
+                                        {},
+                                        NAIFbody(summary.center_id) };
+        }
+    }
+
+    for (auto& [code, body] : orrery.bodies) {
+        if (orrery.bodies.find(body.parent) == orrery.bodies.end()) {
+            LOG_S(ERROR) << "Could not find center for " << int(code);
+            continue;
+        }
+        orrery.bodies[body.parent].children[code] = &body;
     }
 
     return orrery;
