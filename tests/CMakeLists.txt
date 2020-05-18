@@ -22,8 +22,8 @@ include_directories(
 file(GLOB SOURCES
   "../src/orrery/*.cpp"
   ../src/lib/inputfile.cpp
-  ../src/scenario/scenario.cpp
-  ../src/scenario/flightplan.cpp
+#  ../src/scenario/scenario.cpp
+#  ../src/scenario/flightplan.cpp
 #    "src/actions/*.cpp" 
 #    "src/sampling/*.cpp" 
 #    "src/scenario/*.cpp"
@@ -38,8 +38,8 @@ set( TEST_SOURCES
   spk_test.cpp
   orrery_test.cpp
   inputfile_test.cpp
-  scenario_test.cpp
-  flightplan_test.cpp
+#  scenario_test.cpp
+#  flightplan_test.cpp
 )
 
 #set( SOURCES
