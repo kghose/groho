@@ -38,15 +38,20 @@ struct OrreryObject {
 class Orrery {
 
 public:
-    static std::optional<Orrery>
-         load(J2000_s begin, J2000_s end, const Kernels& kernels);
-    void set_to(J2000_s t, v3d_vec_t& pos);
+    enum StatusCode { OK = 0, WARNING, ERROR };
+    Orrery(J2000_s begin, J2000_s end, const Kernels& kernels);
+    StatusCode status() { return _status; }
+    void       set_to(J2000_s t, v3d_vec_t& pos);
 
 private:
     std::vector<OrreryObject> objects;
+    StatusCode                _status;
 };
 
-std::vector<OrreryObject>
-load_orrery_objects(J2000_s begin, J2000_s end, const Kernels& kernels);
+std::vector<OrreryObject> load_orrery_objects(
+    J2000_s             begin,
+    J2000_s             end,
+    const Kernels&      kernels,
+    Orrery::StatusCode& status);
 
 }
