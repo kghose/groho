@@ -52,7 +52,9 @@ std::vector<OrreryObject> load_orrery_objects(
         auto _spk = SpkFile::load(kernel.path);
         if (!_spk) {
             LOG_S(ERROR) << "Unable to load " << kernel.path;
-            status = Orrery::StatusCode::WARNING;
+            if (status != Orrery::StatusCode::ERROR) {
+                status = Orrery::StatusCode::WARNING;
+            }
             continue;
         }
 
@@ -88,7 +90,9 @@ std::vector<OrreryObject> load_orrery_objects(
             for (auto& code : objects_to_find) {
                 LOG_S(ERROR) << int(code);
             }
-            status = Orrery::StatusCode::WARNING;
+            if (status != Orrery::StatusCode::ERROR) {
+                status = Orrery::StatusCode::WARNING;
+            }
         }
     }
 
