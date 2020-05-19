@@ -13,8 +13,6 @@ because that is what the JPL SPK files use
 #include <stdexcept>
 #include <string>
 
-#include "parsestatus.hpp"
-
 namespace groho {
 
 // Time conversion
@@ -29,8 +27,6 @@ struct GregorianDate {
     double H;
 };
 
-typedef Parsed<GregorianDate> ParsedGregorianDate;
-
 inline std::ostream& operator<<(std::ostream& os, const GregorianDate& cd)
 {
     os << cd.Y << "." << cd.M << "." << cd.D << "." << cd.H;
@@ -39,26 +35,18 @@ inline std::ostream& operator<<(std::ostream& os, const GregorianDate& cd)
 
 // We are very strict about the format. It has to look like
 // YYYY.MM.DD.X
-inline auto as_gregorian_date(std::string s, size_t line)
+inline auto as_gregorian_date(std::string s)
 {
-    ParsedGregorianDate date;
-    try {
-        if ((s[4] != '.') | (s[7] != '.') | (s[10] != ':')) {
-            throw std::invalid_argument("Invalid date");
-        }
-
-        date.value.Y = std::stoi(s.substr(0, 4));
-        date.value.M = std::stoi(s.substr(5, 2));
-        date.value.D = std::stoi(s.substr(8, 2));
-        date.value.H = std::stof(s.substr(11));
-
-        date.status.code = ParseStatus::OK;
-
-    } catch (const std::exception& e) {
-        date.status = { line, ParseStatus::ERROR, e.what() };
+    if ((s[4] != '.') | (s[7] != '.') | (s[10] != ':')) {
+        return std::make_pair(GregorianDate(), "Invalid date");
+    } else {
+        return std::make_pair(
+            GregorianDate{ std::stoi(s.substr(0, 4)),
+                           std::stoi(s.substr(5, 2)),
+                           std::stoi(s.substr(8, 2)),
+                           std::stof(s.substr(11)) },
+            "");
     }
-
-    return date;
 }
 
 inline bool leap_gregorian(int year)

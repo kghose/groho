@@ -93,20 +93,18 @@ TEST_CASE("JD to J2000", "[JD to J2000]")
 
 TEST_CASE("Parse Gregorian Date from string", "[ParseDate]")
 {
-    std::string d   = "2050.02.29:0.5";
-    auto[date, err] = as_gregorian_date(d, 1);
+    std::string d    = "2050.02.29:0.5";
+    auto [date, err] = as_gregorian_date(d);
 
     REQUIRE(date.Y == 2050);
     REQUIRE(date.H == 0.5);
-    REQUIRE(err.code == ParseStatus::OK);
+    REQUIRE(err == "");
 }
 
 TEST_CASE("Parse Gregorian Date from string with error", "[ParseDate]")
 {
-    std::string d   = "2050.0229.0.5";
-    auto[date, err] = as_gregorian_date(d, 1);
+    std::string d    = "2050.0229.0.5";
+    auto [date, err] = as_gregorian_date(d);
 
-    REQUIRE(err.code != ParseStatus::OK);
-    REQUIRE(err.line == 1);
-    REQUIRE(err.message == "Invalid date");
+    REQUIRE(err == "Invalid date");
 }
