@@ -16,12 +16,19 @@ TEST_CASE("Load orrery", "[ORRERY]")
 
     REQUIRE(status == Orrery::StatusCode::OK);
     REQUIRE(bodies.size() == 17);
-    REQUIRE(bodies[1].ephemeris->target_code == 10);
-    REQUIRE(bodies[1].parent_idx == 0);
-    REQUIRE(bodies[11].ephemeris->target_code == 299);
-    REQUIRE(bodies[11].parent_idx == 2);
-    REQUIRE(bodies[15].ephemeris->target_code == 399);
-    REQUIRE(bodies[15].parent_idx == 8);
+
+    for (size_t i = 1; i < bodies.size(); i++) {
+        REQUIRE(bodies[i].parent_idx < i); // The ordering property we need
+    }
+
+    for (size_t i = 1; i < bodies.size(); i++) {
+        if (bodies[i].ephemeris->target_code == 299) {
+            size_t venus_bc = bodies[i].parent_idx;
+            REQUIRE(bodies[venus_bc].ephemeris->target_code == 2);
+            REQUIRE(bodies[venus_bc].parent_idx == 0);
+            break;
+        }
+    }
 
     auto orrery = Orrery(begin, end, kernels);
 }
