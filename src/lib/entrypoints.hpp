@@ -19,6 +19,8 @@ void sim(std::string scn_file, std::string sim_folder);
 void chart(
     std::string plot_file, std::string sim_folder, std::string chart_pdf);
 
+void list_programs();
+
 void inspect(std::string kernel_file);
 
 }

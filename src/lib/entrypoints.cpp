@@ -52,6 +52,8 @@ void chart(std::string plot_file, std::string sim_folder, std::string chart_pdf)
     plotter.wait_until_done();
 }
 
+void list_programs() {}
+
 void inspect(std::string kernel_file)
 {
     auto _spk = SpkFile::load(kernel_file);

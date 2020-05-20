@@ -51,6 +51,10 @@ int main(int argc, char* argv[])
     chart->add_option("chart", chart_pdf, "Chart PDF")->required();
     chart->callback([&]() { groho::chart(plot_file, sim_folder, chart_pdf); });
 
+    auto programs = app.add_subcommand(
+        "programs", "Describe spacecraft programs available");
+    programs->callback([&]() { groho::list_programs(); });
+
     auto inspect = app.add_subcommand("inspect", "Inspect kernel file");
     inspect->add_option("spk", kernel_file, "Kernel file")->required();
     inspect->callback([&]() { groho::inspect(kernel_file); });
