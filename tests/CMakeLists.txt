@@ -16,18 +16,13 @@ include_directories(
   ../src/lib 
   ../src/external
   ../src/orrery
-  ../src/scenario
+  ../src/sampling
 )
 
 file(GLOB SOURCES
-  "../src/orrery/*.cpp"
   ../src/lib/inputfile.cpp
-#  ../src/scenario/scenario.cpp
-#  ../src/scenario/flightplan.cpp
-#    "src/actions/*.cpp" 
-#    "src/sampling/*.cpp" 
-#    "src/scenario/*.cpp"
-#    "src/simulator/simulator.cpp"
+  ../src/orrery/*.cpp
+  ../src/sampling/*.cpp 
 )
 
 
@@ -38,18 +33,8 @@ set( TEST_SOURCES
   spk_test.cpp
   orrery_test.cpp
   inputfile_test.cpp
-#  scenario_test.cpp
-#  flightplan_test.cpp
+  sampling_test.cpp
 )
-
-#set( SOURCES
-#  ../src/orrery/*.cpp
-#  ../src/orrery/spk.cpp
-#  ../src/orrery/spklib.cpp
-#  ../src/lib/inputfile.cpp
-#  ../src/scenario/scenario.cpp
-#  ../src/scenario/flightplan.cpp
-#)
 
 add_executable( tests ${TEST_SOURCES} ${SOURCES} )
 target_link_libraries( 

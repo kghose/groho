@@ -44,7 +44,7 @@ private:
     size_t _idx = 0;
 
     FractalDownsampler                   sampler;
-    std::unique_ptr<ThreadedBuffer<V3d>> buffer;
+    std::shared_ptr<ThreadedBuffer<V3d>> buffer;
 };
 
 }
