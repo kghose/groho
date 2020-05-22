@@ -7,12 +7,12 @@ This handles the downsampling of the data
 
 #pragma once
 
-#include "vector.hpp"
+#include "v3d.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
 
-namespace sim {
+namespace groho {
 
 class FractalDownsampler {
 public:
@@ -22,7 +22,7 @@ public:
     {
     }
 
-    bool operator()(const Vector& v)
+    bool operator()(const V3d& v)
     {
         cumulative_curve_dist += (v - last_v).norm();
         double linear_dist = (v - last_sample_v).norm();
@@ -37,7 +37,7 @@ public:
     }
 
 private:
-    void accept_sample(const Vector& v)
+    void accept_sample(const V3d& v)
     {
         cumulative_curve_dist = 0;
         last_sample_v         = v;
@@ -45,8 +45,8 @@ private:
     }
 
     double cumulative_curve_dist = 0;
-    Vector last_sample_v         = { 0, 0, 0 };
-    Vector last_v                = { 0, 0, 0 };
+    V3d    last_sample_v         = { 0, 0, 0 };
+    V3d    last_v                = { 0, 0, 0 };
     double ratio_threshold       = 1.001;
     double linear_threshold      = 1e6;
 };
