@@ -41,6 +41,13 @@ struct V3d {
         z += rhs.z;
         return *this;
     }
+
+    bool operator==(const V3d& rhs) const
+    {
+        return (x == rhs.x) && (y == rhs.y) && (z == rhs.z);
+    }
+
+    bool operator!=(const V3d& rhs) const { return !(*this == rhs); }
 };
 
 typedef std::vector<V3d> v3d_vec_t;
