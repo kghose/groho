@@ -11,7 +11,8 @@ Copyright (c) 2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 #include "fractaldownsampler.hpp"
 #include "naifbody.hpp"
-#include "threadedbuffer.hpp"
+//#include "threadedbuffer.hpp"
+#include "simplebuffer.hpp"
 #include "v3d.hpp"
 
 namespace fs = std::filesystem;
@@ -25,8 +26,8 @@ public:
         : dt(dt)
         , code(code)
     {
-        buffer = std::unique_ptr<ThreadedBuffer<V3d>>(
-            new ThreadedBuffer<V3d>(path));
+        buffer
+            = std::unique_ptr<SimpleBuffer<V3d>>(new SimpleBuffer<V3d>(path));
     }
     ~History();
 
@@ -43,8 +44,8 @@ private:
     V3d    _pos[3];
     size_t _idx = 0;
 
-    FractalDownsampler                   sampler;
-    std::shared_ptr<ThreadedBuffer<V3d>> buffer;
+    FractalDownsampler                 sampler;
+    std::shared_ptr<SimpleBuffer<V3d>> buffer;
 };
 
 }
