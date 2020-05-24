@@ -19,11 +19,11 @@ struct BodyConstant {
     const float       r;  // Radius of body (for collision tests)
 };
 
-struct Body {
-    BodyConstant meta;
-    PosBuf       pos;
-};
+// struct Body {
+//     BodyConstant meta;
+//     PosBuf       pos;
+// };
 
-typedef std::vector<Body> body_vec_t;
+// typedef std::vector<Body> body_vec_t;
 
 }
