@@ -24,10 +24,10 @@ class Serialize {
 
 public:
     Serialize(double dt, const std::vector<NAIFbody>& objects, fs::path path);
-    void       append(const v3d_vec_t& pos);
-    const V3d& pos(size_t idx) const;
-    const V3d& vel(size_t idx) const;
-    const V3d& acc(size_t idx) const;
+    void      append(const v3d_vec_t& pos);
+    const V3d pos(size_t idx) const { return history[idx].pos(); }
+    const V3d vel(size_t idx) const { return history[idx].vel(); }
+    const V3d acc(size_t idx) const { return history[idx].acc(); }
 
 private:
     std::vector<History> history;
