@@ -1,30 +1,31 @@
-_This code is in the middle of a rewrite. For the last working version please
+_This code is in the middle of a rewrite and is not functional yet. For the last working version please
 see the [master branch](https://github.com/kghose/groho/tree/master) and
 [releases](https://github.com/kghose/groho/releases)._
 
 Groho ( গ্রহ )
 =====
+Groho is a simulator for space travel within the solar system.
 
 [![Tests](https://github.com/kghose/groho/workflows/Tests/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ATests)
 [![Simulator](https://github.com/kghose/groho/workflows/Simulator/badge.svg)](https://github.com/kghose/groho/actions?query=workflow%3ASimulator)
 
-Groho is a simulator for space flight, communication and warfare within the
-solar system.
-
-Space is unimaginably vast. My goal is to create a simulator that will give us
-an appreciation of just how lonely even our tiny corner of the universe is. We
-define a solar system model (the Orrery - based on NASA's planetary data), set
-up space craft scripts (Flight Plans), and then sit back and watch the action
-unfold. The program makes it easy to setup, run, save, modify, inspect and
-compose (combine together) simulations. 
-
-My hope is that we will come away with an understanding of basic orbital
-manuevers, an intuition of the time delays in communicating and coordinating
-across the solar system and a feel for what life will be like for our
-descendants who set sail away from the home planet.
+Even our tiny corner of the universe, the solar system, is unimaginably vast and
+lonely. Using this simulator, I hope we can gain an intuition and appreciation
+for basic orbital manuevers and a sense of scale and time for travel between the
+planets. In this way we ca get a feel for what life will be like for our
+descendants who set sail away from the home planet 
 
 *Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the
 word for planetary system but is more of a mouthful.*
+
+# Developer documentation
+I use this project to keep current with my design and C++ skills. 
+
+- Here are some [UML design documents](docs/Readme.md)
+- My relevant [blog posts][posts] on C++ and other topics.
+- Some very [unorganized notes](src/Readme.md) on C++ used in this project. 
+
+[posts]: https://kaushikghose.wordpress.com/tag/spacecraft-trajectory-simulator/
 
 # Quick start
 
@@ -65,17 +66,14 @@ groho programs
 
 ## Orrery model
 You pass a list of kernel files to the simulator. Optionally, you can indicate a
-subset of NAIF codes that the simulator should load for the kernel file.
+subset of NAIF codes that the simulator should load from the kernel file.
 
 ```
-spk de432s.bsp
+spk de432s.bsp ; load everything from this file
 
 pick 809 899
-spk nep086.bsp 
+spk nep086.bsp ; only load 809 and 899 from this file
 ```
-The first `spk` command tells the simulator to load everything in the
-`de432.bsp` kernel. The `pick` prepares the simulator to load only `809` and
-`899` from the next `spk` kernel.
 
 A SPK file contains barycenters as well as physical bodies. Often ephemeris are
 stored relative a barycenter. For example:
@@ -88,12 +86,12 @@ stored relative a barycenter. For example:
 
 When loading objects the simulator follows the following rules
 
-1. If a body is picked but the body is referenced to an object that has not been
-   loaded, this reference object is also loaded and so on, recursively.
 1. If a barycenter and the main body of the barycenter are both loaded, the
    barycenter is used for coordinate transforms but is not used for gravity
    computations: the main body is used. The trajectory of the barycenter is
    also, in this case, not saved.
+1. If a body encountered more than once, the ephemeris is loaded from the first
+   file it is encountered in.
 
 In the given example, the barycenter 8 is not used for gravity computations
 since 899 is loaded. 
@@ -152,15 +150,6 @@ simulation more manageable.
 
 # Plot file manual
 **WIP**
-
-# Developer
-
-The code needs a c++17 compiler.
-
-## Docs
-- [Design](docs/Readme.md)
-- [High level roadmap](docs/roadmap.md)
-
 
 
 ```
