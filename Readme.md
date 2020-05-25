@@ -11,8 +11,8 @@ Groho is a simulator for space travel within the solar system.
 
 Even our tiny corner of the universe, the solar system, is unimaginably vast and
 lonely. Using this simulator, I hope we can gain an intuition and appreciation
-for basic orbital manuevers and a sense of scale and time for travel between the
-planets. In this way we ca get a feel for what life will be like for our
+for basic orbital manuevers, and a sense of scale and time for travel between the
+planets. In this way we can get a feel for what life will be like for our
 descendants who set sail away from the home planet 
 
 *Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the
@@ -105,16 +105,18 @@ Flight plans start with a line indicating the name of the spacecraft
 plan Durga
 ```
 
-This is followed by a list of **events**. Each event specifies a time, a
-spacecraft **program** and how it should run. For example the line:
+This is followed by a list of **events**. Each event specifies a start time,
+duration and, a spacecraft **program** and how it should run. For example the
+line: 
 
 ```
-2050.01.01:0.5 orbit 301 200x200
+2050.01.01:0.5 3600 orbit 301 200x200
 ```
 
 will turn on a program that thrusts the spaceship till it achieves a 200x200 km
-orbit around the moon. Programs terminate once their goal has been achieved or,
-if they are a timed program, once their time runs out.
+orbit around the moon or till the duration is up, whichever is earlier. (A
+duration is required because this makes restarts easier. It allows the simulator
+to more easily decide the time point upto which computations can be reused)
 
 Each program has access to the state of the solarsystem (modeling a perfect IMU
 and perfect knowledge of the solar system) and produces only one output: a
