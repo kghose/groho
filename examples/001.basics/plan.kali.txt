@@ -1,4 +1,8 @@
+; Example flight plan
 plan Kali
 orbiting 301 100x200 
 
-2050.01.02:0.5 orbit 301 200x200 
+2050.01.02:0.5 3600 orbit 301 200x200 
+
+; inserts can be recursive
+insert plan-segment/kali-part1.txt

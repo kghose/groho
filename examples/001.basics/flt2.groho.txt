@@ -1,4 +1,0 @@
-; Please see flt1.groho.txt for a fully annottaed flight plan
-
-name   Ma Kali
-initially orbiting 399 100x100

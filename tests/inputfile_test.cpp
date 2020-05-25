@@ -14,12 +14,17 @@ TEST_CASE("Input file parsing", "[InputFile]")
 {
     auto lines = load_input_file("../examples/001.basics/scn.groho.txt");
 
-    // 9 lines from scn.groho.txt and 3 from plan.kali.txt
-    REQUIRE((*lines).size() == 12);
+    // 9 lines from scn.groho.txt, 3 from plan.kali.txt, 1 from kali-part1.txt
+    // and 1 from kali-part2.txt
+    REQUIRE((*lines).size() == 14);
 
     REQUIRE((*lines)[0].key == "start");
+    REQUIRE((*lines)[7].key == "2050.01.01:0.5");
     REQUIRE((*lines)[8].key == "plan");
-    REQUIRE((*lines)[11].status.code == ParseStatus::ERROR);
+    REQUIRE((*lines)[10].key == "2050.01.02:0.5");
+    REQUIRE((*lines)[11].key == "2050.01.03:0.5");
+    REQUIRE((*lines)[12].key == "2050.01.04:0.5");
+    REQUIRE((*lines)[13].status.code == ParseStatus::ERROR);
 }
 
 TEST_CASE("String split on white space", "[StringSplit]")

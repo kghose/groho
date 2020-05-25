@@ -1,0 +1,6 @@
+; 
+
+2050.01.03:0.5 3600 orbit 301 400x200
+
+; Inserts are relative to the current file
+insert ../kali-part2.txt
