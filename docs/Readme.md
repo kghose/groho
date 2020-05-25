@@ -9,6 +9,7 @@
 
 ### (Re)starting a simulation
 ![](uml/png/startup.png)
+
 An important part of making the program more responsive to interactive
 trajectory development is to only recompute when it is necessary. We do this by
 maintaining periodic checkpoints of the simulation and analyzing changed
