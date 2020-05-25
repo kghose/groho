@@ -1,0 +1,78 @@
+@startuml classes
+
+Class Orrery {
+Gives planet and satelite postion 
+given time t
+==
++set_to()
+}
+
+Class Spacecraft {
++pos
++vel
++acc
+}
+
+class FlightPlan {
+Add engine thrust (acc) to a spacecraft. 
+Depends upon t and pos of Orrey objects 
+and other spacecraft.
+==
++thrust()    
+}
+
+class Serialize {
+Save downsampled points to disk. 
+Save checkpoints periodically 
+so restarts can be made.
+==
++append()
++pos()
++vel()
++acc()
+}
+
+Serialize "1" *-- "many" History
+
+class History {
++sample()
++pos()
++vel()
++acc()
+}
+
+class Scenario {
+Encode scenario input files for 
+easy comparison
+}
+
+class Simulation {
+Carry state
+==
++scenario
++orrery
++spacecraft
++plans
++serializer
++set_from_scenario()
+}
+
+Simulation *-- Scenario
+Simulation *-- Orrery
+Simulation "1" *-- "many" Spacecraft
+Simulation "1" *-- "many" FlightPlan
+Simulation *-- Serialize
+
+class Simulator {
+Step Simulation from t to t + dt
+-simulation
++step()
++restart()
++quit()
+}
+
+Simulator *-- Simulation
+
+
+
+@enduml

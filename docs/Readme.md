@@ -1,16 +1,7 @@
 # Developer documentation
 
 ## Major classes
-
-| Class       | State           | Responsibility
-| ----------- | --------------- |------------------------------------------
-| Orrery      | None            | Gives planet and satelitte postion given time t
-| Spacecraft  | Pos, vel, acc   | State evolves with gravity
-| Flightplan  | None            | Add engine thrust (acc) to a spacecraft. Can depend upon t and pos of Orrey objects and other spacecraft.
-| Serializer  | Various, hidden | Save downsampled points to disk. Save checkpoints periodically so restarts can be made.
-| Simulation  |                 | Container with Orrery, Spacecraft, Flightplans, Serializer
-| Simulator   | Simulation      | Advance Simulation from t to t + dt 
-
+![](uml/png/classes.png)
 
 *It may turn out that Flightplans need state.
 
