@@ -17,12 +17,14 @@ include_directories(
   ../src/external
   ../src/orrery
   ../src/sampling
+  ../src/simulator
 )
 
 file(GLOB SOURCES
   ../src/lib/inputfile.cpp
   ../src/orrery/*.cpp
   ../src/sampling/*.cpp 
+  ../src/simulator/*.cpp
 )
 
 

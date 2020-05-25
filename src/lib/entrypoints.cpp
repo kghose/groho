@@ -10,7 +10,7 @@ Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 #include "bodyconstant.hpp"
 #include "entrypoints.hpp"
 #include "pdfplotter.hpp"
-#include "simulation.hpp"
+#include "simulator.hpp"
 #include "spk.hpp"
 #include "units.hpp"
 
@@ -28,22 +28,22 @@ void loop(
     std::string sim_folder,
     std::string chart_pdf)
 {
-    auto simulation = Simulation(scn_file, sim_folder);
-    auto plotter    = Plotter(plot_file, sim_folder, chart_pdf);
+    auto simulator = Simulator(scn_file, sim_folder);
+    auto plotter   = Plotter(plot_file, sim_folder, chart_pdf);
 
     signal(SIGINT, [](int) { keep_running = false; });
 
     while (keep_running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    simulation.stop();
+    simulator.stop();
     plotter.stop();
 }
 
 void sim(std::string scn_file, std::string sim_folder)
 {
-    auto simulation = Simulation(scn_file, sim_folder);
-    simulation.wait_until_done();
+    auto simulator = Simulator(scn_file, sim_folder);
+    simulator.wait_until_done();
 }
 
 void chart(std::string plot_file, std::string sim_folder, std::string chart_pdf)
