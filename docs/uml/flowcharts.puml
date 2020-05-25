@@ -1,0 +1,58 @@
+@startuml startup
+
+:Scenario changed>
+:Read Scenario file;
+:Load nearest valid checkpoint;
+note right
+  This is the heart of work reuse and is
+  how we can make iterative development
+  of trajectories more responsive.
+end note
+
+:Truncate history\nand checkpoint files;
+note right
+  This detail is noted because it is easy 
+  to overlook, and can be complicated to 
+  implement.
+end note
+:Create new Simulation;
+:Restart Simulator;
+
+stop
+
+@enduml
+
+@startuml simulatorloop
+
+start
+
+repeat 
+
+:set orrery pos;
+:compute accel on spacecraft;
+:compute accel from flight plans;
+:update spacecraft position;
+:serialize data;
+
+repeat while (interrupted?) is (no)
+->yes;
+stop
+
+@enduml
+
+@startuml serialize
+
+:serialize>
+
+if (sample?) then (yes)
+  :save data;
+else (no)
+endif
+
+if (checkpoint?) then (yes)
+  :save checkpoint;
+else (no)
+endif
+
+stop
+@enduml

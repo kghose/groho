@@ -1,8 +1,30 @@
 # Developer documentation
 
-## Use case diagram
+## Major classes
 
-![](uml/png/usecases.png)
+| Class       | State           | Responsibility
+| ----------- | --------------- |------------------------------------------
+| Orrery      | None            | Gives planet and satelitte postion given time t
+| Spacecraft  | Pos, vel, acc   | State evolves with gravity
+| Flightplan  | None            | Add engine thrust (acc) to a spacecraft. Depends upon t and pos of Orrey objects and other spacecraft.
+| Serializer  | ?               | Save downsampled points to disk. Save checkpoints periodically so restarts can be made.
+| Simulation  |                 | Container with Orrery, Spacecraft, Flightplans, Serializer
+| Simulator   | Simulation      | Advance Simulation from t to t + dt 
+
+## High level activity diagrams
+
+![](uml/png/startup.png)
+An important part of making the program more responsive to interactive
+trajectory development is to only recompute when it is necessary. We do this by
+maintaining periodic checkpoints of the simulation and analyzing changed
+scenario files to see if we can restart from an existing checkpoint, rather than
+having to start from the begining.
+
+
+![](uml/png/simulatorloop.png)
+
+![](uml/png/serialize.png)
+
 
 
 ## Sequence diagram
@@ -25,6 +47,26 @@ plot is not redone.
 
 ## Plotter loop
 ![](uml/png/plotterloop.png)
+
+## Saving data
+
+We will find many fascinating ramblings [here](dev). The one sensible thing I
+did was invent the Fractal Downsampler. [Here is a notebook describing
+it](dev/adaptive-display-points.ipynb) and a [blog
+post](https://kaushikghose.wordpress.com/2017/11/25/adaptively-downsampling-a-curve/).
+
+I considered two ways of saving the data: A) write out each trajectory to a
+different file or B) interleave the trajectories in the same file, using a one
+or two byte tag to indicate which trajectory each data point belonged to. 
+
+A. creates a bunch of files, but is easier to process for display. B. Is more
+compact, but requires more complex pre-processing before display. When in doubt
+do the simpler thing. So the simulator writes out data into a directory with one
+file per trajectory.
+
+Simulated data at each step is passed into the fractal downsampler. When the
+downsampler says it's time to save a sample, the sample is written out. Double
+buffering is used.
 
 
 # [Current road map](roadmap.md)
