@@ -19,7 +19,7 @@ having to start from the begining.
 ### Central simulator loop
 ![](uml/png/simulatorloop.png)
 
-### Serialization thread 
+### Serialization threads
 ![](uml/png/serialize.png)
 
 Not shown: details of thread synchronization between simulator and serialization
@@ -38,11 +38,6 @@ restarts from a previous checkpoint in the simulation. Similarly for the
 plotting, if the data is unchanged, or if the plotting file is unchanged, the
 plot is not redone.
 
-## Simulator loop
-![](uml/png/simulatorloop.png)
-
-### Detail of saving and check-pointing
-![](uml/png/simulationstep.png)
 
 ## Plotter loop
 ![](uml/png/plotterloop.png)

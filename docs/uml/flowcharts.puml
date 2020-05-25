@@ -37,7 +37,7 @@ end note
 repeat 
 
 :set orrery pos;
-:compute accel on spacecraft;
+:compute accel from gravity;
 :compute accel from flight plans;
 :update spacecraft position;
 :serialize data;
@@ -50,17 +50,50 @@ stop
 
 @startuml serialize
 
-:serialize>
+start 
 
-if (sample?) then (yes)
-  :save data;
-else (no)
-endif
+repeat
 
-if (checkpoint?) then (yes)
-  :save checkpoint;
-else (no)
-endif
+fork
+
+repeat
+
+  if (stop?) then (yes)
+    break;
+  else (no)
+
+    if (sample?) then (yes)
+      :write buf b;
+    else (no)
+    endif
+
+    if (checkpoint?) then (yes)
+      :write checkpoint;
+    else (no)
+    endif
+
+
+  endif
+
+repeat while(full?) is (no)
+
+fork again
+
+  if (data?) then (yes)
+    :save buf 1 - b;
+  else (no)
+  endif
+
+  if (stop?) then (yes)
+    :quit = true;
+  else (no)
+  endif
+
+end fork
+
+:b = 1 - b\n(switch buffer);
+
+repeat while (quit?) is (no)
 
 stop
 @enduml
