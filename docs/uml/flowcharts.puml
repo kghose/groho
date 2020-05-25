@@ -24,7 +24,15 @@ stop
 
 @startuml simulatorloop
 
-start
+:start simulation>
+:warmup engine if needed;
+note right
+  If we have a cold start (not from a checkpoint)
+  we need to run for three steps or more to set
+  vel and acc for all bodies. Flightplan actions 
+  often need vel and acc of bodies for their
+  computations. 
+end note
 
 repeat 
 

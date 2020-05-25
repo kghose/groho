@@ -6,13 +6,17 @@
 | ----------- | --------------- |------------------------------------------
 | Orrery      | None            | Gives planet and satelitte postion given time t
 | Spacecraft  | Pos, vel, acc   | State evolves with gravity
-| Flightplan  | None            | Add engine thrust (acc) to a spacecraft. Depends upon t and pos of Orrey objects and other spacecraft.
-| Serializer  | ?               | Save downsampled points to disk. Save checkpoints periodically so restarts can be made.
+| Flightplan  | None            | Add engine thrust (acc) to a spacecraft. Can depend upon t and pos of Orrey objects and other spacecraft.
+| Serializer  | Various, hidden | Save downsampled points to disk. Save checkpoints periodically so restarts can be made.
 | Simulation  |                 | Container with Orrery, Spacecraft, Flightplans, Serializer
 | Simulator   | Simulation      | Advance Simulation from t to t + dt 
 
+
+*It may turn out that Flightplans need state.
+
 ## High level activity diagrams
 
+### (Re)starting a simulation
 ![](uml/png/startup.png)
 An important part of making the program more responsive to interactive
 trajectory development is to only recompute when it is necessary. We do this by
@@ -20,11 +24,14 @@ maintaining periodic checkpoints of the simulation and analyzing changed
 scenario files to see if we can restart from an existing checkpoint, rather than
 having to start from the begining.
 
-
+### Central simulator loop
 ![](uml/png/simulatorloop.png)
 
+### Serialization thread 
 ![](uml/png/serialize.png)
 
+Not shown: details of thread synchronization between simulator and serialization
+threads for double buffer implementation.
 
 
 ## Sequence diagram
