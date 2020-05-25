@@ -16,8 +16,8 @@ namespace fs = std::filesystem;
 namespace groho {
 
 struct ParseStatus {
-    enum StatusCode { OK = 0, WARNING, ERROR };
-    StatusCode  code = StatusCode::OK;
+    enum StatusCode { PENDING, OK, WARNING, ERROR };
+    StatusCode  code = StatusCode::PENDING;
     std::string message;
 };
 
