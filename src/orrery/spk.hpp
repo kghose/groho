@@ -19,7 +19,7 @@ chebyshev coefficients stored in the SPK/DAF file to compute vector positions
 #include <unordered_map>
 #include <vector>
 
-#include "body.hpp"
+#include "naifbody.hpp"
 #include "units.hpp"
 #include "v3d.hpp"
 

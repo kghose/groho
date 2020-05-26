@@ -37,9 +37,16 @@ https://naif.jpl.nasa.gov/pub/naif/pds/data/co-s_j_e_v-spice-6-v1.0/cosp_1000/da
 
 #include <unordered_map>
 
-#include "body.hpp"
+#include "naifbody.hpp"
 
 namespace groho {
+
+struct BodyConstant {
+    const NAIFbody    code;
+    const std::string name;
+    const float       GM; // GM value for body
+    const float       r;  // Radius of body (for collision tests)
+};
 
 // clang-format off
 const std::unordered_map<NAIFbody, BodyConstant> body_library = {
