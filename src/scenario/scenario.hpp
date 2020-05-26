@@ -13,7 +13,7 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 #include "inputfile.hpp"
 #include "naifbody.hpp"
-#include "orrery.hpp"
+#include "parameters.hpp"
 #include "units.hpp"
 
 namespace groho {
