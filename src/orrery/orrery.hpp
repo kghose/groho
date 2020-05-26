@@ -16,19 +16,13 @@ Orrery built with SPK files
 #include <unordered_set>
 #include <vector>
 
+#include "parameters.hpp"
 #include "spk.hpp"
 #include "units.hpp"
 
 namespace groho {
 
 namespace fs = std::filesystem;
-
-struct Kernel {
-    std::unordered_set<NAIFbody> codes;
-    fs::path                     path;
-};
-
-typedef std::vector<Kernel> Kernels;
 
 struct OrreryObject {
     std::shared_ptr<Ephemeris> ephemeris;
