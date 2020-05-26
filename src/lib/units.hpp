@@ -38,14 +38,14 @@ inline std::ostream& operator<<(std::ostream& os, const GregorianDate& cd)
 inline auto as_gregorian_date(std::string s)
 {
     if ((s[4] != '.') | (s[7] != '.') | (s[10] != ':')) {
-        return std::make_pair(GregorianDate(), "Invalid date");
+        return std::make_pair(GregorianDate(), std::string("Invalid date"));
     } else {
         return std::make_pair(
             GregorianDate{ std::stoi(s.substr(0, 4)),
                            std::stoi(s.substr(5, 2)),
                            std::stoi(s.substr(8, 2)),
                            std::stof(s.substr(11)) },
-            "");
+            std::string(""));
     }
 }
 
