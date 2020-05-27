@@ -20,6 +20,9 @@ orbiting 399 1000x500 ; Every spacecraft starts out orbiting a body
 2050.01.01:0.5 3600 orbit 301 200x200 ; Starting at this time try and orbit 301 
                                  ; at this altitude 
 
+2050.01.01:0.51 3600 orbit 301 500x200 ; Will raise error, since this overlaps
+                                       ; with previous command 
+
 insert plan.kali.txt ; The insert command inserts the text from another file
                        ; into this once
 

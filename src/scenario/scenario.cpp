@@ -19,7 +19,7 @@ Scenario::Scenario(Lines& lines)
     parse_preamble(lines);
     parse_kernels(lines);
     parse_plans(lines);
-    sort_plans();
+    sort_and_validate_plans();
     log_issues(lines);
 }
 
@@ -149,13 +149,14 @@ void Scenario::parse_plans(Lines& lines)
                 { date,
                   duration,
                   tokens[1],
-                  std::vector<std::string>(tokens.begin() + 2, tokens.end()) });
+                  std::vector<std::string>(tokens.begin() + 2, tokens.end()),
+                  &line });
             line.status.code = ParseStatus::OK;
         }
     }
 }
 
-void Scenario::sort_plans()
+void Scenario::sort_and_validate_plans()
 {
     for (auto& [_, craft_tok] : spacecraft_tokens) {
         std::sort(
@@ -164,6 +165,16 @@ void Scenario::sort_plans()
             [](const CommandToken& cmd_tok1, const CommandToken& cmd_tok2) {
                 return cmd_tok1.start < cmd_tok2.start;
             });
+
+        double previous_plan_end = 0;
+        for (auto& cmd_tok : craft_tok.command_tokens) {
+            if (cmd_tok.start < previous_plan_end) {
+                add_issue(
+                    cmd_tok.line_p, ParseStatus::ERROR, "Command overlaps.");
+            }
+            previous_plan_end
+                = std::max(previous_plan_end, cmd_tok.start + cmd_tok.duration);
+        }
     }
 }
 

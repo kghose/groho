@@ -13,6 +13,7 @@ without having to have knowledge of the objects they represent
 #include <unordered_map>
 #include <unordered_set>
 
+#include "line.hpp"
 #include "naifbody.hpp"
 #include "units.hpp"
 
@@ -23,6 +24,8 @@ namespace groho {
 struct KernelToken {
     std::unordered_set<NAIFbody> codes;
     fs::path                     path;
+
+    Line *pick_line_p, path_line_p;
 };
 
 typedef std::vector<KernelToken> KernelTokens;
@@ -32,6 +35,8 @@ struct CommandToken {
     double                   duration;
     std::string              plan;
     std::vector<std::string> params;
+
+    Line* line_p;
 };
 
 typedef std::vector<CommandToken> CommandTokens;
@@ -40,6 +45,8 @@ struct SpacecraftToken {
     std::string   craft_name;
     CommandToken  initial_condition;
     CommandTokens command_tokens;
+
+    Line* line_p;
 };
 
 typedef std::unordered_map<std::string, SpacecraftToken> SpacecraftTokens;

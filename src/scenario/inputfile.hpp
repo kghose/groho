@@ -13,25 +13,11 @@ Some utilities for parsing input files.
 #include <string>
 #include <vector>
 
+#include "line.hpp"
+
 namespace fs = std::filesystem;
 
 namespace groho {
-
-struct ParseStatus {
-    enum StatusCode { PENDING, OK, WARNING, ERROR };
-    StatusCode  code = StatusCode::PENDING;
-    std::string message;
-};
-
-struct Line {
-    std::string file_name;
-    size_t      line;
-    std::string key;
-    std::string value;
-    ParseStatus status;
-};
-
-typedef std::vector<Line> Lines;
 
 std::optional<Lines> load_input_file(const fs::path& path);
 
