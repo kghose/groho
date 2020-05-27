@@ -22,7 +22,7 @@ TEST_CASE("Input file parsing", "[InputFile]")
     REQUIRE((*lines)[10].key == "2050.01.02:0.5");
     REQUIRE((*lines)[11].key == "2050.01.03:0.5");
     REQUIRE((*lines)[12].key == "2050.01.04:0.5");
-    REQUIRE((*lines)[13].status.code == ParseStatus::ERROR);
+    REQUIRE((*lines)[14].status.code == ParseStatus::ERROR);
 }
 
 TEST_CASE("String split on white space", "[StringSplit]")
