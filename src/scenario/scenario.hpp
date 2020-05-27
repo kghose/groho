@@ -22,15 +22,18 @@ namespace fs = std::filesystem;
 
 struct Scenario {
 
+    Scenario() { ; }
     Scenario(Lines& lines);
 
     J2000_s begin;
     J2000_s end;
 
-    Kernels kernels;
+    Kernels          kernels;
+    SpacecraftTokens spacecraft_tokens;
 
-private:
     void parse_preamble(Lines& lines);
     void parse_kernels(Lines& lines);
+    void parse_plans(Lines& lines);
+    void log_issues(const Lines& lines) const;
 };
 }

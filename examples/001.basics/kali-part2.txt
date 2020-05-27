@@ -2,3 +2,5 @@
 ; inserts are relative to the immediate parent
 
 2050.01.04:0.5 3600 orbit 301 400x500
+
+2050.0105:0.5 3600 orbit 301 400x500 ; bad date

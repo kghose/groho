@@ -18,6 +18,8 @@ Scenario::Scenario(Lines& lines)
 {
     parse_preamble(lines);
     parse_kernels(lines);
+    parse_plans(lines);
+    log_issues(lines);
 }
 
 void Scenario::parse_preamble(Lines& lines)
@@ -28,14 +30,15 @@ void Scenario::parse_preamble(Lines& lines)
             if (err.length() > 0) {
                 line.status.code    = ParseStatus::ERROR;
                 line.status.message = err;
-            } else {
-                if (line.key == "start") {
-                    begin = date;
-                } else {
-                    end = date;
-                }
-                line.status.code = ParseStatus::OK;
+                continue;
             }
+
+            if (line.key == "start") {
+                begin = date;
+            } else {
+                end = date;
+            }
+            line.status.code = ParseStatus::OK;
         }
     }
 }
@@ -44,6 +47,10 @@ void Scenario::parse_kernels(Lines& lines)
 {
     bool picking = false;
     for (auto& line : lines) {
+        if (line.status.code != ParseStatus::PENDING) {
+            continue;
+        }
+
         if (line.key == "spk") {
             if (picking) {
                 kernels.back().path = line.value;
@@ -52,8 +59,10 @@ void Scenario::parse_kernels(Lines& lines)
                 kernels.push_back({ {}, line.value });
             }
             line.status.code = ParseStatus::OK;
+
         } else if (line.key == "pick") {
             std::unordered_set<NAIFbody> codes;
+            line.status.code = ParseStatus::OK;
             for (auto code : split_string(line.value)) {
                 try {
                     codes.insert(std::stoi(code));
@@ -64,6 +73,97 @@ void Scenario::parse_kernels(Lines& lines)
             }
             kernels.push_back({ codes, "" });
             picking = true;
+        }
+    }
+}
+
+bool probably_a_date(std::string s) { return s.find(":") != std::string::npos; }
+
+void Scenario::parse_plans(Lines& lines)
+{
+    auto no_associated_craft = [](Line& line) {
+        line.status.code    = ParseStatus::ERROR;
+        line.status.message = "No craft associated with plan line.";
+    };
+
+    std::string plan_name;
+    for (auto& line : lines) {
+        if (line.status.code != ParseStatus::PENDING) {
+            continue;
+        }
+
+        if (line.key == "plan") {
+            plan_name                               = line.value;
+            spacecraft_tokens[plan_name].craft_name = plan_name;
+            line.status.code                        = ParseStatus::OK;
+
+        } else if (line.key == "orbiting") {
+            if (plan_name == "") {
+                no_associated_craft(line);
+                continue;
+            }
+
+            auto tokens = split_string(line.value);
+            if (tokens.size() != 2) {
+                line.status
+                    = { ParseStatus::ERROR, "Expecting two parameters" };
+                continue;
+            }
+
+            spacecraft_tokens[plan_name].initial_condition
+                = { 0, 0, "orbiting", tokens };
+            line.status.code = ParseStatus::OK;
+
+        } else if (probably_a_date(line.key)) {
+            if (plan_name == "") {
+                no_associated_craft(line);
+                continue;
+            }
+
+            auto [date, err] = as_gregorian_date(line.key);
+            if (err.length() > 0) {
+                line.status.code    = ParseStatus::ERROR;
+                line.status.message = err;
+                continue;
+            }
+
+            auto tokens = split_string(line.value);
+            if (tokens.size() < 2) {
+                line.status = { ParseStatus::ERROR,
+                                "Expecting at least a duration and a command" };
+                continue;
+            }
+
+            double duration;
+            try {
+                duration = std::stod(tokens[0]);
+            } catch (const std::exception& e) {
+                line.status = { ParseStatus::ERROR,
+                                "Couldn't parse command duration "
+                                    + std::string(e.what()) };
+                continue;
+            }
+
+            spacecraft_tokens[plan_name].commands.push_back(
+                { date,
+                  duration,
+                  tokens[1],
+                  std::vector<std::string>(tokens.begin() + 2, tokens.end()) });
+            line.status.code = ParseStatus::OK;
+        }
+    }
+}
+
+void Scenario::log_issues(const Lines& lines) const
+{
+    for (auto& line : lines) {
+        if (line.status.code != ParseStatus::OK) {
+            auto message = line.status.code == ParseStatus::PENDING
+                ? "I don't understand this line"
+                : line.status.message;
+
+            LOG_S(ERROR) << line.file_name << ":" << line.line << " "
+                         << message;
         }
     }
 }

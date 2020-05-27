@@ -14,9 +14,7 @@ TEST_CASE("Input file parsing", "[InputFile]")
 {
     auto lines = load_input_file("../examples/001.basics/scn.groho.txt");
 
-    // 9 lines from scn.groho.txt, 3 from plan.kali.txt, 1 from kali-part1.txt
-    // and 1 from kali-part2.txt
-    REQUIRE((*lines).size() == 14);
+    REQUIRE((*lines).size() == 17);
 
     REQUIRE((*lines)[0].key == "start");
     REQUIRE((*lines)[7].key == "2050.01.01:0.5");

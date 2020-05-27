@@ -9,20 +9,42 @@ without having to have knowledge of the objects they represent
 
 #pragma once
 
+// TODO: rename to tokens.hpp
+
 #include <filesystem>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "naifbody.hpp"
+#include "units.hpp"
 
 namespace fs = std::filesystem;
 
 namespace groho {
 
+// TODO: rename to KernelToken
 struct Kernel {
     std::unordered_set<NAIFbody> codes;
     fs::path                     path;
 };
 
 typedef std::vector<Kernel> Kernels;
+
+struct CommandToken {
+    J2000_s                  start;
+    double                   duration;
+    std::string              plan;
+    std::vector<std::string> params;
+};
+
+typedef std::vector<CommandToken> CommandTokens;
+
+struct SpacecraftToken {
+    std::string   craft_name;
+    CommandToken  initial_condition;
+    CommandTokens commands;
+};
+
+typedef std::unordered_map<std::string, SpacecraftToken> SpacecraftTokens;
 
 }

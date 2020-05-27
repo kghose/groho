@@ -17,10 +17,14 @@ spk nep086.bsp
 plan Durga ; This starts a plan
 orbiting 399 1000x500 ; Every spacecraft starts out orbiting a body 
 
-2050.01.01:0.5 orbit 301 200x200 ; Starting at this time try and orbit 301 
+2050.01.01:0.5 3600 orbit 301 200x200 ; Starting at this time try and orbit 301 
                                  ; at this altitude 
 
 insert plan.kali.txt ; The insert command inserts the text from another file
                        ; into this once
 
 insert non-existent.txt ; A non existent file will raise an error
+
+nonsense ; this will log as an unknown command
+
+2050.01.01:0.5 orbit 301 200x200 ; missing duration will be flagged

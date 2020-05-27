@@ -6,6 +6,8 @@ Some utilities for parsing input files.
 */
 #pragma once
 
+// TODO: Move this under scenario/
+
 #include <filesystem>
 #include <optional>
 #include <string>
