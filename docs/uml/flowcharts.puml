@@ -55,7 +55,6 @@ start
 repeat
 
 fork
-
 repeat
 
   if (stop?) then (yes)
@@ -63,7 +62,7 @@ repeat
   else (no)
 
     if (sample?) then (yes)
-      :write buf b;
+      :write buf (b);
     else (no)
     endif
 
@@ -78,9 +77,9 @@ repeat
 repeat while(full?) is (no)
 
 fork again
-
+partition Save #GreenYellow{
   if (data?) then (yes)
-    :save buf 1 - b;
+    :save buf (1 - b);
   else (no)
   endif
 
@@ -88,7 +87,7 @@ fork again
     :quit = true;
   else (no)
   endif
-
+}
 end fork
 
 :b = 1 - b\n(switch buffer);

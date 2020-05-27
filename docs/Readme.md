@@ -22,9 +22,6 @@ having to start from the begining.
 ### Serialization threads
 ![](uml/png/serialize.png)
 
-Not shown: details of thread synchronization between simulator and serialization
-threads for double buffer implementation.
-
 
 ## Sequence diagram
 
