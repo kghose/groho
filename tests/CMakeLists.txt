@@ -18,6 +18,7 @@ include_directories(
   ../src/orrery
   ../src/sampling
   ../src/simulator
+  ../src/scenario
 )
 
 file(GLOB SOURCES
@@ -25,6 +26,7 @@ file(GLOB SOURCES
   ../src/orrery/*.cpp
   ../src/sampling/*.cpp 
   ../src/simulator/*.cpp
+  ../src/scenario/*.cpp
 )
 
 
@@ -36,6 +38,7 @@ set( TEST_SOURCES
   orrery_test.cpp
   inputfile_test.cpp
   sampling_test.cpp
+  scenario_test.cpp
 )
 
 add_executable( tests ${TEST_SOURCES} ${SOURCES} )

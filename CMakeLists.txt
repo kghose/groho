@@ -25,14 +25,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 file(GLOB GROHO_SOURCES
     src/main.cpp
-    src/lib/entrypoints.cpp
+    src/lib/*.cpp
     src/orrery/*.cpp
     src/sampling/*/cpp
     src/simulator/*.cpp
-#    "src/actions/*.cpp" 
-#    "src/sampling/*.cpp" 
-#    "src/scenario/*.cpp"
-#    "src/simulator/simulator.cpp"
+    src/scenario/*.cpp
 )
 add_executable( groho ${GROHO_SOURCES} )
 
@@ -42,10 +39,8 @@ include_directories(
     src/orrery
     src/sampling
     src/simulator
+    src/scenario
     src/plotting
-#    "src/actions" 
-#    "src/scenario"
-#    "src/simulator"
 )
 
 target_link_libraries( 
