@@ -53,10 +53,10 @@ void Scenario::parse_kernels(Lines& lines)
 
         if (line.key == "spk") {
             if (picking) {
-                kernels.back().path = line.value;
-                picking             = false;
+                kernel_tokens.back().path = line.value;
+                picking                   = false;
             } else {
-                kernels.push_back({ {}, line.value });
+                kernel_tokens.push_back({ {}, line.value });
             }
             line.status.code = ParseStatus::OK;
 
@@ -71,7 +71,7 @@ void Scenario::parse_kernels(Lines& lines)
                     line.status.message += e.what();
                 }
             }
-            kernels.push_back({ codes, "" });
+            kernel_tokens.push_back({ codes, "" });
             picking = true;
         }
     }
@@ -144,7 +144,7 @@ void Scenario::parse_plans(Lines& lines)
                 continue;
             }
 
-            spacecraft_tokens[plan_name].commands.push_back(
+            spacecraft_tokens[plan_name].command_tokens.push_back(
                 { date,
                   duration,
                   tokens[1],

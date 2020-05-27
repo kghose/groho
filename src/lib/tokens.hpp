@@ -22,13 +22,12 @@ namespace fs = std::filesystem;
 
 namespace groho {
 
-// TODO: rename to KernelToken
-struct Kernel {
+struct KernelToken {
     std::unordered_set<NAIFbody> codes;
     fs::path                     path;
 };
 
-typedef std::vector<Kernel> Kernels;
+typedef std::vector<KernelToken> KernelTokens;
 
 struct CommandToken {
     J2000_s                  start;
@@ -42,7 +41,7 @@ typedef std::vector<CommandToken> CommandTokens;
 struct SpacecraftToken {
     std::string   craft_name;
     CommandToken  initial_condition;
-    CommandTokens commands;
+    CommandTokens command_tokens;
 };
 
 typedef std::unordered_map<std::string, SpacecraftToken> SpacecraftTokens;

@@ -13,7 +13,7 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 #include "inputfile.hpp"
 #include "naifbody.hpp"
-#include "parameters.hpp"
+#include "tokens.hpp"
 #include "units.hpp"
 
 namespace groho {
@@ -28,7 +28,7 @@ struct Scenario {
     J2000_s begin;
     J2000_s end;
 
-    Kernels          kernels;
+    KernelTokens     kernel_tokens;
     SpacecraftTokens spacecraft_tokens;
 
     void parse_preamble(Lines& lines);

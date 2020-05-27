@@ -25,9 +25,9 @@ Put the data into a tree as we go, with centers being the parents of targets.
 Do a breadth wise traversal and place all the bodies in order.
 */
 
-Orrery::Orrery(J2000_s begin, J2000_s end, const Kernels& kernels)
+Orrery::Orrery(J2000_s begin, J2000_s end, const KernelTokens& kernel_tokens)
 {
-    objects = load_orrery_objects(begin, end, kernels, _status);
+    objects = load_orrery_objects(begin, end, kernel_tokens, _status);
 }
 
 struct _Body {
@@ -41,14 +41,14 @@ void print_objects_to_debug(const std::vector<OrreryObject>& objects);
 std::vector<OrreryObject> load_orrery_objects(
     J2000_s             begin,
     J2000_s             end,
-    const Kernels&      kernels,
+    const KernelTokens& kernel_tokens,
     Orrery::StatusCode& status)
 {
     status = Orrery::StatusCode::OK;
     std::unordered_map<NAIFbody, _Body> bodies;
     bodies[NAIFbody(0)] = _Body();
 
-    for (const auto& kernel : kernels) {
+    for (const auto& kernel : kernel_tokens) {
         auto _spk = SpkFile::load(kernel.path);
         if (!_spk) {
             LOG_S(ERROR) << "Unable to load " << kernel.path;

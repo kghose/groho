@@ -21,10 +21,10 @@ TEST_CASE("Scenario kernels", "[SCENARIO]")
     Scenario scenario;
     scenario.parse_kernels(*lines);
 
-    REQUIRE(scenario.kernels.size() == 2);
-    REQUIRE(scenario.kernels[0].path == "de432s.bsp");
-    REQUIRE(scenario.kernels[1].path == "nep086.bsp");
-    REQUIRE(scenario.kernels[1].codes.count(NAIFbody(899)) == 1);
+    REQUIRE(scenario.kernel_tokens.size() == 2);
+    REQUIRE(scenario.kernel_tokens[0].path == "de432s.bsp");
+    REQUIRE(scenario.kernel_tokens[1].path == "nep086.bsp");
+    REQUIRE(scenario.kernel_tokens[1].codes.count(NAIFbody(899)) == 1);
 }
 
 TEST_CASE("Scenario craft commands", "[SCENARIO]")
