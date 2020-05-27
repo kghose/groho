@@ -19,6 +19,7 @@ Scenario::Scenario(Lines& lines)
     parse_preamble(lines);
     parse_kernels(lines);
     parse_plans(lines);
+    sort_plans();
     log_issues(lines);
 }
 
@@ -151,6 +152,18 @@ void Scenario::parse_plans(Lines& lines)
                   std::vector<std::string>(tokens.begin() + 2, tokens.end()) });
             line.status.code = ParseStatus::OK;
         }
+    }
+}
+
+void Scenario::sort_plans()
+{
+    for (auto& [_, craft_tok] : spacecraft_tokens) {
+        std::sort(
+            craft_tok.command_tokens.begin(),
+            craft_tok.command_tokens.end(),
+            [](const CommandToken& cmd_tok1, const CommandToken& cmd_tok2) {
+                return cmd_tok1.start < cmd_tok2.start;
+            });
     }
 }
 

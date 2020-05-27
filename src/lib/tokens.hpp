@@ -9,8 +9,6 @@ without having to have knowledge of the objects they represent
 
 #pragma once
 
-// TODO: rename to tokens.hpp
-
 #include <filesystem>
 #include <unordered_map>
 #include <unordered_set>

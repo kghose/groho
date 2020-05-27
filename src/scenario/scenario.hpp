@@ -34,6 +34,7 @@ struct Scenario {
     void parse_preamble(Lines& lines);
     void parse_kernels(Lines& lines);
     void parse_plans(Lines& lines);
+    void sort_plans();
     void log_issues(const Lines& lines) const;
 };
 }
