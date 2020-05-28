@@ -14,15 +14,13 @@ TEST_CASE("Input file parsing", "[InputFile]")
 {
     auto lines = load_input_file("../examples/001.basics/scn.groho.txt");
 
-    REQUIRE((*lines).size() == 17);
+    REQUIRE((*lines).size() == 18);
 
     REQUIRE((*lines)[0].key == "start");
     REQUIRE((*lines)[7].key == "2050.01.01:0.5");
-    REQUIRE((*lines)[8].key == "plan");
-    REQUIRE((*lines)[10].key == "2050.01.02:0.5");
-    REQUIRE((*lines)[11].key == "2050.01.03:0.5");
-    REQUIRE((*lines)[12].key == "2050.01.04:0.5");
-    REQUIRE((*lines)[14].status.code == ParseStatus::ERROR);
+    REQUIRE((*lines)[9].key == "plan");
+    REQUIRE((*lines)[12].key == "2050.01.03:0.5");
+    REQUIRE((*lines)[15].status.code == ParseStatus::ERROR);
 }
 
 TEST_CASE("String split on white space", "[StringSplit]")
