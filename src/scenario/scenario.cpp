@@ -14,8 +14,9 @@ Parse scenario input file and return Scenario struct
 
 namespace groho {
 
-Scenario::Scenario(Lines& lines)
+Scenario::Scenario(const Lines& lines_)
 {
+    lines = lines_;
     parse_preamble(lines);
     parse_kernels(lines);
     parse_plans(lines);

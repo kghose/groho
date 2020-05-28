@@ -23,13 +23,15 @@ namespace fs = std::filesystem;
 struct Scenario {
 
     Scenario() { ; }
-    Scenario(Lines& lines);
+    Scenario(const Lines& lines);
 
     J2000_s begin;
     J2000_s end;
 
     KernelTokens     kernel_tokens;
     SpacecraftTokens spacecraft_tokens;
+
+    Lines lines;
 
     void parse_preamble(Lines& lines);
     void parse_kernels(Lines& lines);
