@@ -31,6 +31,9 @@ TEST_CASE("Load orrery", "[ORRERY]")
     }
 
     auto orrery = Orrery(begin, end, kernels);
+    // auto body_codes = orrery.list_bodies();
+
+    // REQUIRE(body_codes.size() == 17);
 }
 
 TEST_CASE("Missing kernel file", "[ORRERY]")

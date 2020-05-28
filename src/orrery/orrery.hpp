@@ -34,8 +34,10 @@ class Orrery {
 public:
     enum StatusCode { OK = 0, WARNING, ERROR };
     Orrery(J2000_s begin, J2000_s end, const KernelTokens& kernel_tokens);
-    StatusCode status() { return _status; }
-    void       set_to(J2000_s t, v3d_vec_t& pos);
+
+    StatusCode            status() { return _status; }
+    void                  set_to(J2000_s t, v3d_vec_t& pos);
+    std::vector<NAIFbody> list_bodies();
 
 private:
     std::vector<OrreryObject> objects;
