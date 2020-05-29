@@ -149,8 +149,8 @@ void Orrery::set_to(J2000_s t, v3d_vec_t& pos) {}
 std::vector<NAIFbody> Orrery::list_bodies()
 {
     std::vector<NAIFbody> bodies;
-    for (auto& obj : objects) {
-        bodies.push_back(obj.ephemeris->target_code);
+    for (size_t i = 1; i < objects.size(); i++) {
+        bodies.push_back(objects[i].ephemeris->target_code);
     }
     return bodies;
 }
