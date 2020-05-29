@@ -33,6 +33,7 @@ class Orrery {
 
 public:
     enum StatusCode { OK = 0, WARNING, ERROR };
+    Orrery() { ; }
     Orrery(J2000_s begin, J2000_s end, const KernelTokens& kernel_tokens);
 
     StatusCode            status() { return _status; }

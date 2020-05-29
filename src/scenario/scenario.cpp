@@ -54,11 +54,13 @@ void Scenario::parse_kernels(Lines& lines)
         }
 
         if (line.key == "spk") {
+            auto spk_path
+                = fs::canonical(line.file_path.parent_path() / line.value);
             if (picking) {
-                kernel_tokens.back().path = line.value;
+                kernel_tokens.back().path = spk_path;
                 picking                   = false;
             } else {
-                kernel_tokens.push_back({ {}, line.value });
+                kernel_tokens.push_back({ {}, spk_path });
             }
             line.status.code = ParseStatus::OK;
 
@@ -187,7 +189,7 @@ void Scenario::log_issues(const Lines& lines) const
                 ? "I don't understand this line"
                 : line.status.message;
 
-            LOG_S(ERROR) << line.file_name << ":" << line.line << " "
+            LOG_S(ERROR) << line.file_path << ":" << line.line << " "
                          << message;
         }
     }

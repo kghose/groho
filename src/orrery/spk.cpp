@@ -78,6 +78,11 @@ bool Summary::valid_time_range(J2000_s begin, J2000_s end) const
 
 std::optional<SpkFile> SpkFile::load(const fs::path& path)
 {
+    if (!fs::exists(path)) {
+        LOG_S(ERROR) << "Missing file: " << fs::weakly_canonical(path);
+        return {};
+    }
+
     std::ifstream nasa_spk_file(path, std::ios::binary);
 
     auto hdr = read_file_record(nasa_spk_file);

@@ -22,8 +22,10 @@ TEST_CASE("Scenario kernels", "[SCENARIO]")
     scenario.parse_kernels(*lines);
 
     REQUIRE(scenario.kernel_tokens.size() == 2);
-    REQUIRE(scenario.kernel_tokens[0].path == "de432s.bsp");
-    REQUIRE(scenario.kernel_tokens[1].path == "nep086.bsp");
+    REQUIRE(scenario.kernel_tokens[0].path.filename() == "de432s.bsp");
+    REQUIRE(fs::exists(scenario.kernel_tokens[0].path));
+    REQUIRE(scenario.kernel_tokens[1].path.filename() == "nep086.bsp");
+    REQUIRE(fs::exists(scenario.kernel_tokens[1].path));
     REQUIRE(scenario.kernel_tokens[1].codes.count(NAIFbody(899)) == 1);
 }
 

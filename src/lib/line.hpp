@@ -9,9 +9,12 @@ without having to have knowledge of the objects they represent
 
 #pragma once
 
+#include <filesystem>
 #include <string>
 
 namespace groho {
+
+namespace fs = std::filesystem;
 
 struct ParseStatus {
     enum StatusCode { PENDING, OK, WARNING, ERROR };
@@ -20,7 +23,7 @@ struct ParseStatus {
 };
 
 struct Line {
-    std::string file_name;
+    fs::path    file_path;
     size_t      line;
     std::string key;
     std::string value;
