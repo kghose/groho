@@ -144,7 +144,12 @@ void print_objects_to_debug(const std::vector<OrreryObject>& objects)
     }
 }
 
-void Orrery::set_to(J2000_s t, v3d_vec_t& pos) {}
+void Orrery::set_to(J2000_s t, v3d_vec_t& pos)
+{
+    for (size_t i = 1; i < objects.size(); i++) {
+        objects[i].ephemeris->eval(t, pos[i - 1]);
+    }
+}
 
 std::vector<NAIFbody> Orrery::list_bodies()
 {
