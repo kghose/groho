@@ -7,8 +7,8 @@
 ;   Each spaceship has its own flight plan which governs what it 
 ;   does in the simulation.
 
-start 2050.01.01:0.5 ; Times are given as a Gregorian dates
-end 2050.01.02:0.5
+start 2020.01.01:0.5 ; Times are given as a Gregorian dates
+end 2020.02.01:0.5
 
 spk ../../tests/groho-test-data/de432s.bsp  ; load a spice kernel
 pick 809 899    ; for the next spice kernel load the following bodies
