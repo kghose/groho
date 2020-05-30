@@ -37,6 +37,13 @@ public:
         }
     }
 
+    ~SimpleBuffer()
+    {
+        if (idx > 0) {
+            file.write((char*)buffer, sizeof(T) * idx);
+        }
+    }
+
 private:
     std::ofstream file;
     T             buffer[buf_size];
