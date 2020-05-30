@@ -38,6 +38,7 @@ set( TEST_SOURCES
   units_test.cpp
   spk_test.cpp
   orrery_test.cpp
+  doublebuffer_test.cpp
   inputfile_test.cpp
   sampling_test.cpp
   scenario_test.cpp
