@@ -23,7 +23,7 @@ Serialize::Serialize(
 
     history.reserve(objects.size());
     for (size_t i = 0; i < objects.size(); i++) {
-        auto fname = path / (std::to_string(int(objects[i])) + "-pos.bin");
+        auto fname = path / ("pos" + std::to_string(int(objects[i])) + ".bin");
         history.emplace_back(dt, objects[i], fname);
     }
 }
