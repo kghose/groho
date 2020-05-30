@@ -12,7 +12,7 @@ TEST_CASE("Scenario preamble", "[SCENARIO]")
     Scenario scenario;
     scenario.parse_preamble(*lines);
 
-    REQUIRE(scenario.begin == J2000_s(GregorianDate{ 2050, 01, 01, 0.5 }));
+    REQUIRE(scenario.begin == J2000_s(GregorianDate{ 2020, 01, 01, 0.5 }));
 }
 
 TEST_CASE("Scenario kernels", "[SCENARIO]")
