@@ -59,5 +59,11 @@ Simulated data at each step is passed into the fractal downsampler. When the
 downsampler says it's time to save a sample, the sample is written out. Double
 buffering is used.
 
+### Folder organization
+The folder is populated with the following files 
+- `posX.bin` where `X` is the NAIF id of the object.
+- `bodies.txt` a manifest file listing all the bodies in the simulation
+- `events.txt` a list of events and their times
+
 
 # [Current road map](roadmap.md)
