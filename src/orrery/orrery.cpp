@@ -149,6 +149,11 @@ void Orrery::set_to(J2000_s t, v3d_vec_t& pos)
     for (size_t i = 1; i < objects.size(); i++) {
         objects[i].ephemeris->eval(t, pos[i - 1]);
     }
+    for (size_t i = 1; i < objects.size(); i++) {
+        if (objects[i].parent_idx != 0) {
+            pos[i - 1] += pos[objects[i].parent_idx - 1];
+        }
+    }
 }
 
 std::vector<NAIFbody> Orrery::list_bodies()
