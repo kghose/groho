@@ -23,6 +23,7 @@ namespace groho {
 class Serialize {
 
 public:
+    Serialize() { ; }
     Serialize(double dt, const std::vector<NAIFbody>& objects, fs::path path);
     void      append(const v3d_vec_t& pos);
     const V3d pos(size_t idx) const { return history[idx].pos(); }
