@@ -19,6 +19,7 @@ include_directories(
   ../src/sampling
   ../src/simulator
   ../src/scenario
+  ../src/simulation
 )
 
 file(GLOB SOURCES
@@ -27,6 +28,7 @@ file(GLOB SOURCES
   ../src/sampling/*.cpp 
   ../src/simulator/*.cpp
   ../src/scenario/*.cpp
+  ../src/simulation/*.cpp
 )
 
 

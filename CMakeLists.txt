@@ -27,9 +27,10 @@ file(GLOB GROHO_SOURCES
     src/main.cpp
     src/lib/*.cpp
     src/orrery/*.cpp
-    src/sampling/*/cpp
+    src/sampling/*.cpp
     src/simulator/*.cpp
     src/scenario/*.cpp
+    src/simulation/*.cpp
 )
 add_executable( groho ${GROHO_SOURCES} )
 
@@ -40,6 +41,7 @@ include_directories(
     src/sampling
     src/simulator
     src/scenario
+    src/simulation
     src/plotting
 )
 

@@ -37,3 +37,27 @@ TEST_CASE("Serializer vel acc check", "[SAMPLING]")
     REQUIRE(sampler.acc(0) == V3d{ 0, 2, 0 });
     REQUIRE(sampler.acc(1) == V3d{ 0, 0, 0 });
 }
+
+// TODO: Improve this test
+TEST_CASE("Serializer sampling check", "[SAMPLING]")
+{
+    std::vector<NAIFbody> objects = { 0 };
+
+    auto path = fs::temp_directory_path();
+
+    {
+        // We put this in a scope so that the Serialize object is deleted and
+        // we flush out the last point
+        auto sampler = Serialize(1, objects, path);
+        sampler.append({ { 1e7, 0, 0 } });
+        sampler.append({ { 0, 1e7, 0 } });
+        sampler.append({ { 1e7, 0, 1e7 } });
+        sampler.append({ { 0, 1, 1e7 } });
+    }
+
+    std::ifstream file(path / "pos0.bin", std::ios::binary | std::ios::in);
+    V3d           pos_back[4];
+    file.read((char*)pos_back, sizeof(V3d) * 4);
+    REQUIRE(pos_back[0] == V3d{ 0, 1e7, 0 });
+    REQUIRE(pos_back[1] == V3d{ 0, 1, 1e7 });
+}

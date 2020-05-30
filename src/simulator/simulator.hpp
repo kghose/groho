@@ -14,7 +14,7 @@ namespace groho {
 
 class Simulator {
 public:
-    Simulator(std::string scn_file, std::string sim_folder) { ; }
+    Simulator(std::string scn_file, std::string sim_folder);
     void stop() { ; }
     void wait_until_done() { ; }
 };
