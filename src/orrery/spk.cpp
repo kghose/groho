@@ -37,31 +37,6 @@ void Elements::read(std::ifstream& nasa_spk_file, int n_coeff, int data_type)
     }
 }
 
-// https://en.wikipedia.org/wiki/Clenshaw_algorithm#Special_case_for_Chebyshev_series
-inline double Elements::cheby_eval_one(double t, size_t i0, size_t i1) const
-{
-    double x  = (t - t_mid) / t_half;
-    double x2 = 2 * x;
-    double Tn, Tn_1 = x, Tn_2 = 1.0;
-    double b = A[i0] * Tn_2 + A[i0 + 1] * Tn_1;
-    for (size_t i = i0 + 2; i < i1; i++) {
-        Tn = x2 * Tn_1 - Tn_2;
-        b += Tn * A[i];
-        Tn_2 = Tn_1;
-        Tn_1 = Tn;
-    }
-    return b;
-}
-
-inline void Ephemeris::eval(double t, V3d& pos) const
-{
-    const auto& element = elements[std::floor((t - begin_s) / interval_s)];
-
-    pos.x = element.cheby_eval_one(t, 0, element.off1);
-    pos.y = element.cheby_eval_one(t, element.off1, element.off2);
-    pos.z = element.cheby_eval_one(t, element.off2, element.off3);
-}
-
 bool Summary::valid_time_range(J2000_s begin, J2000_s end) const
 {
     if ((begin_second <= begin) && (end_second >= end)) {
@@ -92,6 +67,7 @@ std::optional<SpkFile> SpkFile::load(const fs::path& path)
         return {};
     }
 
+    LOG_S(INFO) << "Loading " << path;
     SpkFile spk_file;
     spk_file.path      = path;
     spk_file.comment   = read_comment_blocks(nasa_spk_file, hdr);

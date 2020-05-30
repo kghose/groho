@@ -36,7 +36,21 @@ struct Elements {
     size_t    off1, off2, off3;
 
     void   read(std::ifstream& nasa_spk_file, int n_coeff, int data_type);
-    double cheby_eval_one(double t, size_t i0, size_t i1) const;
+    double cheby_eval_one(double t, size_t i0, size_t i1) const
+    {
+        // https://en.wikipedia.org/wiki/Clenshaw_algorithm#Special_case_for_Chebyshev_series
+        double x  = (t - t_mid) / t_half;
+        double x2 = 2 * x;
+        double Tn, Tn_1 = x, Tn_2 = 1.0;
+        double b = A[i0] * Tn_2 + A[i0 + 1] * Tn_1;
+        for (size_t i = i0 + 2; i < i1; i++) {
+            Tn = x2 * Tn_1 - Tn_2;
+            b += Tn * A[i];
+            Tn_2 = Tn_1;
+            Tn_1 = Tn;
+        }
+        return b;
+    }
 };
 
 typedef std::vector<Elements> elem_vec_t;
@@ -48,7 +62,14 @@ struct Ephemeris {
     J2000_s    interval_s;  // Length of interval
     elem_vec_t elements; // coefficients for just the epoch we are interested in
 
-    void eval(double t, V3d& pos) const;
+    void eval(double t, V3d& pos) const
+    {
+        const auto& element = elements[std::floor((t - begin_s) / interval_s)];
+
+        pos.x = element.cheby_eval_one(t, 0, element.off1);
+        pos.y = element.cheby_eval_one(t, element.off1, element.off2);
+        pos.z = element.cheby_eval_one(t, element.off2, element.off3);
+    }
 };
 
 typedef std::vector<Ephemeris> ephem_vec_t;
