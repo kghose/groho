@@ -6,14 +6,15 @@ using namespace groho;
 
 TEST_CASE("Basic Serializer check", "[SAMPLING]")
 {
-    std::vector<NAIFbody> objects = { 0, 2, 5 };
+    std::vector<NAIFbody> objects = { -10, 0, 2, 5 };
 
     auto path    = fs::temp_directory_path();
     auto sampler = Serialize(1, objects, path);
     REQUIRE(fs::exists(path));
-    REQUIRE(fs::exists(path / "0-pos.bin"));
-    REQUIRE(fs::exists(path / "2-pos.bin"));
-    REQUIRE(fs::exists(path / "5-pos.bin"));
+    REQUIRE(fs::exists(path / "pos-10.bin"));
+    REQUIRE(fs::exists(path / "pos0.bin"));
+    REQUIRE(fs::exists(path / "pos2.bin"));
+    REQUIRE(fs::exists(path / "pos5.bin"));
 }
 
 TEST_CASE("Serializer vel acc check", "[SAMPLING]")
