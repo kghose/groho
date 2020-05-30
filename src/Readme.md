@@ -44,13 +44,29 @@ Developer notes
     - [Passing member function pointers to callbacks](#passing-member-function-pointers-to-callbacks)
     - [The use of "f" in code using OpenGL](#the-use-of-f-in-code-using-opengl)
 - [Some notes on implementation](#some-notes-on-implementation)
-    - [Organization](#organization)
+    - [Ideal design](#ideal-design)
+    - [Realistically achievable design](#realistically-achievable-design)
+    - [Scenario files](#scenario-files)
+    - [Orerry](#orerry)
+    - [Rocks and Ships](#rocks-and-ships)
+    - [Flight Plan Actions](#flight-plan-actions)
+    - [State](#state)
+    - [State History](#state-history)
+    - [Checkpoints](#checkpoints)
+    - [Simulation file](#simulation-file)
+    - [Simulation run](#simulation-run)
     - [Loading planetary kernels](#loading-planetary-kernels)
-    - [The LOD problem](#the-lod-problem)
-        - [Option: Store all the data](#option-store-all-the-data)
-        - [Option: Adaptive downsampling](#option-adaptive-downsampling)
-        - [The LOD problem](#the-lod-problem-1)
+    - [Downsampling and Bezier interpolation](#downsampling-and-bezier-interpolation)
+        - [Raw data quantity](#raw-data-quantity)
+        - [Adaptive downsampling](#adaptive-downsampling)
+        - [Linear interpolation breaks soon.](#linear-interpolation-breaks-soon)
+            - [Mars, Phobos and Deimos](#mars-phobos-and-deimos)
             - [More power is not the answer](#more-power-is-not-the-answer)
+        - [Bezier interpolations in 3D](#bezier-interpolations-in-3d)
+        - [Bezier interpolations in 2D](#bezier-interpolations-in-2d)
+        - [Question: Can we project a 3D bezier to a 2D view?](#question-can-we-project-a-3d-bezier-to-a-2d-view)
+    - [Writing to pdf](#writing-to-pdf)
+    - [The LOD problem](#the-lod-problem)
         - [Adaptive sampling + interpolation](#adaptive-sampling--interpolation)
         - [Loss of fidelity](#loss-of-fidelity)
     - [Restarts](#restarts)
@@ -85,7 +101,7 @@ Developer notes
         - [The decision](#the-decision-1)
     - [How would annotations work?](#how-would-annotations-work)
 - [Usage notes](#usage-notes)
-    - [2018.10.16](#20181016)
+    - [6](#6)
 
 <!-- /TOC -->
 
@@ -115,7 +131,7 @@ I found it awesome because
 
 
 
-##  loguru and signal
+## loguru and signal
 `loguru` probably attaches it's own SIGINT handler, so doing 
 ```
 loguru::init(argc, argv);
@@ -800,7 +816,7 @@ rather that the live version of the object be used, you should pass a reference
 using std::ref
 
 
-###Condition variables
+### Condition variables
 
 - issue with atomic
 
@@ -918,12 +934,65 @@ the underlying functions operate of floats, passing a number like 2.0
 
 # Some notes on implementation
 
-## Organization
+## Ideal design
 
-Simulation contains Scenario, History and State
+- Real time display of simulation and annotations via an interactive GUI 
+  (the beginings of which can be seen in release [18.08.26](https://github.com/kghose/groho/tree/18.08.26))
+- Identical print out to pdf on demand
+- Periodic simulation check points such the simulation can be extended in time
+  and computation can be reused.
+- Composability, such that new components can be added to the simulation and
+  previous computations can be reused.
 
-Scenario loads and contains orrery, flightplans and configuration (file I/O)
 
+## Realistically achievable design
+- Given my desire to fiddle less with UI elements, especially in C++, I think the
+  most feasible is a very 1970s design where the real-time display is left out.
+  The output is in the form of a pdf file which updates with every change (unless
+  we tell the program to create a new printout for each new run)
+- All the other requirements are limited only by computational ingenuity, so we
+  should implement them.
+
+## Scenario files
+The `Scenario` file and associated `Flight Plan` files which tell the simulator
+which orrery model to use and what the characteristics and flight plan of the
+spaceships are.
+
+## Orerry
+Contains the model of the solar system. It can give us the positions of all the
+objects at any arbitrary point in time within a given range.
+
+## Rocks and Ships
+The two types of objects that move in the simulation. Rocks are moved by the
+Orrery and Ships are moved by Newton's laws.
+
+## Flight Plan Actions
+These are lists of commands (bascially a program) that control a spaceship in
+response to the state of the world. 
+
+## State
+Contains all variables significant to the simulation, including flight plan action
+state variables.
+
+## State History
+A set of samples of the state as the simulation evolves. Only variables required
+for display and events are saved. A downsampling method is used to reduce the
+number of time points saved.
+
+## Checkpoints
+A sparse, periodic set of complete `State` objects.
+
+## Simulation file
+`State History` and `Checkpoints` and scenario metadata saved to a file. 
+
+## Simulation run
+Scenario files and an optional Simulation file is passed to the simulator.
+The simulator decides how much of the Simulation file can be reused given
+the Scenario files and runs the simulation. It 
+
+
+This file can be loaded as part of a simulation run. The simulator will compare
+the scenario files 
 
 
 
@@ -935,6 +1004,125 @@ was entertaining (to an extent) and satisfying to analyze the data structure and
 then implement a reader for it. It was especially satisfying to see the complex
 non-planar orbits of the moons of the gas giants and a lot of fun to load up the
 SPK file carrying those 343 asteroids and see them swirl around the sun.
+
+## Downsampling and Bezier interpolation
+
+### Raw data quantity
+
+Assuming a simulation time step of 1 minute, a 100 year simulation will result in
+100 * 365.25 * 24 * 60 = 52.6 million data points per trajectory. If we store 
+just the position and we store this as floats, this is 52.6e6 * 3 * 4 = 631 MB
+of data per trajectory. This is reasonably weighty.
+
+### Adaptive downsampling
+
+A 1 minute simulation step, possibly essential for numerical stability, is probably
+way more dense than necessary for display purposes. Downsampling the data allows
+us to maintain visual fidelity and avoid gobbling up memory and diskspace, 
+and overwhelming the plotting system. For reasons detailed in this 
+[IPython notebook][downsampler] a decent solution is an adpative downsampler
+that samples tighter curvatures more densely. 
+
+This can be tuned to give a density of sampling such that, at a scale where the
+whole, or substantial parts of, the solar system are visible, the trajectories 
+are visually pleasant to look at even with just linear interpolation.
+This allows us, in practice, to reduce a 100 year, full solar system simulation
+to around 2-3 million points.
+
+### Linear interpolation breaks soon.
+
+When you zoom in however, say to look at Mars and it's moons, downsampled data 
+with linear interpolation looks very annoying. A smooth trajectory like mars
+has sampling intervals that are large compared to the tight motions its moons
+make, resulting in a very glitchy and inaccurate rendering with linear interpolation.
+
+#### Mars, Phobos and Deimos
+The orbits of Phobos and Deimos are particularly challenging - they are both
+strikingly close to Mars and their orbits correspondingly have tight curvatures.
+Visually, aggressive downsampling works for most of the planets/moons but not for the Martian system.
+
+#### More power is not the answer
+I tried cranking down the tolerances on the adaptive sampler but the problem
+is that to get dense enough sampling for the Martian system we start to flood
+with data. With the default tolerances, for a 100 year full solar system simulation
+we end up with about 2.6 million points. This can skyrocket to 31 million points
+and we still have glitchy visuals.
+
+It's possible to set the tolerances differently for the different planets, since
+only the Martian system has such a tight scale, but we're just kicking the can
+down the road and we're going to run into again, for example, when we'll be
+looping a spacecraft through the Jovian system and wonder why everything looks
+so funny. 
+
+### Bezier interpolations in 3D
+
+Either for an interactive 3D view or for computing annotations without having
+to rerun the simulation we will need an interpolation system for the 3D data.
+
+Using the same interpolation as NASA does for the SPK type I/II files is an
+interesting idea - this way the simulated spacecraft trajectories will end up
+with the same representation as the Orrery, which opens up interesting ideas.
+However, when I looked at the [NASA toolkit for this][mkspk] they produce
+data in different formats. 9 was the intriguing one, but for purposes of
+expediency (I would end up doing too many new things at the same time) I chose
+to learn about Beziers and represent the trajectory as Beziers because of my
+plans to produce pdf plots of the orbits.
+
+[mkspk]: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/ug/mkspk.html
+
+There is some neat literature [[1][spline-1],[2][spline-2]] about gluing 
+beziers together so that they are smooth (continuous, continuous first derivative, 
+continuous second derivative) and I want to implement that. 
+
+[spline-1]: http://www.malinc.se/m/MakingABezierSpline.php
+[spline-2]: http://www.math.ucla.edu/~baker/149.1.02w/handouts/dd_splines.pdf
+
+### Bezier interpolations in 2D
+
+It has always been my intention to create nicely annotated, printable plots, 
+possibly very large and detailed, of the flights. PDF is a nice medium for this
+and when I found how easy it was to write out PDFs of the kind I needed (mostly
+lines and curves and some text) I targeted that. Also, PDFs have native support
+for Bezier curves - you give fixed and control points - which makes life easier.
+
+
+### Question: Can we project a 3D bezier to a 2D view?
+
+We can glue together the beziers for the 3D representation, and we can compute 
+the projections of the data points in 2D (as they would be seen by a pin-hole
+camera) and then glue them together again. But this seems like a wasteful 
+double computation. Once we have a 3D bezier representation can we project that
+3D bezier into 2D (anchor and control points via camera transform) and will that
+bezier behave well? Will it maintain the original continuity properties?
+
+
+
+https://stackoverflow.com/questions/18921962/how-to-visually-match-the-perspective-projection-of-a-b%C3%A9zier-curve-to-the-origin
+-> Projecting the control points of a Bezier curve onto the near plane by using the appropriate view matrix should yield a rational Bezier curve that is the same as what you see in the viewport.
+
+
+This class note is very nice: it goes slowly through the projection matrix and
+homogenous coordinates, but accelerates rapidly at the end to come to the
+statement that "The perspective projection of a spatial Bezier curve yields a rational Bezier curve,"
+
+https://www.rose-hulman.edu/~finn/CCLI/Notes/day21.pdf
+
+
+The key technical problem in this project was doing websearches like 
+"pdf bezier curve" 
+
+
+
+As an aside, ran into an "interactive API" - just a cool idea and well executed
+https://pomax.github.io/bezierjs/
+
+
+
+keywords: curve simplification 
+
+## Writing to pdf
+
+https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/PDF32000_2008.pdf
 
 ## The LOD problem
 
@@ -951,53 +1139,7 @@ The raw compute is not so much of an issue, especially given that it's not an
 interactive simulation. What is challenging is the sheer size of the data
 produced which is unwieldy to store and display.
 
-### Option: Store all the data
 
-Assuming a simulation time step of 1 minute a 100 year simulation will result in
-100 * 365.25 * 24 * 60 = 52.6 million data points per trajectory. If we store 
-just the position and we stpre this as floats, this is 52.6e6 * 3 * 4 = 631 MB
-of data per trajectory. For our full-solar stsem simulation this is 12.6 GB for 
-the 20 spaceships alone. 
-
-### Option: Adaptive downsampling
-
-A 1 minute interval, possibly essential for numerical stability, is probably
-way more dense than necessary for display purposes. Downsampling the data allows
-us to maintain visual fidelity. For reasons detailed in this 
-[IPython notebook][downsampler] a decent solution is an adpative downsampler
-that samples tighter curvatures more densely. 
-
-This can be tuned to give a density of sampling such that,
-at a scale where the whole, or substantial parts of, the solar system are visible, 
-the trajectories are visually pleasant to look at even with just linear interpolation.
-This allows us, in practice, to reduce a 100 year, full solar system simulation
-to around 2-3 million points.
-
-### The LOD problem
-
-Solving this problem graduates us to the next level of problem: The Level of Detail
-issue. When you zoom in however, say to look at Mars and it's moons, downsampled data 
-with linear interpolation looks very annoying. A smooth trajectory like mars
-has sampling intervals that are large compared to the tight motions its moons
-make, resulting in a very glitchy and inaccurate rendering with linear interpolation.
-
-> ### Mars, Phobos and Deimos
-> The orbits of Phobos and Deimos are particularly challenging - they are both
-strikingly close to Mars and their orbits correspondingly have tight curvatures.
-Visually, aggressive downsampling works for most of the planets/moons but not for the Martian system.
-
-#### More power is not the answer
-I tried cranking down the tolerances on the adaptive sampler but the problem
-is that to get dense enough sampling for the Martian system we start to flood
-with data. With the default tolerances, for a 100 year full solar system simulation
-we end up with about 2.6 million points. This can skyrocket to 31 million points
-and we still have glitchy visuals.
-
-It's possible to set the tolerances differently for the different planets, since
-only the Martian system has such a tight scale, but we're just kicking the can
-down the road and we're going to run into again, for example, when we'll be
-looping a spacecraft through the Jovian system and wonder why everything looks
-so funny. 
 
 ### Adaptive sampling + interpolation
 
@@ -1486,7 +1628,7 @@ marking object points.
 
 # Usage notes
 
-## 2018.10.16
+## 6
 - Tinkering with `001.basics` scenario after having implemented important actions
   `wait-till`, `wait-till-phase` and `orient`
 - These three functions enable me to fairly quickly, iteratively, develop a Mars-Earth maneuver

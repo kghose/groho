@@ -23,13 +23,11 @@ plot them as we do.
    `sim-groho` indicates this to the user, compares the cached scenario file(s)
    in this folder to the current one and figures out what, if anything, can be
    memoized. Currently the simulation is completely empty.
-1. Create an orrery file.
-1. Add in the DE425 `.bsp` file (basic solar system components)
 1. Separately start `vis-groho` passing the plot file, the `sim-groho` output
    folder and a `vis-groho` plot folder as command line arguments. 
    > The simulation is completely empty, the plot file is non-existent, so
    > nothing is plotted
-1. Include the orrery file in the scenario file
+1. Add in the DE425 `.bsp` file (basic solar system components)
    > `sim-groho` detects a change in one of the scenario files and retries
    > simulation. Because no time limits have been set, nothing happens.
 1. Indicate a start date for the simulation
