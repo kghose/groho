@@ -22,10 +22,16 @@ namespace groho {
 class History {
 
 public:
-    History(double dt, NAIFbody code, fs::path path)
-        : dt(dt)
-        , code(code)
+    History(
+        double   dt,
+        NAIFbody code,
+        fs::path path,
+        double   rt = 1.00001,
+        double   lt = 1e4)
+        : code(code)
+        , dt(dt)
     {
+        sampler = FractalDownsampler(rt, lt);
         buffer
             = std::unique_ptr<SimpleBuffer<V3d>>(new SimpleBuffer<V3d>(path));
     }
