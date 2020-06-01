@@ -18,14 +18,14 @@ int main(int argc, char* argv[])
     }
 }*/
 
-#include <atomic>
-#include <chrono>
-#include <ctype.h>
+#include <condition_variable>
 #include <filesystem>
 #include <fstream>
 #include <mutex>
-#include <string>
 #include <thread>
+
+#define LOGURU_WITH_STREAMS 1
+#include "loguru.hpp"
 
 namespace groho {
 
@@ -34,7 +34,6 @@ namespace fs = std::filesystem;
 const size_t buf_size = 5000;
 
 template <typename T> class ThreadedBuffer {
-    enum BufferId { one = 0, two = 1, neither = 3 };
 
 public:
     ThreadedBuffer(fs::path fname)
@@ -43,17 +42,17 @@ public:
         buffer[1] = new T[buf_size];
         idx[0] = idx[1] = 0;
 
-        file.open(fname, std::ios::binary | std::ios::out);
-
         write_b = 0;
-        m[write_b].lock();
+        file.open(fname, std::ios::binary | std::ios::out);
 
         saver = std::thread(&ThreadedBuffer::save_buffer_to_disk, this);
     }
 
     ~ThreadedBuffer()
     {
-        release_write_buffer();
+        wait_for(saved);
+        run = false;
+        set(go);
         saver.join();
         delete[] buffer[0];
         delete[] buffer[1];
@@ -65,7 +64,10 @@ public:
         idx[write_b]++;
 
         if (idx[write_b] == buf_size) {
-            release_write_buffer();
+            wait_for(saved);
+            write_b      = 1 - write_b;
+            idx[write_b] = 0;
+            set(go);
         }
     }
 
@@ -74,29 +76,42 @@ private:
     T*            buffer[2];
     size_t        idx[2];
     size_t        write_b = 0;
-    std::mutex    m[2];
+
+    bool       go;
+    bool       saved;
+    bool       run = true;
+    std::mutex m;
+
+    std::condition_variable cv;
 
     std::thread saver;
 
     void save_buffer_to_disk()
     {
+        set(saved);
         size_t save_b = 0;
-        for (;;) {
-            const std::lock_guard<std::mutex> save_guard(m[save_b]);
+        do {
+            wait_for(go);
             file.write((char*)buffer[save_b], sizeof(T) * idx[save_b]);
-            if (idx[save_b] < buf_size) {
-                break;
-            }
             save_b = 1 - save_b;
-        }
+            set(saved);
+        } while (run);
     }
 
-    void release_write_buffer()
+    void set(bool& v)
     {
-        m[1 - write_b].lock();
-        idx[1 - write_b] = 0;
-        m[write_b].unlock();
-        write_b = 1 - write_b;
+        {
+            std::unique_lock<std::mutex> lk(m);
+            v = true;
+        }
+        cv.notify_one();
+    }
+
+    void wait_for(bool& v)
+    {
+        std::unique_lock<std::mutex> lk(m);
+        cv.wait(lk, [&] { return v; });
+        v = false;
     }
 };
 

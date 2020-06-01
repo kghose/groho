@@ -84,7 +84,7 @@ partition Save #GreenYellow{
   endif
 
   if (stop?) then (yes)
-    :quit = true;
+    :run = false;
   else (no)
   endif
 }
@@ -92,7 +92,7 @@ end fork
 
 :b = 1 - b\n(switch buffer);
 
-repeat while (quit?) is (no)
+repeat while (run?) is (yes)
 
 stop
 @enduml
