@@ -39,6 +39,9 @@ plot is not redone.
 ## Plotter loop
 ![](uml/png/plotterloop.png)
 
+
+# Design decisions
+
 ## Saving data
 
 We will find many fascinating ramblings [here](dev). The one sensible thing I
@@ -59,8 +62,9 @@ Simulated data at each step is passed into the fractal downsampler. When the
 downsampler says it's time to save a sample, the sample is written out. Double
 buffering is used.
 
-### Folder organization
-The folder is populated with the following files 
+### Output directory organization
+The output directory is populated with the following files 
+- `params.txt` a copy of the sim params file used to run the simulation
 - `posX.bin` where `X` is the NAIF id of the object.
 - `bodies.txt` a manifest file listing all the bodies in the simulation
 - `events.txt` a list of events and their times
