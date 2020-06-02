@@ -31,7 +31,7 @@ namespace groho {
 
 namespace fs = std::filesystem;
 
-const size_t buf_size = 5000;
+const size_t buf_size = 8192;
 
 template <typename T> class ThreadedBuffer {
 
