@@ -64,39 +64,39 @@ std::optional<Lines> load_input_file(const fs::path& path)
 {
     Lines         lines;
     std::ifstream cfile(path);
-    size_t        line_no = 1;
+    size_t        line_no = 0;
     std::string   line, key, value;
 
     if (cfile.fail()) {
         LOG_S(ERROR) << "Input file '" << path << "' not found";
         return {};
-    } else {
-        while (std::getline(cfile, line)) {
-            line = trim_whitespace(trim_comment(line));
-            if (line.length() > 0) {
-                split_key_value(line, key, value);
-                if (key == "insert") {
-                    auto inserted_lines
-                        = load_input_file(path.parent_path() / value);
-                    if (!inserted_lines) {
-                        lines.push_back(
-                            Line{ path,
-                                  line_no,
-                                  key,
-                                  value,
-                                  ParseStatus{ ParseStatus::ERROR,
-                                               "Missing insert file" } });
-                    } else {
-                        lines.insert(
-                            std::end(lines),
-                            std::begin(*inserted_lines),
-                            std::end(*inserted_lines));
-                    }
-                } else {
-                    lines.push_back(Line{ path, line_no, key, value });
-                }
+    }
+
+    while (std::getline(cfile, line)) {
+        line = trim_whitespace(trim_comment(line));
+        line_no++;
+        if (line.length() == 0) {
+            continue;
+        }
+
+        split_key_value(line, key, value);
+        if (key == "insert") {
+            auto inserted_lines = load_input_file(path.parent_path() / value);
+            if (!inserted_lines) {
+                lines.push_back(Line{
+                    path,
+                    line_no,
+                    key,
+                    value,
+                    ParseStatus{ ParseStatus::ERROR, "Missing insert file" } });
+            } else {
+                lines.insert(
+                    std::end(lines),
+                    std::begin(*inserted_lines),
+                    std::end(*inserted_lines));
             }
-            line_no++;
+        } else {
+            lines.push_back(Line{ path, line_no, key, value });
         }
     }
 
