@@ -11,20 +11,23 @@ Copyright (c) 2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 namespace groho {
 
 Serialize::Serialize(
-    double dt, const std::vector<NAIFbody>& objects, fs::path path)
+    const SimParams&             sim_params,
+    const std::vector<NAIFbody>& objects,
+    const fs::path&              outdir)
 {
-    if (fs::exists(path)) {
-        if (!fs::is_directory(path)) {
+    if (fs::exists(outdir)) {
+        if (!fs::is_directory(outdir)) {
             throw std::runtime_error("Output path must be directory");
         }
     } else {
-        fs::create_directories(path);
+        fs::create_directories(outdir);
     }
 
     history.reserve(objects.size());
     for (size_t i = 0; i < objects.size(); i++) {
-        auto fname = path / ("pos" + std::to_string(int(objects[i])) + ".bin");
-        history.emplace_back(dt, objects[i], fname);
+        auto fname
+            = outdir / ("pos" + std::to_string(int(objects[i])) + ".bin");
+        history.emplace_back(sim_params, objects[i], fname);
     }
 }
 

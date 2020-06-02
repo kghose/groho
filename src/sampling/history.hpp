@@ -11,8 +11,9 @@ Copyright (c) 2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 #include "fractaldownsampler.hpp"
 #include "naifbody.hpp"
-//#include "threadedbuffer.hpp"
-#include "simplebuffer.hpp"
+#include "simparams.hpp"
+#include "threadedbuffer.hpp"
+// #include "simplebuffer.hpp"
 #include "v3d.hpp"
 
 namespace fs = std::filesystem;
@@ -22,18 +23,13 @@ namespace groho {
 class History {
 
 public:
-    History(
-        double   dt,
-        NAIFbody code,
-        fs::path path,
-        double   rt = 1.00001,
-        double   lt = 1e4)
-        : code(code)
-        , dt(dt)
+    History(const SimParams& sim_params, NAIFbody code, fs::path path)
+        : dt(sim_params.dt)
+        , code(code)
     {
-        sampler = FractalDownsampler(rt, lt);
-        buffer
-            = std::unique_ptr<SimpleBuffer<V3d>>(new SimpleBuffer<V3d>(path));
+        sampler = FractalDownsampler(sim_params.rt, sim_params.lt);
+        buffer.reset(new ThreadedBuffer<V3d>(path));
+        // buffer.reset(new SimpleBuffer<V3d>(path));
     }
     ~History();
 
@@ -44,14 +40,16 @@ public:
     V3d acc() const;
 
 private:
-    NAIFbody code;
+    const double   dt;
+    const NAIFbody code;
 
-    double dt;
     V3d    _pos[3];
     size_t _idx = 0;
 
-    FractalDownsampler                 sampler;
-    std::shared_ptr<SimpleBuffer<V3d>> buffer;
+    FractalDownsampler sampler;
+
+    std::shared_ptr<ThreadedBuffer<V3d>> buffer;
+    // std::shared_ptr<SimpleBuffer<V3d>> buffer;
 };
 
 }

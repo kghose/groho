@@ -4,23 +4,27 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 */
 #pragma once
 
-#include <string>
+#include <filesystem>
 
 #include "orrery.hpp"
 #include "scenario.hpp"
 #include "serialize.hpp"
+#include "simparams.hpp"
 
 namespace groho {
 
+namespace fs = std::filesystem;
+
 struct Simulation {
 
-    Simulation(const Scenario& scenario);
+    Simulation(const Scenario& scenario, const fs::path& outdir);
 
     Scenario  scenario;
     Orrery    orrery;
     Serialize solar_system, spacecraft;
 
-    void set_from_new_scenario(const Scenario& scenario);
+    void
+    set_from_new_scenario(const Scenario& scenario, const fs::path& outdir);
 };
 
 }

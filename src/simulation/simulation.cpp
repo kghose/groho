@@ -7,23 +7,21 @@ Copyright (c) 2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 namespace groho {
 
-Simulation::Simulation(const Scenario& scenario_)
+Simulation::Simulation(const Scenario& scenario_, const fs::path& outdir)
 {
-    set_from_new_scenario(scenario_);
+    set_from_new_scenario(scenario_, outdir);
 }
 
-void Simulation::set_from_new_scenario(const Scenario& scenario_)
+void Simulation::set_from_new_scenario(
+    const Scenario& scenario_, const fs::path& outdir)
 {
-    // Hardcoded for prototyping
-    double   dt   = 60;
-    fs::path path = "output";
-
     // For our first implementation, we don't do any work reuse
     scenario = scenario_;
 
-    orrery       = Orrery(scenario.begin, scenario.end, scenario.kernel_tokens);
-    solar_system = Serialize(dt, orrery.list_bodies(), path);
-    spacecraft   = Serialize(dt, {}, path);
+    orrery
+        = Orrery(scenario.sim.begin, scenario.sim.end, scenario.kernel_tokens);
+    solar_system = Serialize(scenario.sim, orrery.list_bodies(), outdir);
+    spacecraft   = Serialize(scenario.sim, {}, outdir);
 }
 
 }

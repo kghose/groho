@@ -15,16 +15,20 @@ serializer also supplies velocity and acceleration data on request.
 
 #include "history.hpp"
 #include "naifbody.hpp"
-
-namespace fs = std::filesystem;
+#include "simparams.hpp"
 
 namespace groho {
+
+namespace fs = std::filesystem;
 
 class Serialize {
 
 public:
     Serialize() { ; }
-    Serialize(double dt, const std::vector<NAIFbody>& objects, fs::path path);
+    Serialize(
+        const SimParams&             sim_params,
+        const std::vector<NAIFbody>& objects,
+        const fs::path&              outdir);
     void      append(const v3d_vec_t& pos);
     const V3d pos(size_t idx) const { return history[idx].pos(); }
     const V3d vel(size_t idx) const { return history[idx].vel(); }

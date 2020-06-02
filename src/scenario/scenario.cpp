@@ -36,10 +36,22 @@ void Scenario::parse_preamble(Lines& lines)
             }
 
             if (line.key == "start") {
-                begin = date;
+                sim.begin = date;
             } else {
-                end = date;
+                sim.end = date;
             }
+            line.status.code = ParseStatus::OK;
+
+        } else if (line.key == "dt") {
+            sim.dt           = std::stod(line.value);
+            line.status.code = ParseStatus::OK;
+
+        } else if (line.key == "rt") {
+            sim.rt           = std::stod(line.value);
+            line.status.code = ParseStatus::OK;
+
+        } else if (line.key == "lt") {
+            sim.lt           = std::stod(line.value);
             line.status.code = ParseStatus::OK;
         }
     }

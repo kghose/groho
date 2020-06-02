@@ -13,6 +13,7 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 #include "inputfile.hpp"
 #include "naifbody.hpp"
+#include "simparams.hpp"
 #include "tokens.hpp"
 #include "units.hpp"
 
@@ -25,8 +26,7 @@ struct Scenario {
     Scenario() { ; }
     Scenario(const Lines& lines);
 
-    J2000_s begin;
-    J2000_s end;
+    SimParams sim;
 
     KernelTokens     kernel_tokens;
     SpacecraftTokens spacecraft_tokens;
