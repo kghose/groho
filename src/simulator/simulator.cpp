@@ -24,9 +24,7 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
     Scenario   scenario(*lines);
     Simulation simulation(scenario, outdir);
 
-    v3d_vec_t orrery_pos;
-
-    orrery_pos.resize(simulation.orrery.list_objects().size());
+    v3d_vec_t orrery_pos(simulation.orrery_objects.size());
 
     const auto& sim = scenario.sim;
     LOG_S(INFO) << "start: " << sim.begin.as_ut();

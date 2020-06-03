@@ -42,11 +42,17 @@ void Orrery::set_to(J2000_s t, v3d_vec_t& pos)
     }
 }
 
-std::vector<NAIFbody> Orrery::list_objects()
+std::vector<BodyConstant> Orrery::list_objects()
 {
-    std::vector<NAIFbody> obj_list;
+    std::vector<BodyConstant> obj_list;
     for (size_t i = 1; i < objects.size(); i++) {
-        obj_list.push_back(objects[i].ephemeris->target_code);
+        NAIFbody code = objects[i].ephemeris->target_code;
+        try {
+            obj_list.push_back(body_library.at(code));
+        } catch (const std::out_of_range& e) {
+            LOG_S(WARNING) << "No GM data for " << int(code);
+            obj_list.push_back({ code, std::to_string(int(code)) });
+        }
     }
     return obj_list;
 }

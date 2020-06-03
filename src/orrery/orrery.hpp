@@ -16,6 +16,7 @@ Orrery built with SPK files
 #include <unordered_set>
 #include <vector>
 
+#include "bodyconstant.hpp"
 #include "spk.hpp"
 #include "tokens.hpp"
 #include "units.hpp"
@@ -37,10 +38,10 @@ public:
     Orrery() { ; }
     Orrery(J2000_s begin, J2000_s end, const KernelTokens& kernel_tokens);
 
-    StatusCode            status() { return _status; }
-    void                  set_to(J2000_s t, v3d_vec_t& pos);
-    std::vector<NAIFbody> list_objects();
-    std::vector<size_t>   index_of_gravitational_objects();
+    StatusCode                status() { return _status; }
+    void                      set_to(J2000_s t, v3d_vec_t& pos);
+    std::vector<BodyConstant> list_objects();
+    std::vector<size_t>       index_of_gravitational_objects();
 
 private:
     std::vector<OrreryObject> objects;

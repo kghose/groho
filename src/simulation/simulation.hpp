@@ -23,6 +23,9 @@ struct Simulation {
     Orrery    orrery;
     Serialize solar_system, spacecraft;
 
+    std::vector<BodyConstant> orrery_objects;
+    std::vector<size_t>       grav_index;
+
     void
     set_from_new_scenario(const Scenario& scenario, const fs::path& outdir);
 };
