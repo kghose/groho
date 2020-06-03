@@ -26,7 +26,7 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
 
     v3d_vec_t orrery_pos;
 
-    orrery_pos.resize(simulation.orrery.list_bodies().size());
+    orrery_pos.resize(simulation.orrery.list_objects().size());
 
     const auto& sim = scenario.sim;
     LOG_S(INFO) << "start: " << sim.begin.as_ut();

@@ -34,6 +34,8 @@ struct NAIFbody {
     bool is_asteroid() const { return (code > 2000000); }
     bool is_comet() const { return (code > 1000000) && (code <= 2000000); }
 
+    NAIFbody barycenter() const { return code / 100; }
+
     bool operator<(const NAIFbody& s) const { return (code < (int)s); }
     bool operator==(const NAIFbody& s) const { return (code == (int)s); }
 };

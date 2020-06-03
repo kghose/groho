@@ -27,6 +27,7 @@ namespace fs = std::filesystem;
 struct OrreryObject {
     std::shared_ptr<Ephemeris> ephemeris;
     size_t                     parent_idx;
+    bool                       gravitational_body = true;
 };
 
 class Orrery {
@@ -38,7 +39,8 @@ public:
 
     StatusCode            status() { return _status; }
     void                  set_to(J2000_s t, v3d_vec_t& pos);
-    std::vector<NAIFbody> list_bodies();
+    std::vector<NAIFbody> list_objects();
+    std::vector<size_t>   index_of_gravitational_objects();
 
 private:
     std::vector<OrreryObject> objects;

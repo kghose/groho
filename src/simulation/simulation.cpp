@@ -20,7 +20,7 @@ void Simulation::set_from_new_scenario(
 
     orrery
         = Orrery(scenario.sim.begin, scenario.sim.end, scenario.kernel_tokens);
-    solar_system = Serialize(scenario.sim, orrery.list_bodies(), outdir);
+    solar_system = Serialize(scenario.sim, orrery.list_objects(), outdir);
     spacecraft   = Serialize(scenario.sim, {}, outdir);
 }
 

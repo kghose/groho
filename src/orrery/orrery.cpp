@@ -30,11 +30,46 @@ Orrery::Orrery(J2000_s begin, J2000_s end, const KernelTokens& kernel_tokens)
     objects = load_orrery_objects(begin, end, kernel_tokens, _status);
 }
 
+void Orrery::set_to(J2000_s t, v3d_vec_t& pos)
+{
+    for (size_t i = 1; i < objects.size(); i++) {
+        objects[i].ephemeris->eval(t, pos[i - 1]);
+    }
+    for (size_t i = 1; i < objects.size(); i++) {
+        if (objects[i].parent_idx != 0) {
+            pos[i - 1] += pos[objects[i].parent_idx - 1];
+        }
+    }
+}
+
+std::vector<NAIFbody> Orrery::list_objects()
+{
+    std::vector<NAIFbody> obj_list;
+    for (size_t i = 1; i < objects.size(); i++) {
+        obj_list.push_back(objects[i].ephemeris->target_code);
+    }
+    return obj_list;
+}
+
+std::vector<size_t> Orrery::index_of_gravitational_objects()
+{
+    std::vector<size_t> obj_list;
+    for (size_t i = 1; i < objects.size(); i++) {
+        if (objects[i].gravitational_body) {
+            obj_list.push_back(i - 1);
+        }
+    }
+    return obj_list;
+}
+
 struct _Body {
     std::shared_ptr<Ephemeris>           ephemeris;
     std::unordered_map<NAIFbody, _Body*> children;
     NAIFbody                             parent;
 };
+
+std::vector<OrreryObject>
+traverse_tree_depth_first(std::unordered_map<NAIFbody, _Body>& bodies);
 
 void print_objects_to_debug(const std::vector<OrreryObject>& objects);
 
@@ -108,6 +143,16 @@ std::vector<OrreryObject> load_orrery_objects(
         bodies[body.parent].children[code] = &bodies[code];
     }
 
+    auto objects = traverse_tree_depth_first(bodies);
+
+    print_objects_to_debug(objects);
+
+    return objects;
+}
+
+std::vector<OrreryObject>
+traverse_tree_depth_first(std::unordered_map<NAIFbody, _Body>& bodies)
+{
     std::vector<OrreryObject> objects;
     objects.push_back({ nullptr, 0 });
 
@@ -122,12 +167,15 @@ std::vector<OrreryObject> load_orrery_objects(
             map_code_to_index[code] = objects.size();
             objects.push_back(
                 { child->ephemeris, map_code_to_index[child->parent] });
+            if (code.is_planet()) {
+                auto bary = map_code_to_index.find(code.barycenter());
+                if (bary != map_code_to_index.end()) {
+                    objects[bary->second].gravitational_body = false;
+                }
+            }
             q.push_back(child);
         }
     }
-
-    print_objects_to_debug(objects);
-
     return objects;
 }
 
@@ -142,27 +190,6 @@ void print_objects_to_debug(const std::vector<OrreryObject>& objects)
         LOG_S(INFO) << "[" << i << "]" << obj.ephemeris->target_code << " -> "
                     << "[" << obj.parent_idx << "]" << center;
     }
-}
-
-void Orrery::set_to(J2000_s t, v3d_vec_t& pos)
-{
-    for (size_t i = 1; i < objects.size(); i++) {
-        objects[i].ephemeris->eval(t, pos[i - 1]);
-    }
-    for (size_t i = 1; i < objects.size(); i++) {
-        if (objects[i].parent_idx != 0) {
-            pos[i - 1] += pos[objects[i].parent_idx - 1];
-        }
-    }
-}
-
-std::vector<NAIFbody> Orrery::list_bodies()
-{
-    std::vector<NAIFbody> bodies;
-    for (size_t i = 1; i < objects.size(); i++) {
-        bodies.push_back(objects[i].ephemeris->target_code);
-    }
-    return bodies;
 }
 
 }
