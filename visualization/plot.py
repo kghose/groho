@@ -6,6 +6,7 @@ import glob
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def load_data(folder: pathlib.Path):
@@ -23,9 +24,18 @@ def base_chart(trajectories: dict):
     plt.gca().set_aspect("equal")
 
 
+def d3_chart(trajectories: dict):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+    for k, v in trajectories.items():
+        ax.plot(v["x"], v["y"], v["z"])
+    # plt.gca().set_aspect("equal")
+
+
 def main():
     trajectories = load_data(pathlib.Path(sys.argv[1]))
-    base_chart(trajectories)
+    # base_chart(trajectories)
+    d3_chart(trajectories)
     plt.show()
 
 
