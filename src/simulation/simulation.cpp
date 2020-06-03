@@ -28,7 +28,12 @@ void Simulation::set_from_new_scenario(
         oo_naifs.push_back(oo.code);
     }
     solar_system = Serialize(scenario.sim, oo_naifs, outdir);
-    spacecraft   = Serialize(scenario.sim, {}, outdir);
+
+    std::vector<NAIFbody> sc_naifs;
+    for (const auto& [name, plan] : scenario.spacecraft_tokens) {
+        sc_naifs.push_back(plan.code);
+    }
+    spacecraft = Serialize(scenario.sim, sc_naifs, outdir);
 }
 
 }

@@ -36,6 +36,10 @@ TEST_CASE("Scenario craft commands", "[SCENARIO]")
     scenario.parse_plans(*lines);
 
     REQUIRE(scenario.spacecraft_tokens.size() == 2);
+    REQUIRE(scenario.spacecraft_tokens["Kali"].code == -2000);
+    REQUIRE(
+        scenario.spacecraft_tokens["Kali"].initial_condition.params[0]
+        == "301");
 }
 
 TEST_CASE("Scenario integrative test", "[SCENARIO]")

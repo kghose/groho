@@ -42,6 +42,7 @@ struct CommandToken {
 typedef std::vector<CommandToken> CommandTokens;
 
 struct SpacecraftToken {
+    NAIFbody      code;
     std::string   craft_name;
     CommandToken  initial_condition;
     CommandTokens command_tokens;

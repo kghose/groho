@@ -103,6 +103,7 @@ void Scenario::parse_plans(Lines& lines)
     };
 
     std::string plan_name;
+    int         naif_code = -1000; // Made up NAIFCode
     for (auto& line : lines) {
         if (line.status.code != ParseStatus::PENDING) {
             continue;
@@ -111,6 +112,7 @@ void Scenario::parse_plans(Lines& lines)
         if (line.key == "plan") {
             plan_name                               = line.value;
             spacecraft_tokens[plan_name].craft_name = plan_name;
+            spacecraft_tokens[plan_name].code       = naif_code--;
             line.status.code                        = ParseStatus::OK;
 
         } else if (line.key == "orbiting") {
@@ -129,6 +131,13 @@ void Scenario::parse_plans(Lines& lines)
             spacecraft_tokens[plan_name].initial_condition
                 = { 0, 0, "orbiting", tokens };
             line.status.code = ParseStatus::OK;
+
+        } else if (line.key == "code") {
+            if (plan_name == "") {
+                no_associated_craft(line);
+                continue;
+            }
+            spacecraft_tokens[plan_name].code = std::stoi(line.value);
 
         } else if (probably_a_date(line.key)) {
             if (plan_name == "") {
