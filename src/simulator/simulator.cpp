@@ -14,6 +14,52 @@ This file defines the simulator code
 
 namespace groho {
 
+void initialize_ships_state(const Serialize& solar_system, State& state)
+{
+    auto& pos = state.spacecraft.pos();
+    auto& vel = state.spacecraft.vel();
+    for (size_t i = 0; i < pos.size(); i++) {
+        pos[i] = { 1e8, (i + 1) * 1e8, 1e8 };
+        vel[i] = { 10, 0, -20 };
+    }
+}
+
+void update_ship_state(double dt, State& state)
+{
+    auto& pos = state.spacecraft.pos();
+    auto& vel = state.spacecraft.vel();
+    auto& acc = state.spacecraft.acc();
+
+    for (size_t i = 0; i < pos.size(); i++) {
+        pos[i] += vel[i] * dt;
+        vel[i] += acc[i] * dt;
+    }
+}
+
+void compute_gravitational_acceleration(
+    const State& state, const Orrery& orrery, v3d_vec_t& ship_acc)
+{
+    const auto& ship_pos   = state.spacecraft.pos();
+    const auto& orrery_pos = state.orrery.pos();
+
+    for (size_t i = 0; i < ship_pos.size(); i++) {
+        ship_acc[i] = { 0, 0, 0 };
+        for (size_t g_idx : orrery.grav_body_idx) {
+            auto r = orrery_pos[g_idx] - ship_pos[i];
+            auto f = orrery.bodies[g_idx].GM / r.norm_sq();
+            ship_acc[i] += r.normed() * f;
+        }
+    }
+}
+
+void add_thrust_to_acceleration(
+    const State&            state,
+    const Serialize&        solar_system,
+    const SpacecraftTokens& spacecraft_tokens,
+    v3d_vec_t&              ship_acc)
+{
+}
+
 Simulator::Simulator(std::string scn_file, std::string outdir)
 {
     auto lines = load_input_file(scn_file);
@@ -24,15 +70,41 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
     Scenario   scenario(*lines);
     Simulation simulation(scenario, outdir);
 
-    v3d_vec_t orrery_pos(simulation.orrery_objects.size());
-
     const auto& sim = scenario.sim;
     LOG_S(INFO) << "start: " << sim.begin.as_ut();
     LOG_S(INFO) << "end:   " << sim.end.as_ut();
     LOG_S(INFO) << "step:  " << sim.dt;
-    for (double t = sim.begin; t < sim.end; t += sim.dt) {
-        simulation.orrery.set_to(t, orrery_pos);
-        simulation.solar_system.append(orrery_pos);
+
+    auto& state = simulation.state;
+
+    double t = sim.begin;
+
+    if (simulation.requires_state_initialization()) {
+        // Warm up
+        for (size_t i = 0; i < 4; i++) {
+            simulation.orrery.pos_at(t, state.orrery.next_pos());
+            simulation.solar_system.append(state.orrery.pos());
+            t += sim.dt;
+        }
+
+        // Initialize ships state
+        initialize_ships_state(simulation.solar_system, state);
+    }
+
+    // Main sim
+    for (; t < sim.end; t += sim.dt) {
+        simulation.orrery.pos_at(t, state.orrery.next_pos());
+        update_ship_state(sim.dt, state);
+        compute_gravitational_acceleration(
+            state, simulation.orrery, state.spacecraft.acc());
+        add_thrust_to_acceleration(
+            state,
+            simulation.solar_system,
+            simulation.scenario.spacecraft_tokens,
+            state.spacecraft.acc());
+
+        simulation.solar_system.append(state.orrery.pos());
+        simulation.spacecraft.append(state.spacecraft.pos());
     }
 }
 

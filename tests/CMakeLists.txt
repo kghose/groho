@@ -42,6 +42,7 @@ set( TEST_SOURCES
   inputfile_test.cpp
   sampling_test.cpp
   scenario_test.cpp
+  state_test.cpp
 )
 
 add_executable( tests ${TEST_SOURCES} ${SOURCES} )

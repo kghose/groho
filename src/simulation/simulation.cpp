@@ -33,10 +33,7 @@ void Simulation::set_from_new_scenario(
     }
     spacecraft = Serialize(scenario.sim, sc_naifs, outdir);
 
-    state.orrery_pos.resize(solar_system.size());
-    state.ship_pos.resize(spacecraft.size());
-    state.ship_vel.resize(spacecraft.size());
-    state.ship_acc.resize(spacecraft.size());
+    state = State(solar_system.size(), spacecraft.size(), scenario.sim.dt);
 }
 
 }

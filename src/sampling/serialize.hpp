@@ -29,10 +29,8 @@ public:
         const SimParams&             sim_params,
         const std::vector<NAIFbody>& objects,
         const fs::path&              outdir);
-    void      append(const v3d_vec_t& pos);
-    const V3d pos(size_t idx) const { return history[idx].pos(); }
-    const V3d vel(size_t idx) const { return history[idx].vel(); }
-    const V3d acc(size_t idx) const { return history[idx].acc(); }
+    size_t size() { return history.size(); }
+    void   append(const v3d_vec_t& pos);
 
 private:
     std::vector<History> history;

@@ -31,20 +31,25 @@ public:
         buffer.reset(new ThreadedBuffer<V3d>(path));
         // buffer.reset(new SimpleBuffer<V3d>(path));
     }
-    ~History();
+    ~History()
+    {
+        buffer->write(last_pos);
+        // This will sometimes give us a duplicate datapoint right at the end
+        // and we are ok with that.
+    }
 
-    void sample(const V3d& pos);
-
-    V3d pos() const;
-    V3d vel() const;
-    V3d acc() const;
+    void sample(const V3d& pos)
+    {
+        last_pos = pos;
+        if (sampler(pos)) {
+            buffer->write(pos);
+        }
+    }
 
 private:
     const double   dt;
     const NAIFbody code;
-
-    V3d    _pos[3];
-    size_t _idx = 0;
+    V3d            last_pos;
 
     FractalDownsampler sampler;
 

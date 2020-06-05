@@ -10,17 +10,11 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 #include "scenario.hpp"
 #include "serialize.hpp"
 #include "simparams.hpp"
+#include "state.hpp"
 
 namespace groho {
 
 namespace fs = std::filesystem;
-
-struct State {
-    v3d_vec_t orrery_pos;
-    v3d_vec_t ship_pos;
-    v3d_vec_t ship_vel;
-    v3d_vec_t ship_acc;
-};
 
 struct Simulation {
 
