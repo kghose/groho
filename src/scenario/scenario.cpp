@@ -110,10 +110,9 @@ void Scenario::parse_plans(Lines& lines)
         }
 
         if (line.key == "plan") {
-            plan_name                               = line.value;
-            spacecraft_tokens[plan_name].craft_name = plan_name;
-            spacecraft_tokens[plan_name].code       = naif_code--;
-            line.status.code                        = ParseStatus::OK;
+            plan_name = line.value;
+            spacecraft_tokens.push_back({ naif_code--, plan_name });
+            line.status.code = ParseStatus::OK;
 
         } else if (line.key == "orbiting") {
             if (plan_name == "") {
@@ -128,7 +127,7 @@ void Scenario::parse_plans(Lines& lines)
                 continue;
             }
 
-            spacecraft_tokens[plan_name].initial_condition
+            spacecraft_tokens.back().initial_condition
                 = { 0, 0, "orbiting", tokens };
             line.status.code = ParseStatus::OK;
 
@@ -137,7 +136,7 @@ void Scenario::parse_plans(Lines& lines)
                 no_associated_craft(line);
                 continue;
             }
-            spacecraft_tokens[plan_name].code = std::stoi(line.value);
+            spacecraft_tokens.back().code = std::stoi(line.value);
 
         } else if (probably_a_date(line.key)) {
             if (plan_name == "") {
@@ -169,7 +168,7 @@ void Scenario::parse_plans(Lines& lines)
                 continue;
             }
 
-            spacecraft_tokens[plan_name].command_tokens.push_back(
+            spacecraft_tokens.back().command_tokens.push_back(
                 { date,
                   duration,
                   tokens[1],
@@ -182,7 +181,7 @@ void Scenario::parse_plans(Lines& lines)
 
 void Scenario::sort_and_validate_plans()
 {
-    for (auto& [_, craft_tok] : spacecraft_tokens) {
+    for (auto& craft_tok : spacecraft_tokens) {
         std::sort(
             craft_tok.command_tokens.begin(),
             craft_tok.command_tokens.end(),

@@ -33,7 +33,7 @@ typedef std::vector<KernelToken> KernelTokens;
 struct CommandToken {
     J2000_s                  start;
     double                   duration;
-    std::string              plan;
+    std::string              command;
     std::vector<std::string> params;
 
     Line* line_p;
@@ -50,6 +50,6 @@ struct SpacecraftToken {
     Line* line_p;
 };
 
-typedef std::unordered_map<std::string, SpacecraftToken> SpacecraftTokens;
+typedef std::vector<SpacecraftToken> SpacecraftTokens;
 
 }
