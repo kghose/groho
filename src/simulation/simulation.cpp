@@ -20,20 +20,23 @@ void Simulation::set_from_new_scenario(
 
     orrery
         = Orrery(scenario.sim.begin, scenario.sim.end, scenario.kernel_tokens);
-    orrery_objects = orrery.list_objects();
-    grav_index     = orrery.index_of_gravitational_objects();
 
     std::vector<NAIFbody> oo_naifs;
-    for (const auto& oo : orrery_objects) {
+    for (const auto& oo : orrery.bodies) {
         oo_naifs.push_back(oo.code);
     }
     solar_system = Serialize(scenario.sim, oo_naifs, outdir);
 
     std::vector<NAIFbody> sc_naifs;
-    for (const auto& [name, plan] : scenario.spacecraft_tokens) {
-        sc_naifs.push_back(plan.code);
+    for (const auto& craft : scenario.spacecraft_tokens) {
+        sc_naifs.push_back(craft.code);
     }
     spacecraft = Serialize(scenario.sim, sc_naifs, outdir);
+
+    state.orrery_pos.resize(solar_system.size());
+    state.ship_pos.resize(spacecraft.size());
+    state.ship_vel.resize(spacecraft.size());
+    state.ship_acc.resize(spacecraft.size());
 }
 
 }

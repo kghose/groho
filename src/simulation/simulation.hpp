@@ -15,6 +15,13 @@ namespace groho {
 
 namespace fs = std::filesystem;
 
+struct State {
+    v3d_vec_t orrery_pos;
+    v3d_vec_t ship_pos;
+    v3d_vec_t ship_vel;
+    v3d_vec_t ship_acc;
+};
+
 struct Simulation {
 
     Simulation(const Scenario& scenario, const fs::path& outdir);
@@ -23,11 +30,12 @@ struct Simulation {
     Orrery    orrery;
     Serialize solar_system, spacecraft;
 
-    std::vector<BodyConstant> orrery_objects;
-    std::vector<size_t>       grav_index;
+    State state;
 
     void
     set_from_new_scenario(const Scenario& scenario, const fs::path& outdir);
+
+    bool requires_state_initialization() { return true; }
 };
 
 }
