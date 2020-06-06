@@ -42,6 +42,7 @@ include_directories(
     src/simulator
     src/scenario
     src/simulation
+    src/commands
     src/plotting
 )
 

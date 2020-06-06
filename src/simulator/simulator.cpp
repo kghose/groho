@@ -6,6 +6,7 @@ This file defines the simulator code
 */
 #include <filesystem>
 
+#include "initialorbit.hpp"
 #include "simulation.hpp"
 #include "simulator.hpp"
 
@@ -14,13 +15,17 @@ This file defines the simulator code
 
 namespace groho {
 
-void initialize_ships_state(const Serialize& solar_system, State& state)
+void initialize_ships(Simulation& simulation)
 {
-    auto& pos = state.spacecraft.pos();
-    auto& vel = state.spacecraft.vel();
+    auto& pos = simulation.state.spacecraft.pos();
+    auto& vel = simulation.state.spacecraft.vel();
     for (size_t i = 0; i < pos.size(); i++) {
-        pos[i] = { 1e8, (i + 1) * 1e8, 1e8 };
-        vel[i] = { 10, 0, -20 };
+        set_initial_orbit(
+            simulation.scenario.spacecraft_tokens[i].initial_condition,
+            simulation.state,
+            simulation.orrery,
+            pos[i],
+            vel[i]);
     }
 }
 
@@ -88,7 +93,7 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
         }
 
         // Initialize ships state
-        initialize_ships_state(simulation.solar_system, state);
+        initialize_ships(simulation);
     }
 
     // Main sim
