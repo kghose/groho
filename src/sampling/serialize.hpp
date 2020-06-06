@@ -31,6 +31,7 @@ public:
         const fs::path&              outdir);
     size_t size() { return history.size(); }
     void   append(const v3d_vec_t& pos);
+    void   flush(const v3d_vec_t& pos);
 
 private:
     std::vector<History> history;
