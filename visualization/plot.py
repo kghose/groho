@@ -5,8 +5,11 @@ import pathlib
 import glob
 
 import numpy as np
+from scipy.spatial.transform import Rotation as Rot
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
+rot = Rot.from_euler("x", -23.5, degrees=True)
 
 
 def load_data(folder: pathlib.Path):
@@ -14,13 +17,14 @@ def load_data(folder: pathlib.Path):
     trajectories = {}
     for f in glob.glob(str(folder / "pos*.bin")):
         naif = int(pathlib.Path(f).name[3:-4])
-        trajectories[naif] = np.fromfile(f, dtype=dtype)
+        x = np.fromfile(f, dtype=dtype)
+        trajectories[naif] = rot.apply(x.view(np.float64).reshape(x.shape + (-1,)))
     return trajectories
 
 
 def base_chart(trajectories: dict):
     for k, v in trajectories.items():
-        plt.plot(v["x"], v["y"], label=k)
+        plt.plot(v[:, 0], v[:, 1], label=k)
     plt.gca().set_aspect("equal")
 
 
@@ -28,14 +32,17 @@ def d3_chart(trajectories: dict):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
     for k, v in trajectories.items():
-        ax.plot(v["x"], v["y"], v["z"])
+        ax.plot(v[:, 0], v[:, 1], v[:, 2])
     # plt.gca().set_aspect("equal")
+    ax.set_xlabel("X axis")
+    ax.set_ylabel("Y axis")
+    ax.set_zlabel("Z axis")
 
 
 def main():
     trajectories = load_data(pathlib.Path(sys.argv[1]))
-    # base_chart(trajectories)
-    d3_chart(trajectories)
+    base_chart(trajectories)
+    # d3_chart(trajectories)
     plt.show()
 
 
