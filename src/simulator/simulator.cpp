@@ -29,13 +29,14 @@ void initialize_ships(Simulation& simulation)
     }
 }
 
-void update_ship_state(double dt, State& state)
+void update_ship_state(double t, const double dt, State& state)
 {
     auto& pos = state.spacecraft.pos();
     auto& vel = state.spacecraft.vel();
     auto& acc = state.spacecraft.acc();
 
     for (size_t i = 0; i < pos.size(); i++) {
+        pos[i].t = t;
         pos[i] += vel[i] * dt;
         vel[i] += acc[i] * dt;
     }
@@ -82,11 +83,12 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
 
     auto& state = simulation.state;
 
-    double t = sim.begin;
+    double t     = sim.begin;
+    size_t steps = 0;
 
     if (simulation.requires_state_initialization()) {
         // Warm up
-        for (size_t i = 0; i < 4; i++) {
+        for (size_t i = 0; i < 4; i++, steps++) {
             simulation.orrery.pos_at(t, state.orrery.next_pos());
             simulation.solar_system.append(state.orrery.pos());
             t += sim.dt;
@@ -97,9 +99,9 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
     }
 
     // Main sim
-    for (; t < sim.end; t += sim.dt) {
+    for (; t < sim.end; t += sim.dt, steps++) {
         simulation.orrery.pos_at(t, state.orrery.next_pos());
-        update_ship_state(sim.dt, state);
+        update_ship_state(t, sim.dt, state);
         compute_gravitational_acceleration(
             state, simulation.orrery, state.spacecraft.acc());
         add_thrust_to_acceleration(
@@ -113,6 +115,7 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
     }
     simulation.solar_system.flush(state.orrery.pos());
     simulation.spacecraft.flush(state.spacecraft.pos());
+    LOG_S(INFO) << steps << " steps";
 }
 
 }

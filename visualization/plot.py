@@ -5,7 +5,10 @@ import pathlib
 import glob
 
 import numpy as np
+from numpy.lib.recfunctions import structured_to_unstructured
 from scipy.spatial.transform import Rotation as Rot
+from scipy import interpolate
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -13,18 +16,44 @@ rot = Rot.from_euler("x", -23.5, degrees=True)
 
 
 def load_data(folder: pathlib.Path):
-    dtype = np.dtype([("x", "f8"), ("y", "f8"), ("z", "f8")])
+    dtype = np.dtype([("x", "f8"), ("y", "f8"), ("z", "f8"), ("t", "f8")])
     trajectories = {}
     for f in glob.glob(str(folder / "pos*.bin")):
         naif = int(pathlib.Path(f).name[3:-4])
         x = np.fromfile(f, dtype=dtype)
-        trajectories[naif] = rot.apply(x.view(np.float64).reshape(x.shape + (-1,)))
+        if x.size:
+            trajectories[naif] = {
+                "s": rot.apply(x.view(np.float64).reshape(x.shape + (-1,))[:, :3]),
+                "t": x["t"],
+            }
     return trajectories
 
 
-def base_chart(trajectories: dict):
+def chart(trajectories: dict):
     for k, v in trajectories.items():
-        plt.plot(v[:, 0], v[:, 1], label=k)
+        plt.plot(v["s"][:, 0], v["s"][:, 1], label=k)
+    plt.gca().set_aspect("equal")
+
+
+def chart_ref_to(trajectories: dict, ref: int):
+    ref_traj = trajectories[ref]
+    refx = ref_traj["s"][:, 0]
+    refy = ref_traj["s"][:, 1]
+    fx = interpolate.interp1d(ref_traj["t"], refx)
+    fy = interpolate.interp1d(ref_traj["t"], refy)
+
+    for k, v in trajectories.items():
+        if k == ref:
+            continue
+        if abs(k) / 10 <= 1:
+            continue
+
+        try:
+            refxnew = fx(v["t"])
+            refynew = fy(v["t"])
+            plt.plot(v["s"][:, 0] - refxnew, v["s"][:, 1] - refynew)
+        except:
+            pass
     plt.gca().set_aspect("equal")
 
 
@@ -41,8 +70,8 @@ def d3_chart(trajectories: dict):
 
 def main():
     trajectories = load_data(pathlib.Path(sys.argv[1]))
-    base_chart(trajectories)
-    # d3_chart(trajectories)
+    # chart(trajectories)
+    chart_ref_to(trajectories, 399)
     plt.show()
 
 
