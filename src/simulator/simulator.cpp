@@ -36,9 +36,9 @@ void update_ship_state(double t, const double dt, State& state)
     auto& acc = state.spacecraft.acc();
 
     for (size_t i = 0; i < pos.size(); i++) {
-        pos[i].t = t;
-        pos[i] += vel[i] * dt;
         vel[i] += acc[i] * dt;
+        pos[i] += vel[i] * dt;
+        pos[i].t = t;
     }
 }
 
