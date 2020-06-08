@@ -7,6 +7,8 @@ This handles the downsampling of the data
 
 #pragma once
 
+#include <limits>
+
 #include "v3d.hpp"
 
 #define LOGURU_WITH_STREAMS 1
@@ -20,6 +22,7 @@ public:
         : ratio_threshold(rt)
         , linear_threshold(lt)
     {
+        cumulative_curve_dist = std::numeric_limits<double>::infinity();
     }
 
     bool operator()(const V3d& v)
@@ -34,6 +37,16 @@ public:
         }
         last_v = v;
         return false;
+    }
+
+    bool flush(V3d& v)
+    {
+        if (cumulative_curve_dist != 0) {
+            v = last_v;
+            return true;
+        } else {
+            return false;
+        }
     }
 
 private:

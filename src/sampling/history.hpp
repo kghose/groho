@@ -39,7 +39,13 @@ public:
         }
     }
 
-    void flush(const V3d& pos) { buffer->write(pos); }
+    ~History()
+    {
+        V3d last_pos;
+        if (sampler.flush(last_pos)) {
+            buffer->write(last_pos);
+        }
+    }
 
 private:
     const double   dt;

@@ -90,7 +90,7 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
         // Warm up
         for (size_t i = 0; i < 4; i++, steps++) {
             simulation.orrery.pos_at(t, state.orrery.next_pos());
-            simulation.solar_system.append(state.orrery.pos());
+            // simulation.solar_system.append(state.orrery.pos());
             t += sim.dt;
         }
 
@@ -113,8 +113,6 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
         simulation.solar_system.append(state.orrery.pos());
         simulation.spacecraft.append(state.spacecraft.pos());
     }
-    simulation.solar_system.flush(state.orrery.pos());
-    simulation.spacecraft.flush(state.spacecraft.pos());
     LOG_S(INFO) << steps << " steps";
 }
 

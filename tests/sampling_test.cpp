@@ -30,15 +30,16 @@ TEST_CASE("Serializer sampling check", "[SAMPLING]")
         // We put this in a scope so that the Serialize object is deleted and
         // we flush out the last point
         auto sampler = Serialize(sim_par, objects, path);
-        sampler.append({ { 1e7, 0, 0 } });
-        sampler.append({ { 0, 1e7, 0 } });
-        sampler.append({ { 1e7, 0, 1e7 } });
-        sampler.append({ { 0, 1, 1e7 } });
+        sampler.append({ { 0, 0, 0 } });
+        sampler.append({ { 1e8, 0, 0 } });
+        sampler.append({ { 1e8, 1e8, 0 } });
+        sampler.append({ { 1e8, 1e8, 1e8 } });
     }
 
     std::ifstream file(path / "pos0.bin", std::ios::binary | std::ios::in);
-    V3d           pos_back[4];
-    file.read((char*)pos_back, sizeof(V3d) * 4);
-    REQUIRE(pos_back[0] == V3d{ 0, 1e7, 0 });
-    REQUIRE(pos_back[1] == V3d{ 0, 1, 1e7 });
+    V3d           pos_back[3];
+    file.read((char*)pos_back, sizeof(V3d) * 3);
+    REQUIRE(pos_back[0] == V3d{ 0, 0, 0 });
+    REQUIRE(pos_back[1] == V3d{ 1e8, 1e8, 0 });
+    REQUIRE(pos_back[2] == V3d{ 1e8, 1e8, 1e8 });
 }

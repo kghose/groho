@@ -38,11 +38,4 @@ void Serialize::append(const v3d_vec_t& pos)
     }
 }
 
-void Serialize::flush(const v3d_vec_t& pos)
-{
-    for (size_t i = 0; i < history.size(); i++) {
-        history[i].flush(pos[i]);
-    }
-}
-
 }
