@@ -15,12 +15,18 @@ Copyright (c) 2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 namespace groho {
 
 void set_initial_orbit(
-    double GM, double r, const V3d Pbody, const V3d Vbody, V3d& pos, V3d& vel)
+    double    GM,
+    double    r1,
+    double    r2,
+    const V3d Pbody,
+    const V3d Vbody,
+    V3d&      pos,
+    V3d&      vel)
 {
     V3d U_hat = cross(Vbody, Pbody * -1).normed();
     V3d V_hat = cross(Pbody * -1, U_hat).normed();
-    pos       = Pbody + (Pbody.normed() * r);
-    vel       = (V_hat * std::sqrt(GM / r)) + Vbody;
+    pos       = Pbody + (Pbody.normed() * r1);
+    vel       = (V_hat * std::sqrt(2 * GM * r2 / (r1 * (r1 + r2)))) + Vbody;
 }
 
 void set_initial_orbit(
@@ -33,10 +39,10 @@ void set_initial_orbit(
     auto orbit = OrbitalCommand(command.params);
     // No error checking for now
     size_t idx = orrery.naif_to_idx.at(orbit.center);
-    // Need to handle separate peri and apo-apses
     set_initial_orbit(
         orrery.bodies[idx].GM,
         orrery.bodies[idx].r + orbit.a1,
+        orrery.bodies[idx].r + orbit.a2,
         state.orrery.pos()[idx],
         state.orrery.vel(idx),
         pos,
