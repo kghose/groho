@@ -23,7 +23,6 @@ void initialize_ships(Simulation& simulation)
         set_initial_orbit(
             simulation.scenario.spacecraft_tokens[i].initial_condition,
             simulation.state,
-            simulation.orrery,
             pos[i],
             vel[i]);
     }
@@ -42,17 +41,16 @@ void update_ship_state(double t, const double dt, State& state)
     }
 }
 
-void compute_gravitational_acceleration(
-    const State& state, const Orrery& orrery, v3d_vec_t& ship_acc)
+void compute_gravitational_acceleration(const State& state, v3d_vec_t& ship_acc)
 {
     const auto& ship_pos   = state.spacecraft.pos();
     const auto& orrery_pos = state.orrery.pos();
 
     for (size_t i = 0; i < ship_pos.size(); i++) {
         ship_acc[i] = { 0, 0, 0 };
-        for (size_t g_idx : orrery.grav_body_idx) {
+        for (size_t g_idx : state.orrery.grav_body_idx()) {
             auto r = orrery_pos[g_idx] - ship_pos[i];
-            auto f = orrery.bodies[g_idx].GM / r.norm_sq();
+            auto f = state.orrery.body(g_idx).GM / r.norm_sq();
             ship_acc[i] += r.normed() * f;
         }
     }
@@ -102,8 +100,7 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
     for (; t < sim.end; t += sim.dt, steps++) {
         simulation.orrery.pos_at(t, state.orrery.next_pos());
         update_ship_state(t, sim.dt, state);
-        compute_gravitational_acceleration(
-            state, simulation.orrery, state.spacecraft.acc());
+        compute_gravitational_acceleration(state, state.spacecraft.acc());
         add_thrust_to_acceleration(
             state,
             simulation.solar_system,

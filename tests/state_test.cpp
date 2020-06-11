@@ -8,7 +8,7 @@ using namespace groho;
 
 TEST_CASE("State vel acc check", "[SAMPLING]")
 {
-    auto state = DiffableState(2, 1);
+    auto state = DiffableState({ {}, {} }, { 0, 1 }, 1);
 
     state.next_pos() = { { 0, 0, 0 }, { 0, 0, 0 } };
     state.next_pos() = { { 0, 1, 0 }, { 0, 2, 0 } };

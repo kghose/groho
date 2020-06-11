@@ -28,9 +28,6 @@ Do a breadth wise traversal and place all the bodies in order.
 Orrery::Orrery(J2000_s begin, J2000_s end, const KernelTokens& kernel_tokens)
 {
     objects = load_orrery_objects(begin, end, kernel_tokens, _status);
-    set_bodies();
-    set_grav_body_idx();
-    set_naif_to_idx();
 }
 
 void Orrery::pos_at(J2000_s t, v3d_vec_t& pos)
@@ -46,8 +43,9 @@ void Orrery::pos_at(J2000_s t, v3d_vec_t& pos)
     }
 }
 
-void Orrery::set_bodies()
+std::vector<BodyConstant> Orrery::get_bodies() const
 {
+    std::vector<BodyConstant> bodies;
     for (size_t i = 1; i < objects.size(); i++) {
         NAIFbody code = objects[i].ephemeris->target_code;
         try {
@@ -57,22 +55,18 @@ void Orrery::set_bodies()
             bodies.push_back({ code, std::to_string(int(code)) });
         }
     }
+    return bodies;
 }
 
-void Orrery::set_grav_body_idx()
+std::vector<size_t> Orrery::get_grav_body_idx() const
 {
+    std::vector<size_t> grav_body_idx;
     for (size_t i = 1; i < objects.size(); i++) {
         if (objects[i].gravitational_body) {
             grav_body_idx.push_back(i - 1);
         }
     }
-}
-
-void Orrery::set_naif_to_idx()
-{
-    for (size_t i = 1; i < objects.size(); i++) {
-        naif_to_idx[objects[i].ephemeris->target_code] = i - 1;
-    }
+    return grav_body_idx;
 }
 
 struct _Body {

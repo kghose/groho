@@ -41,17 +41,12 @@ public:
     StatusCode status() { return _status; }
     void       pos_at(J2000_s t, v3d_vec_t& pos);
 
-    std::vector<BodyConstant>            bodies;
-    std::vector<size_t>                  grav_body_idx;
-    std::unordered_map<NAIFbody, size_t> naif_to_idx;
+    std::vector<BodyConstant> get_bodies() const;
+    std::vector<size_t>       get_grav_body_idx() const;
 
 private:
     std::vector<OrreryObject> objects;
     StatusCode                _status;
-
-    void set_bodies();
-    void set_grav_body_idx();
-    void set_naif_to_idx();
 };
 
 std::vector<OrreryObject> load_orrery_objects(

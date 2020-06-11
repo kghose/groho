@@ -30,19 +30,15 @@ void set_initial_orbit(
 }
 
 void set_initial_orbit(
-    const CommandToken& command,
-    const State&        state,
-    const Orrery&       orrery,
-    V3d&                pos,
-    V3d&                vel)
+    const CommandToken& command, const State& state, V3d& pos, V3d& vel)
 {
     auto orbit = OrbitalCommand(command.params);
     // No error checking for now
-    size_t idx = orrery.naif_to_idx.at(orbit.center);
+    size_t idx = state.orrery.idx_of(orbit.center);
     set_initial_orbit(
-        orrery.bodies[idx].GM,
-        orrery.bodies[idx].r + orbit.a1,
-        orrery.bodies[idx].r + orbit.a2,
+        state.orrery.body(idx).GM,
+        state.orrery.body(idx).r + orbit.a1,
+        state.orrery.body(idx).r + orbit.a2,
         state.orrery.pos()[idx],
         state.orrery.vel(idx),
         pos,

@@ -9,6 +9,7 @@ A small class to carry a Vector data structure
 
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 namespace groho {
 

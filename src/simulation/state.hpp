@@ -8,15 +8,27 @@ and enable vel and accel computations.
 */
 #pragma once
 
+#include "bodyconstant.hpp"
 #include "v3d.hpp"
 
 namespace groho {
 
 class DiffableState {
 public:
-    DiffableState(size_t n, double dt)
-        : dt(dt)
+    DiffableState() {}
+    DiffableState(
+        const std::vector<BodyConstant>& bodies,
+        const std::vector<size_t>&       grav_body_idx,
+        double                           dt)
+        : bodies_(bodies)
+        , grav_body_idx_(grav_body_idx)
+        , dt(dt)
     {
+        for (size_t i = 0; i < bodies_.size(); i++) {
+            naif_to_idx_[bodies_[i].code] = i;
+        }
+
+        size_t n = bodies_.size();
         vec[0].resize(n);
         vec[1].resize(n);
         vec[2].resize(n);
@@ -74,20 +86,36 @@ public:
         }
     }
 
+    size_t idx_of(NAIFbody naif) const { return naif_to_idx_.at(naif); }
+    const BodyConstant& body(size_t i) const { return bodies_[i]; }
+    const BodyConstant& body(NAIFbody naif) const
+    {
+        return bodies_[naif_to_idx_.at(naif)];
+    }
+    const std::vector<size_t>& grav_body_idx() const { return grav_body_idx_; }
+
 private:
     double dt;
 
     v3d_vec_t vec[3];
     size_t    idx = 0;
+
+    std::vector<BodyConstant>            bodies_;
+    std::vector<size_t>                  grav_body_idx_;
+    std::unordered_map<NAIFbody, size_t> naif_to_idx_;
 };
 
 class ExplicitState {
 public:
-    ExplicitState(size_t n)
+    ExplicitState() {}
+    ExplicitState(std::vector<NAIFbody> codes)
     {
-        vec[0].resize(n);
-        vec[1].resize(n);
-        vec[2].resize(n);
+        for (size_t i = 0; i < codes.size(); i++) {
+            naif_to_idx_[codes[i]] = i;
+        }
+        vec[0].resize(codes.size());
+        vec[1].resize(codes.size());
+        vec[2].resize(codes.size());
     }
 
     v3d_vec_t&       pos() { return vec[0]; }
@@ -97,19 +125,23 @@ public:
     v3d_vec_t&       acc() { return vec[2]; }
     const v3d_vec_t& acc() const { return vec[2]; }
 
+    size_t idx_of(NAIFbody naif) const { return naif_to_idx_.at(naif); }
+
 private:
     v3d_vec_t vec[3];
+
+    std::unordered_map<NAIFbody, size_t> naif_to_idx_;
 };
 
 struct State {
-    State()
-        : orrery(0, 0)
-        , spacecraft(0)
-    {
-    }
-    State(size_t orrery_n, size_t fleet_n, double dt)
-        : orrery(orrery_n, dt)
-        , spacecraft(fleet_n)
+    State() {}
+    State(
+        const std::vector<BodyConstant>& bodies,
+        const std::vector<size_t>&       grav_body_idx,
+        const std::vector<NAIFbody>&     codes,
+        double                           dt)
+        : orrery(bodies, grav_body_idx, dt)
+        , spacecraft(codes)
     {
     }
 

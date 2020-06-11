@@ -9,10 +9,19 @@ commands.
 
 #include <string>
 
-#include "inputfile.hpp"
+#include "inputfile.hpp" // for splitstring, move this to lib
 #include "naifbody.hpp"
+#include "state.hpp"
+#include "tokens.hpp"
+#include "v3d.hpp"
 
 namespace groho {
+
+class Command {
+public:
+    Command(CommandToken& token);
+    bool execute(const State&, V3d& acc);
+};
 
 struct OrbitalCommand {
 
