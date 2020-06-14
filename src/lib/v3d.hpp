@@ -86,6 +86,24 @@ inline V3d rotate(const V3d& v, V3d k, double th)
         + k * dot(k, v) * (1 - std::cos(th));
 }
 
+class RotateX {
+public:
+    RotateX(double th)
+        : a11(std::cos(th))
+        , a12(-std::sin(th))
+        , a21(std::sin(th))
+        , a22(std::cos(th))
+    {
+    }
+    V3d operator()(const V3d& v) const
+    {
+        return { v.x, v.y * a11 + v.z * a12, v.y * a21 + v.z * a22, v.t };
+    }
+
+private:
+    const double a11, a12, a21, a22;
+};
+
 inline std::ostream& operator<<(std::ostream& os, const V3d& v)
 {
     os << v.x << ", " << v.y << ", " << v.z;
