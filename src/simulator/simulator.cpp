@@ -1,11 +1,12 @@
 /*
 This file is part of Groho, a simulator for inter-planetary travel and warfare.
-Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
+Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 This file defines the simulator code
 */
 #include <filesystem>
 
+#include "filelock.hpp"
 #include "initialorbit.hpp"
 #include "simulation.hpp"
 #include "simulator.hpp"
@@ -65,11 +66,20 @@ void add_thrust_to_acceleration(
 }
 
 Simulator::Simulator(std::string scn_file, std::string outdir)
+    : scn_file(scn_file)
+    , outdir(outdir)
+{
+    sim_thread = std::thread(&Simulator::run, this);
+}
+
+void Simulator::run()
 {
     auto lines = load_input_file(scn_file);
     if (!lines) {
         return;
     }
+
+    FileLock lock(outdir);
 
     Scenario   scenario(*lines);
     Simulation simulation(scenario, outdir);

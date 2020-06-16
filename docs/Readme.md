@@ -69,7 +69,29 @@ The output directory is populated with the following files
 - `bodies.txt` a manifest file listing all the bodies in the simulation
 - `events.txt` a list of events and their times
 
-## Why the data are rotated in Python rather than C++
+## Python/C++ interop
+We need a mechanism by which the C++ simulator code can signal to the Python
+visualization code that the simulation data is ready. Also, the Python code
+should be able to signal to the C++ code when it's still loading the data, so
+that the C++ simulator won't restart at the same time and overwrite the old
+simulation just yet.
+
+There is a nice list of possibilities [here][so-ipc]. To start with I used a
+basic lock file based system. If time permits I will explore more sophisticated
+methods. 
+
+[so-ipc]: https://softwareengineering.stackexchange.com/a/262932/108304
+
+On the Python side, the file locking is achieved via
+[`py-filelock`](https://pypi.org/project/filelock/) while on the C++ side we use
+`fcntl`. We use a RAII idom in the FileLock class
+([hpp](https://github.com/kghose/groho/tree/master/src/simulator/filelock.hpp),
+[cpp](https://github.com/kghose/groho/tree/non-interactive/src/simulator/filelock.cpp))
+
+The lock file is called `sim.lock` and is located within the data directory.
+
+
+## Why are the data rotated in Python rather than C++?
 The J2000 frame is aligned with the Earth's axis, which is tilted 23.5 deg to the
 eclicptic plane. Aesthetically, charts look much better when plotted with the
 eclicptic on the XY-plane, so we rotate the data.
@@ -85,7 +107,7 @@ Saving without rotating in C++: 2.188s
 ```
 
 Now, the benchmarks may not be perfect, but it tipped the decision in favor of
-rotatng the data in Python before displaying:
+rotating the data in Python before displaying:
 
 1. It felt icky to hardcode the rotation parameters in the C++ code. Better to
    have it easily and transparently operated in the Python code
