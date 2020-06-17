@@ -38,5 +38,7 @@ struct Scenario {
     void parse_plans(Lines& lines);
     void sort_and_validate_plans();
     void log_issues(const Lines& lines) const;
+
+    bool operator != (const Scenario& rhs);
 };
 }

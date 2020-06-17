@@ -65,42 +65,57 @@ void add_thrust_to_acceleration(
 {
 }
 
-Simulator::Simulator(std::string scn_file, std::string outdir)
+Simulator::Simulator(
+    std::string scn_file, std::string outdir, bool non_interactive)
     : scn_file(scn_file)
     , outdir(outdir)
 {
-    keep_running = true;
-    sim_thread   = std::thread(&Simulator::run, this);
+    keep_looping     = !non_interactive;
+    main_loop_thread = std::thread(&Simulator::main_loop, this);
 }
 
-bool Simulator::scenario_has_changed() { return false; }
+void Simulator::main_loop()
+{
+    for (;;) {
+        auto lines = load_input_file(scn_file);
+        if (lines) {
+            auto new_scenario = Scenario(*lines);
+            if (new_scenario != current_scenario) {
+                if (sim_thread.joinable()) {
+                    keep_running = false;
+                    sim_thread.join();
+                }
+                current_scenario = new_scenario;
+                keep_running     = true;
+                sim_thread       = std::thread(&Simulator::run, this);
+            }
+        }
+        if (keep_looping) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        } else {
+            if (sim_thread.joinable()) {
+                sim_thread.join();
+            }
+            break;
+        }
+    }
+}
 
-void Simulator::stop()
+void Simulator::quit()
 {
     keep_running = false;
-    sim_thread.join();
-}
-
-void Simulator::restart()
-{
-    stop();
-    keep_running = true;
-    sim_thread   = std::thread(&Simulator::run, this);
+    keep_looping = false;
+    main_loop_thread.join();
 }
 
 void Simulator::run()
 {
-    auto lines = load_input_file(scn_file);
-    if (!lines) {
-        return;
-    }
-
     FileLock lock(outdir);
 
-    Scenario   scenario(*lines);
-    Simulation simulation(scenario, outdir);
+    // Scenario scenario(*lines);
+    Simulation simulation(current_scenario, outdir);
 
-    const auto& sim = scenario.sim;
+    const auto& sim = current_scenario.sim;
     LOG_S(INFO) << "start: " << sim.begin.as_ut();
     LOG_S(INFO) << "end:   " << sim.end.as_ut();
     LOG_S(INFO) << "step:  " << sim.dt;

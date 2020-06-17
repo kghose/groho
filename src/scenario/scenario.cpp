@@ -215,4 +215,20 @@ void Scenario::log_issues(const Lines& lines) const
     }
 }
 
+// MVP of scenario change checking
+bool Scenario::operator!=(const Scenario& rhs)
+{
+    if (lines.size() != rhs.lines.size()) {
+        return true;
+    }
+
+    for (size_t i = 0; i < lines.size(); i++) {
+        if (lines[i] != rhs.lines[i]) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 }

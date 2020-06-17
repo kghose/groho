@@ -24,7 +24,7 @@ volatile sig_atomic_t keep_running = true;
 void simulate(
     std::string scn_file, std::string sim_folder, bool non_interactive)
 {
-    auto simulator = Simulator(scn_file, sim_folder);
+    auto simulator = Simulator(scn_file, sim_folder, non_interactive);
     if (non_interactive) {
         simulator.wait_until_done();
         return;
@@ -32,18 +32,9 @@ void simulate(
 
     signal(SIGINT, [](int) { keep_running = false; });
     while (keep_running) {
-        if (simulator.scenario_has_changed()) {
-            simulator.restart();
-        }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    simulator.stop();
-}
-
-void sim(std::string scn_file, std::string sim_folder)
-{
-    auto simulator = Simulator(scn_file, sim_folder);
-    simulator.wait_until_done();
+    simulator.quit();
 }
 
 void list_programs() {}

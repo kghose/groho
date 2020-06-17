@@ -116,5 +116,24 @@ rotating the data in Python before displaying:
 I left the rotation code in `V3d`, because why not, but removed it from history
 to avoid cluttering up the code. It's hard to throw things away, but one must.
 
+## Checking Scenario file for changes
+
+In the older version of the code (~2018) we used file change detections to drive
+simulation restarts. The complication with this was that, since a scenario could
+be made of multiple files, we had to track which files made up a scenario and
+monitor each one. This made the watcher code complicated.
+
+In the current (2020) incarnation we periodically load the scenario. The loading
+process resolves all `insert`s and we get back a list of lines. We then check
+the lines for changes. While the details of the checking can be improved, this
+method is superior to the file watching method: 
+
+1. We don't have to keep track and monitor each individual scenario file
+   explicitly 
+2. Non-functional changes, like changes in comments, changes in spacings etc, do
+   not trigger a restart.
+
+There might be a slight increase in work becasue we repeatedly reload the
+scenario, these are small text files, so the overhead is small.
 
 # [Current road map](roadmap.md)

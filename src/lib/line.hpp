@@ -28,6 +28,13 @@ struct Line {
     std::string key;
     std::string value;
     ParseStatus status;
+
+    // Good enough for MVP
+    bool operator!=(const Line& rhs)
+    {
+        return !(
+            (line == rhs.line) && (key == rhs.key) && (value == rhs.value));
+    }
 };
 
 inline void
