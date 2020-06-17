@@ -13,7 +13,7 @@ Entry point function for command line program
 void print_license()
 {
     std::cout << R"(  
-    Groho 20.05: A simulator for inter-planetary travel and warfare
+    Groho 20.06: A simulator for inter-planetary travel.
     Copyright (c) 2017 - 2020 by Kaushik Ghose. 
     Released under the MIT License. Some rights reserved.
     
@@ -27,29 +27,21 @@ int main(int argc, char* argv[])
     CLI::App app{ "Groho: A simulator for inter-planetary travel" };
     app.require_subcommand(1);
 
-    std::string scn_file, plot_file, sim_folder, chart_pdf, kernel_file;
+    std::string scn_file, sim_folder, kernel_file;
+    bool        non_interactive;
 
     auto loop = app.add_subcommand(
-        "loop",
+        "sim",
         "Monitor changes in scenario and plot files,\n"
         "rerun and rechart simulation continuously");
     loop->add_option("simfile", scn_file, "Scenario file")->required();
-    loop->add_option("plotfile", plot_file, "Plot file")->required();
     loop->add_option("simfolder", sim_folder, "Simulation folder")->required();
-    loop->add_option("chart", chart_pdf, "Chart PDF")->required();
+    loop->add_flag(
+        "--non-interactive",
+        non_interactive,
+        "Run simulation and exit, instead of looping.");
     loop->callback(
-        [&]() { groho::loop(scn_file, plot_file, sim_folder, chart_pdf); });
-
-    auto sim = app.add_subcommand("sim", "Simulate scenario and exit");
-    sim->add_option("simfile", scn_file, "Scenario file")->required();
-    sim->add_option("simfolder", sim_folder, "Simulation folder")->required();
-    sim->callback([&]() { groho::sim(scn_file, sim_folder); });
-
-    auto chart = app.add_subcommand("chart", "Chart simulation and exit");
-    chart->add_option("plotfile", plot_file, "Plot file")->required();
-    chart->add_option("simfolder", sim_folder, "Simulation folder")->required();
-    chart->add_option("chart", chart_pdf, "Chart PDF")->required();
-    chart->callback([&]() { groho::chart(plot_file, sim_folder, chart_pdf); });
+        [&]() { groho::simulate(scn_file, sim_folder, non_interactive); });
 
     auto programs = app.add_subcommand(
         "programs", "Describe spacecraft programs available");

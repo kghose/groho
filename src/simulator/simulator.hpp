@@ -15,7 +15,9 @@ namespace groho {
 class Simulator {
 public:
     Simulator(std::string scn_file, std::string outdir);
-    void stop() { ; }
+    bool scenario_has_changed();
+    void stop();
+    void restart();
     void wait_until_done() { sim_thread.join(); }
 
 private:
@@ -24,7 +26,8 @@ private:
     const std::string scn_file;
     const std::string outdir;
 
-    std::thread sim_thread;
+    std::thread       sim_thread;
+    std::atomic<bool> keep_running;
 };
 
 }

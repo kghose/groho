@@ -69,7 +69,23 @@ Simulator::Simulator(std::string scn_file, std::string outdir)
     : scn_file(scn_file)
     , outdir(outdir)
 {
-    sim_thread = std::thread(&Simulator::run, this);
+    keep_running = true;
+    sim_thread   = std::thread(&Simulator::run, this);
+}
+
+bool Simulator::scenario_has_changed() { return false; }
+
+void Simulator::stop()
+{
+    keep_running = false;
+    sim_thread.join();
+}
+
+void Simulator::restart()
+{
+    stop();
+    keep_running = true;
+    sim_thread   = std::thread(&Simulator::run, this);
 }
 
 void Simulator::run()
@@ -107,7 +123,7 @@ void Simulator::run()
     }
 
     // Main sim
-    for (; t < sim.end; t += sim.dt, steps++) {
+    for (; t < sim.end && keep_running; t += sim.dt, steps++) {
         simulation.orrery.pos_at(t, state.orrery.next_pos());
         update_ship_state(t, sim.dt, state);
         compute_gravitational_acceleration(state, state.spacecraft.acc());

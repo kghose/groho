@@ -8,19 +8,8 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 namespace groho {
 
-void loop(
-    std::string scn_file,
-    std::string plot_file,
-    std::string sim_folder,
-    std::string chart_pdf);
-
-void sim(std::string scn_file, std::string sim_folder);
-
-void chart(
-    std::string plot_file, std::string sim_folder, std::string chart_pdf);
-
+void simulate(std::string scn_file, std::string sim_folder, bool);
 void list_programs();
-
 void inspect(std::string kernel_file);
 
 }
