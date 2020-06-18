@@ -125,15 +125,18 @@ monitor each one. This made the watcher code complicated.
 
 In the current (2020) incarnation we periodically load the scenario. The loading
 process resolves all `insert`s and we get back a list of lines. We then check
-the lines for changes. While the details of the checking can be improved, this
-method is superior to the file watching method: 
+the lines for changes. This method is superior to the older file watching method: 
 
-1. We don't have to keep track and monitor each individual scenario file
-   explicitly 
-2. Non-functional changes, like changes in comments, changes in spacings etc, do
-   not trigger a restart.
+1. The algorithm is simpler: We don't have to keep track of and monitor each
+   individual scenario file explicitly. This also gave rise to an issue where we
+   could change what files composed a scenario in an edit, and it got
+   complicated to update the watchers to track these new files, or remove stale
+   files from the watch list.
+2. Non-functional changes: adding/removing comments, adding non-functional
+   whitespace and so on are ignored in a very natural manner. 
 
-There might be a slight increase in work becasue we repeatedly reload the
-scenario, these are small text files, so the overhead is small.
+There might be a slight increase in work because we repeatedly reload the
+scenario. However these are small text files reloaded at (in CPU time) a low
+rate, so the overhead is insignificant.
 
 # [Current road map](roadmap.md)
