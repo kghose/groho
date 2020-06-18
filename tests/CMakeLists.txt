@@ -24,7 +24,7 @@ include_directories(
 )
 
 file(GLOB SOURCES
-  ../src/lib/inputfile.cpp
+  ../src/lib/*.cpp
   ../src/orrery/*.cpp
   ../src/sampling/*.cpp 
   ../src/simulator/*.cpp
