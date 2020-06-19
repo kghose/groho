@@ -1,5 +1,6 @@
 import time
 import argparse
+import pathlib
 
 import grohoviz.chartmaker
 
@@ -11,7 +12,7 @@ def main():
     args = parser.parse_args()
 
     chart_maker = grohoviz.chartmaker.ChartMaker(
-        datadir=args.datadir, plotting_file=args.plotfile
+        datadir=pathlib.Path(args.datadir), plotting_file=pathlib.Path(args.plotfile)
     )
     chart_maker.start()
 

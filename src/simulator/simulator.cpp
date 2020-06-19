@@ -4,6 +4,7 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 
 This file defines the simulator code
 */
+#include <chrono>
 #include <filesystem>
 
 #include "filelock.hpp"
@@ -15,6 +16,8 @@ This file defines the simulator code
 #include "loguru.hpp"
 
 namespace groho {
+
+namespace fs = std::filesystem;
 
 void initialize_ships(Simulation& simulation)
 {
@@ -63,6 +66,15 @@ void add_thrust_to_acceleration(
     const SpacecraftTokens& spacecraft_tokens,
     v3d_vec_t&              ship_acc)
 {
+}
+
+void save_manifest(const State& state, std::string outdir)
+{
+    std::ofstream file(fs::path(outdir) / "manifest.yml", std::ios::out);
+    file << "time: "
+         << std::chrono::system_clock::to_time_t(
+                std::chrono::system_clock::now())
+         << std::endl;
 }
 
 Simulator::Simulator(
@@ -152,6 +164,8 @@ void Simulator::run()
         simulation.spacecraft.append(state.spacecraft.pos());
     }
     LOG_S(INFO) << steps << " steps";
+
+    save_manifest(state, outdir);
 }
 
 }

@@ -1,4 +1,125 @@
-@startuml Sequence
+@startuml sequence
+
+actor User
+boundary Scenario
+control "Simulator" as sim
+participant Manifest
+participant Lock
+participant Data
+control Plotter
+participant Chart
+boundary "View" as plotf
+actor "User" as u2
+
+' Inital run
+
+activate Scenario
+activate plotf
+plotf ->> Plotter: update(viewfile)
+activate Plotter
+deactivate plotf
+Plotter -> Data: load_data()
+Plotter <-- Data: < no data >
+deactivate Plotter
+
+Scenario ->> sim: restart(scenario)
+deactivate Scenario
+sim ->> Lock: lock
+activate Lock #red
+activate sim
+|||
+|||
+sim -> sim: done
+sim ->> Data
+activate Data
+sim ->> Manifest
+activate Manifest
+Manifest ->> Plotter: Manifest changed
+activate Plotter
+deactivate Lock
+deactivate sim
+deactivate Manifest
+
+Plotter -> Lock: lock
+activate Lock #blue
+Data ->> Plotter: data
+deactivate Data
+deactivate Lock
+Plotter -> Chart: plot(data)
+deactivate Plotter
+
+
+' User edits plot file
+
+activate u2
+u2 -> plotf: edit
+deactivate u2
+
+activate plotf
+plotf ->> Plotter: update(viewfile)
+activate Plotter
+deactivate plotf
+Plotter -> Chart: plot(data)
+deactivate Plotter
+
+
+' Restart after scenario edit
+
+activate User
+User -> Scenario: edit
+deactivate User
+activate Scenario
+
+Scenario -> sim: stop
+deactivate sim
+Scenario -> sim: restart(scenario)
+deactivate Scenario
+activate sim
+sim ->> Lock: lock
+activate Lock #red
+
+
+' User edits plot file II
+
+activate u2
+u2 -> plotf: edit
+deactivate u2
+
+activate plotf
+Plotter <- plotf: update(viewfile)
+deactivate plotf
+activate Plotter
+Plotter -> Chart: plot(data)
+deactivate Plotter
+
+sim -> sim: done
+sim ->> Data
+activate Data
+sim ->> Manifest
+activate Manifest
+Manifest ->> Plotter: Manifest changed
+deactivate Manifest
+activate Plotter
+deactivate sim
+deactivate Lock
+Plotter -> Lock: lock
+activate Lock #blue
+
+Data ->> Plotter: data
+deactivate Data
+deactivate Lock
+Plotter -> Chart: plot(data)
+deactivate Plotter
+
+
+
+
+@enduml
+
+
+
+
+@startuml Sequenceold
 
 actor User
 boundary Scenario

@@ -6,6 +6,7 @@ from watchdog.observers import Observer
 from filelock import FileLock
 
 lock_file = "sim.lock"
+manifest_file = "manifest.yml"
 
 
 class EventHandler:
@@ -38,10 +39,11 @@ class FileObserver:
 
 class ChartMaker:
     def __init__(self, datadir: pathlib.Path, plotting_file: pathlib.Path):
-        self.data_observer = FileObserver(
-            pathlib.Path(datadir) / lock_file, self.reload_data
-        )
-        self.plot_observer = FileObserver(pathlib.Path(plotting_file), self.replot)
+        self.datadir = datadir
+        self.plotting_file = plotting_file
+        self.reload_data()
+        self.data_observer = FileObserver(datadir / manifest_file, self.reload_data)
+        self.plot_observer = FileObserver(plotting_file, self.replot)
 
     def start(self):
         self.data_observer.start()
@@ -52,7 +54,7 @@ class ChartMaker:
         self.plot_observer.stop()
 
     def reload_data(self):
-        lock = FileLock(self.data_observer.path)
+        lock = FileLock(self.datadir / lock_file)
         with lock:
             sys.stderr.write("Reloading data\n")
         self.replot()

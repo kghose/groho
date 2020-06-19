@@ -36,10 +36,6 @@ plotting, if the data is unchanged, or if the plotting file is unchanged, the
 plot is not redone.
 
 
-## Plotter loop
-![](uml/png/plotterloop.png)
-
-
 # Design decisions
 
 ## Saving data
@@ -64,10 +60,12 @@ buffering is used.
 
 ### Output directory organization
 The output directory is populated with the following files 
-- `params.txt` a copy of the sim params file used to run the simulation
+- `manifest.yml` simulation data for charting program
 - `posX.bin` where `X` is the NAIF id of the object.
-- `bodies.txt` a manifest file listing all the bodies in the simulation
 - `events.txt` a list of events and their times
+
+`manifest.yml` doubles as a file to watch for simulator reruns. It is refreshed
+at each run.
 
 ## Python/C++ interop
 We need a mechanism by which the C++ simulator code can signal to the Python
@@ -89,6 +87,21 @@ On the Python side, the file locking is achieved via
 [cpp](https://github.com/kghose/groho/tree/non-interactive/src/simulator/filelock.cpp))
 
 The lock file is called `sim.lock` and is located within the data directory.
+
+### Making lock file and file watching work well together
+From the python side we use a [file watcher](https://pypi.org/project/watchdog/)
+to trigger replotting when the plot file changes, and reloading and replotting
+when the simulation reruns.
+
+Initially I watched the lock file. This was a disaster because it turns out the
+`py-filelock` library modifies the file when it locks/unlocks it. This triggered
+further watch events, which led to further lock/unlock events ... you get the
+idea. So I ended up watching the `manifest.yml` file, and things work fine.
+
+_As a side note, the code does some tricks to make the watchdog code watch a
+particular file, rather than a directory. The tricks are a lot simpler than what
+you will find on the internet. They are found in the `chartmaker.py` code in the
+`EventHandler.dispatch` function_
 
 
 ## Why are the data rotated in Python rather than C++?
