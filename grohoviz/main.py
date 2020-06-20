@@ -16,13 +16,13 @@ def main():
     chart_maker = grohoviz.chartmaker.ChartMaker(
         datadir=pathlib.Path(args.datadir), plotting_file=pathlib.Path(args.plotfile)
     )
-    chart_maker.start()
 
     try:
         while True:
             plt.pause(0.01)
+            chart_maker.poll()
     except KeyboardInterrupt:
-        chart_maker.stop()
+        pass
 
 
 if __name__ == "__main__":

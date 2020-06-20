@@ -3,7 +3,6 @@ import argparse
 import sys
 from typing import List
 
-from watchdog.observers import Observer
 from filelock import FileLock
 
 import matplotlib.pyplot as plt
@@ -14,51 +13,26 @@ lock_file = "sim.lock"
 manifest_file = "manifest.yml"
 
 
-class EventHandler:
-    def __init__(self, path: pathlib.Path, callback):
-        self.path = path
-        self.callback = callback
-
-    def dispatch(self, event):
-        if self.path.is_dir() or (event.src_path == str(self.path)):
-            self.callback()
-
-
-class FileObserver:
-    def __init__(self, path: pathlib.Path, callback):
-        self.path = path
-        self.callback = callback
-        self.observer = Observer()
-        self.eh = EventHandler(path, callback)
-        self.watcher = self.observer.schedule(
-            self.eh, str(self.path.parent) if self.path.is_file() else str(self.path)
-        )
-
-    def start(self):
-        self.observer.start()
-
-    def stop(self):
-        self.observer.stop()
-        self.observer.join()
-
-
 class ChartMaker:
     def __init__(self, datadir: pathlib.Path, plotting_file: pathlib.Path):
         self.datadir = datadir
         self.plotting_file = plotting_file
+        self.datadir_last_changed = 0
+        self.plotting_file_last_changed = 0
+
         self.trajectories = None
         self.ax = plt.subplot(111)
         self.reload_data()
-        self.data_observer = FileObserver(datadir / manifest_file, self.reload_data)
-        self.plot_observer = FileObserver(plotting_file, self.replot)
 
-    def start(self):
-        self.data_observer.start()
-        self.plot_observer.start()
-
-    def stop(self):
-        self.data_observer.stop()
-        self.plot_observer.stop()
+    def poll(self):
+        datadir_last_changed = (self.datadir / manifest_file).stat().st_mtime
+        plotting_file_last_changed = self.plotting_file.stat().st_mtime
+        if datadir_last_changed > self.datadir_last_changed:
+            self.reload_data()
+            self.datadir_last_changed = datadir_last_changed
+        elif plotting_file_last_changed > self.plotting_file_last_changed:
+            self.replot()
+            self.plotting_file_last_changed = plotting_file_last_changed
 
     def reload_data(self):
         lock = FileLock(self.datadir / lock_file)
