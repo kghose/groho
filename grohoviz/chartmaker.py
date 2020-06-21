@@ -22,15 +22,20 @@ class ChartMaker:
 
         self.trajectories = None
         self.ax = plt.subplot(111)
-        self.reload_data()
 
     def poll(self):
         datadir_last_changed = (self.datadir / manifest_file).stat().st_mtime
         plotting_file_last_changed = self.plotting_file.stat().st_mtime
-        if datadir_last_changed > self.datadir_last_changed:
+
+        should_reload = datadir_last_changed > self.datadir_last_changed
+        should_replot = plotting_file_last_changed > self.plotting_file_last_changed
+
+        if should_reload:
             self.reload_data()
             self.datadir_last_changed = datadir_last_changed
-        elif plotting_file_last_changed > self.plotting_file_last_changed:
+            should_replot = True
+
+        if should_replot:
             self.replot()
             self.plotting_file_last_changed = plotting_file_last_changed
 
@@ -39,7 +44,6 @@ class ChartMaker:
         with lock:
             self.trajectories = datalib.load_data(self.datadir)
             sys.stderr.write("Reloading data\n")
-        self.replot()
 
     def replot(self):
         self.chart()
@@ -48,10 +52,13 @@ class ChartMaker:
 
     def chart(self, targets: List[int] = None):
         self.ax.cla()
-        for k, v in self.trajectories.items():
+        for k in self.trajectories.bodies():
             if targets is not None:
                 if k not in targets:
                     continue
-
-            self.ax.plot(v.s[:, 0], v.s[:, 1], label=k)
+            p = self.trajectories.get(k)
+            # p = self.trajectories.get(k, 301)
+            # p = self.trajectories.get(k, 301, 3600)
+            if p is not None:
+                self.ax.plot(p.x, p.y, label=k)
         self.ax.set_aspect("equal")
