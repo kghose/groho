@@ -111,6 +111,7 @@ SpkFile::load_ephemeris(NAIFbody code, J2000_s begin, J2000_s end) const
         break;
     default:
         LOG_S(ERROR) << "Body " << summary.target_id
+                     << ": Data type: " << summary.data_type
                      << ": Data is neither Type II or Type III: Skipping";
         return {};
     }
