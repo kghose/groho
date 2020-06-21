@@ -83,8 +83,8 @@ methods.
 On the Python side, the file locking is achieved via
 [`py-filelock`](https://pypi.org/project/filelock/) while on the C++ side we use
 `fcntl`. We use a RAII idom in the FileLock class
-([hpp](https://github.com/kghose/groho/tree/master/src/simulator/filelock.hpp),
-[cpp](https://github.com/kghose/groho/tree/non-interactive/src/simulator/filelock.cpp))
+([hpp](https://github.com/kghose/groho/tree/stable/src/simulator/filelock.hpp),
+[cpp](https://github.com/kghose/groho/tree/stable/src/simulator/filelock.cpp))
 
 The lock file is called `sim.lock` and is located within the data directory.
 

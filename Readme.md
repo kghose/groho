@@ -154,6 +154,14 @@ simulation more manageable.
 **WIP**
 
 
+# Getting the data
+
+
+## Physical constants
+The webpage at https://ssd.jpl.nasa.gov/sbdb_query.cgi#x will generate CSV files
+with customized data as you need.
+
+
 ```
 cd examples/001.basics
 ../../release_build/groho scn.groho.txt 
