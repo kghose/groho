@@ -12,8 +12,8 @@ Copyright (c) 2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 #include "fractaldownsampler.hpp"
 #include "naifbody.hpp"
 #include "simparams.hpp"
-#include "threadedbuffer.hpp"
-// #include "simplebuffer.hpp"
+// #include "threadedbuffer.hpp"
+#include "simplebuffer.hpp"
 #include "v3d.hpp"
 
 namespace fs = std::filesystem;
@@ -29,8 +29,8 @@ public:
         , rotx(-3.14159265358979323846264338327950288419 * 23.5 / 180.0)
     {
         sampler = FractalDownsampler(sim_params.rt, sim_params.lt);
-        buffer.reset(new ThreadedBuffer<V3d>(path));
-        // buffer.reset(new SimpleBuffer<V3d>(path));
+        // buffer.reset(new ThreadedBuffer<V3d>(path));
+        buffer.reset(new SimpleBuffer<V3d>(path));
     }
 
     void sample(const V3d& pos)
@@ -57,8 +57,8 @@ private:
     FractalDownsampler sampler;
     RotateX            rotx;
 
-    std::shared_ptr<ThreadedBuffer<V3d>> buffer;
-    // std::shared_ptr<SimpleBuffer<V3d>> buffer;
+    // std::shared_ptr<ThreadedBuffer<V3d>> buffer;
+    std::shared_ptr<SimpleBuffer<V3d>> buffer;
 };
 
 }
