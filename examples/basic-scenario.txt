@@ -1,0 +1,7 @@
+start 2020.01.01:0.5 ; Times are given as a Gregorian dates
+end 2022.01.03:0.4
+
+spk de432s.bsp
+
+plan Durga ; This starts a plan
+orbiting 301 700x100 ; Every spacecraft starts out orbiting a body 

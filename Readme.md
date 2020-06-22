@@ -1,7 +1,3 @@
-_This code is in the middle of a rewrite and is not functional yet. For the last working version please
-see the [master branch](https://github.com/kghose/groho/tree/master) and
-[releases](https://github.com/kghose/groho/releases)._
-
 Groho ( গ্রহ )
 =====
 Groho is a simulator for space travel within the solar system.
@@ -18,50 +14,99 @@ descendants who set sail away from the home planet
 *Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the
 word for planetary system but is more of a mouthful.*
 
-# Developer documentation
-I use this project to keep current with my design and C++ skills. 
-
-- Here are some [UML design documents](docs/Readme.md)
-- My relevant [blog posts][posts] on C++ and other topics.
-- Some very [unorganized notes](src/Readme.md) on C++ used in this project. 
-
-[posts]: https://kaushikghose.wordpress.com/tag/spacecraft-trajectory-simulator/
 
 # Quick start
 
-The simulator uses two input files: a **scenario file** and a **plot file**. The
-scenario file lists out the initial conditions for the simulation, the orrery
-model and the flight plans for any spacecraft in the simulation. The plot file
-lists instructions for how to plot the simulation data.
+**You can put the compiled code, your scenario files and the data files
+anywhere on disk. For simplicity, in the tutorial here, especially so that the
+example scenario file can work out of the box, I mention a fixed directory
+structure.**
 
-_For the restless, you can jump to this annotated
-[example](examples/001.basics/scn.groho.txt) to get started_ 
+## Installation
 
-## Invocations
-Simulator loop: monitor changes in scenario and plot files and rerun and replot
-simulation continuously
+_I haven't had time to make things super easy. This assumes some knowledge of
+how to compile C++ programs and install Python programs with `pip`_
+
+The software consists of two parts: a simulator, which is a C++ program that
+needs to be compiled, and a visualizer, which is a Python program that should be
+installed.
+
+You need `cmake` 3.12.0 or later, a c++ compiler that can do C++17, like `gcc`
+9.3.1 or later, or `clang` 11.0.3 or later, and Python 3.7 or later.
+
+### Grab the code
+Best is to `git clone` the latest code from the `stable` branch.
 ```
-groho loop scn-file.txt plot-file.txt sim-folder chart.pdf
+git clone https://github.com/kghose/groho.git
 ```
 
-Simulate scenario and exit
+### Install the visualizer
+From the root of the code directory, where you find this Readme.md file, in
+a Python 3.7 environment 
 ```
-groho sim scn-file.txt sim-folder
+pip install .
 ```
 
-Chart simulation and exit
+### Compile simulator
+From the root of the code directory, where you find this Readme.md file: 
 ```
-groho chart plot-file.txt sim-folder chart.pdf
+mkdir build
+cd build
+cmake ..
+make -j4
 ```
+
+## Pull sample data files
+
+The simulator loads planetary and satellite data from data files put out by the
+Jet Propulsion Laboratory (JPL). These are called SPICE kernels and many can be
+found from [this website](https://naif.jpl.nasa.gov/naif/data.html)
+
+The example uses the [de432s.bsp] kernel. Download this file to the `examples`
+directory. 
+
+[de432s.bsp]: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de432s.bsp
+
+
+## Running
+
+Open a terminal and, from the root directory, do
+```
+build/groho sim examples/basic-scenario.txt simout
+```
+This will start the simulator in "server" mode, which just means it runs the
+simulation and then sits watching for changes to the scenario described by
+`basic-scenario.txt` and reruns whenever the scenario is changed.
+
+In another terminal, in your Python 3.7 environment, start the visualizer code
+with 
+```
+grohoviz simout exmples/basic-plotfile.txt
+```
+This starts the visualizer which will plot the simulation and then wait,
+watching for updates to the simulator output (which it will replot
+automatically) and for updates to the plotfile, which it will also replot,
+automatically. 
+
+At this point you should have the following plot:
+
+
+- plot goes here -
+
+The `groho` executable has a few other modes that the CLI help will explain to
+you if you are interested. 
 
 # Scenario file manual
 
+The scenario file lists out the initial conditions for the simulation, the orrery
+model and the flight plans for any spacecraft in the simulation.
+
 The easiest way to learn about scenario files is to look at the annotated
-[example](examples/001.basics/scn.groho.txt)
+[example](examples/basic-scenario.txt) we just ran.
 
 To get a list of spacecraft programs and how to use them do
 ```
-groho programs
+build/groho programs
 ```
 
 ## Orrery model
@@ -162,252 +207,14 @@ The webpage at https://ssd.jpl.nasa.gov/sbdb_query.cgi#x will generate CSV files
 with customized data as you need.
 
 
-```
-cd examples/001.basics
-../../release_build/groho scn.groho.txt 
-```
-![Groho 18.07 screenshot](docs/milestone-images/groho-18.07.png "Groho 18.07 screenshot")
+# Developer documentation
+I use this project to keep current with my design and C++ skills. 
 
+- Here are some [UML design documents](docs/Readme.md)
+- My relevant [blog posts][posts] on C++ and other topics.
+- Some very [unorganized notes](src/Readme.md) on C++ used in this project. 
 
-```
-cd examples/002.full-solar-system
-../../release_build/groho scn.groho.txt 
-```
-![Groho 18.07 screenshot](docs/milestone-images/groho-18.07-ss.png "Groho 18.07 screenshot")
-
-[![CircleCI](https://circleci.com/gh/kghose/groho/tree/master.svg?style=shield)](https://circleci.com/gh/kghose/groho/tree/master)
-
-<!-- TOC -->
-
-- [Quick start](#quick-start)
-  - [Invocations](#invocations)
-- [Scenario file manual](#scenario-file-manual)
-  - [Orrery model](#orrery-model)
-  - [Flight plans](#flight-plans)
-  - [The `insert` directive](#the-insert-directive)
-- [Plot file manual](#plot-file-manual)
-- [Developer](#developer)
-  - [Docs](#docs)
-- [Features and use cases](#features-and-use-cases)
-  - [This is not an interactive simulation](#this-is-not-an-interactive-simulation)
-  - [This is not an n-body simulation](#this-is-not-an-n-body-simulation)
-  - [Relativistic effects](#relativistic-effects)
-- [Compilation/building](#compilationbuilding)
-  - [Compile](#compile)
-- [Manual/Tutorial](#manualtutorial)
-  - [Getting the data](#getting-the-data)
-  - [Simulation files](#simulation-files)
-    - [Actions](#actions)
-    - [Signals](#signals)
-    - [Restarts](#restarts)
-  - [What does a ship know about the world?](#what-does-a-ship-know-about-the-world)
-  - [Orbit view interactions](#orbit-view-interactions)
-  - [[Developer documentation](docs/Readme.md)](#developer-documentationdocsreadmemd)
-  - [Meta](#meta)
-    - [Why is the tutorial/manual in the form of commented examples?](#why-is-the-tutorialmanual-in-the-form-of-commented-examples)
-    - [Why do you have stuff in the manual/examples that isn't implemented yet?](#why-do-you-have-stuff-in-the-manualexamples-that-isnt-implemented-yet)
-- [Physics/astronautics word salad](#physicsastronautics-word-salad)
-- [Related software](#related-software)
-  - [NASA's GMAT](#nasas-gmat)
-  - [Solar System Voyager (SSVG)](#solar-system-voyager-ssvg)
-  - [NASA Ames Research Center Trajectory Browser](#nasa-ames-research-center-trajectory-browser)
-  - [Rebound by Hanno Rein](#rebound-by-hanno-rein)
-  - [Orbiter by Martin Schweiger](#orbiter-by-martin-schweiger)
-  - [Bussard by Phil Hagelberg](#bussard-by-phil-hagelberg)
-  - [SolarSystemOrbiter](#solarsystemorbiter)
-  - [Poliastro by Juan Luis Cano Rodríguez](#poliastro-by-juan-luis-cano-rodríguez)
-  - [Celestia](#celestia)
-  - [Asterank](#asterank)
-- [Thanks](#thanks)
-  - [Components](#components)
-  - [Dev tooling](#dev-tooling)
-- [Meta: Why did you put everything in this one document?](#meta-why-did-you-put-everything-in-this-one-document)
-  - [Developer notes](#developer-notes)
-
-<!-- /TOC -->
-
-# Features and use cases
-
-This simulator is designed to help gain intuitions of how near-future space 
-flight within the solar system would look like. To this end it allows us to:
-
-- Simulate the flights and interactions of hundreds of spacecraft
-- Simulate decades long journeys in reasonable CPU time.
-- Compose multiple journeys together to make a complex simulation from simpler ones
-- Perform reproducible simulations (seeded random number generators, stable numerical calculations)
-- Compare multiple versions of a simulation
-
-
-## This is not an interactive simulation
-
-The simulation works by setting up a scenario and then letting everything evolve
-according to physical law and scripted events. The experimenter influences the
-simulation only through the choice of scenario and script parameters.
-
-
-## This is not an n-body simulation
-
-The motions of planets, moons and larger asteroids are taken from existing 
-ephemeris and are not propagated via n-body gravitational simulations. The 
-expected time scales of the simulations (upto a century) are short enough that 
-existing ephemeres will do fine and will save us a lot of computation. 
-The gravitational effect of each planet, moon and asteroid on a ship is taken 
-into account.
-
-
-## Relativistic effects
-
-Communications over solar-system distances are interestingly affected by the
-finite speed of light. The simulation enables the calculation of when an event
-at one location is detected at other locations/ships.
-
-
-# Compilation/building
-
-
-
-**This code requires a C++17 compiler.** In case you need it, there is a 
-[Dockerfile](.circleci/dockerfile) that installs a recent GCC. I used the 
-following creature comforts from C++17
-- [`std::optional`](https://en.cppreference.com/w/cpp/utility/optional)
-- [structured bindings](http://wg21.link/p0217r3)
-- [typename in a template template parameter](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4051.html)
-- [`[[maybe_unused]]` attribute](https://en.cppreference.com/w/cpp/language/attributes/maybe_unused)
-
-
-## Compile
-
-```
-git clone git@github.com:kghose/groho.git
-cd groho && \
-mkdir build && \
-cd build && \
-cmake -DCMAKE_BUILD_TYPE=Release .. && \
-make
-```
-
-# Manual/Tutorial
-
-```
-groho --help  # Get help about the program
-groho --actions # List available spacecraft actions 
-```
-
-## Getting the data
-
-Groho simulates the solar system using data produced by NASA/JPL. This data
-is distributed by NASA as planetary kernels found [here][nasa-kernels]. 
-There is a [script](examples/bsp-script.sh) under the examples directory that 
-I used to pull in all the `.bsp` files for the solar system. Be aware that 
-this is a few GB worth of data. You are free to use whatever kernels you wish.
-
-[nasa-kernels]: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/
-
-I save all these kernels under the [`examples`][ex-dir] directory.
-
-## Simulation files
-
-Groho uses a **scenario file**, one or more **flight plans** and one or more 
-**annotation files** to run a simulation and organize information on screen. 
-Simulation files can be edited with your favorite editor and versioned with
-your favourite versioning system. `groho` is independent of all this. What
-`groho` does is monitor changes to the simulation files on the file system and 
-updates the simulation computations when the files change.
-
-In the [`examples`][ex-dir] directory are a series of tutorials-by-example. 
-Each directory contains a scenario file, flight plans and annotation files
-with a mixture of commentary and code to show you the syntax. 
-
-[ex-dir]: examples/
-
-Start with the [basic example][basic-ex]: Read the [simulation file][basic-sim-file],
-[flight plan file][basic-flt-plan1] (there are [two][basic-flt-plan2]) and the
-[annotation file][basic-ann-file].
-
-[basic-ex]: examples/001.basics
-[basic-sim-file]: examples/001.basics/scn.groho.txt
-[basic-flt-plan1]: examples/001.basics/flt1.groho.txt
-[basic-flt-plan2]: examples/001.basics/flt2.groho.txt
-[basic-ann-file]: examples/001.basics/annotate.groho.txt
-
-After that, just browse the examples to get a feel for what else is available.
-
-### Actions
-
-Flight Plan actions are commands to a ship to do something. Actions can take
-place at a particular time or be triggered by a particular world state. Actions
-happen in sequence. 
-
-### Signals
-
-A flight plan can create signals on behalf of a ship. Signals travel radially 
-out at the speed of light from their point of origin and can be received by
-other ships once they are within the sphere. Once the signal has spread past 
-the furthest simulation object it is removed, since all ships have received
-the signal by that time. Signals can be shaped, such that they have different 
-amplitudes in different directions. Ship receivers can have different 
-sensitivities to signal intensity.
-
-### Restarts
-
-Restarts allow
-1. An existing complete simulation to be rerun with an extended end time without
-   having to recompute the previously computed segment
-1. An existing simulation to be rerun intelligently conserving previously computed
-   parts.
-
-Restarts are have not been implemented yet but features are implemented with
-restarts in mind.
-
-
-## What does a ship know about the world?
-
-We assume that every ship has access to perfect knowledge about all Orrery
-objects. Every ship has access to perfect information about itself, but not
-others. In order to get information about other ships it has to make use of
-signals (which travel at the speed of light). Signals can be radar/lidar which
-allow ranging, velocity and some identity information or data packets broadcast
-from another ship, which can carry arbitrary information.
-
-## Orbit view interactions
-
-Dragging the mouse will orbit the camera. Scrolling will zoom in and out. 
-Pressing ALT while scrolling will move back and forth in time. The up/down 
-cursor keys cycle through the planets/asteroids/spacecraft and the left/right keys 
-cycle through the satellites of said planets allowing us to center the camera on 
-different objects. 
-
-Pressing `p` will toggle display of body paths, `m` will toggle display of the
-fixed size markers, `b` will toggle display of the scaled circles that
-represent the actual size of the bodies, and `o` will toggle the information
-overlay.
-
-Once you have sufficient objects in the simulation, it becomes hard to find things. 
-Whatever view you can get to using the mouse/keyboard, you can also get to using
-the `view` annotation and in a much more effective way. Check out the documentation.
-
-*Eventually the [tutorial here](docs/tutorial.md) will be copied over into this space.*
-
-## [Developer documentation](docs/Readme.md)
-
-## Meta 
-
-### Why is the tutorial/manual in the form of commented examples?
-
-I personally learn well by example, so I wanted to try this out. I also use
-these tutorial scripts as ways to prototype proposed simulation file syntax,
-to see how it could look and work.
-
-Lastly, for a hobby project, it's a wasteful duplication of effort to have to 
-create/update example scripts and a separate manual or tutorial 
-(where I'd have to paste in snippets of code anyway). I chose to use comments 
-in the simulation files as a reliable way to keep upto-date documentation. 
-
-### Why do you have stuff in the manual/examples that isn't implemented yet?
-
-I'm aspirational. But seriously, I use the manual and the example input files as
-functional specifications. As I build out more of the software, more of the
-specifications are implemented. Please file bug reports as necessary.
+[posts]: https://kaushikghose.wordpress.com/tag/spacecraft-trajectory-simulator/
 
 
 # Physics/astronautics word salad
@@ -519,44 +326,10 @@ They are live at http://www.asterank.com/.
 
 # Thanks
 
-## Components
 Included in the code are the following fine pieces of software
 
 1. [loguru](https://github.com/emilk/loguru) from Emil Ernerfeldt for the logging
 1. [CLI11](https://github.com/CLIUtils/CLI11) from Henry Schreiner for the CLI 
 1. [catch(2)](https://github.com/catchorg/Catch2) from Phil Nash for unit tests
-1. [magnum/corrade][magnum] from Mosra (Vladimír Von­druš) for everything graphical
 
-## Dev tooling
-I was helped in writing the code by
-
-1. [The Clang compiler][clang] and `clang-format`  
-1. [Visual Studio Code][vs-code] from microsoft which does everything 
-   I want in a code editor (Though the debugger integration needs some work.)
-1. [Instruments]. I dislike Xcode, but love Instruments
-1. [markdown-toc][mtoc] from Alan Walk. I used that to generate the 
-   table of contents in markdown documents, which allowed me to 
-   consolidate my documentation.
-
-
-[vs-code]: https://code.visualstudio.com/
-[clang]: https://clang.llvm.org/
-[Instruments]: https://help.apple.com/instruments/mac/current/
-[mtoc]: https://github.com/AlanWalk/Markdown-TOC
-
-
-# Meta: Why did you put everything in this one document?
-
-When I started the project I had text documents all over the place. It seemed
-like a good idea - one document for an idea or topic. Pretty soon I had multiple
-docments with similar ideas/topics and I began to forget that I had them.
-Discoverability began to be a problem. So I decided to try packing stuff into
-as few documents as possible. You don't have to read all this at once, you can
-look for things using your browser or text editor's search function and not
-have to keep jumping from document to document. I will try to use bookmarks
-to help orientation. It's an experiment - tell me if you hate it.
-
-## Developer notes
-
-That said, there is a separate file, which contains 
-[some war stories about C++ and implementation](src/Readme.md).
+The code is passed through `clang-format` and VS code is my go to editor.
