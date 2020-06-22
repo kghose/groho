@@ -122,6 +122,10 @@ void Simulator::quit()
 
 void Simulator::run()
 {
+    if (!fs::exists(outdir)) {
+        fs::create_directories(outdir);
+    }
+
     FileLock lock(outdir);
 
     // Scenario scenario(*lines);
