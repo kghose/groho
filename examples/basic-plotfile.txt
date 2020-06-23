@@ -1,2 +1,11 @@
-main,,,
-moon,301,3600,-1000
+fig:
+  figsize: [4.5, 2.8]
+
+panels:
+  main:
+    subplot: 121
+  moon:
+    subplot: 122
+    ref: 301
+    targets: [-1000]
+    dt: 60

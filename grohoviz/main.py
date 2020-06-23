@@ -4,7 +4,7 @@ import pathlib
 
 import matplotlib.pyplot as plt
 
-import grohoviz.chartmaker
+from grohoviz.publisher import Publisher
 
 
 def main():
@@ -13,16 +13,10 @@ def main():
     parser.add_argument("plotfile", help="File with plotting instructions")
     args = parser.parse_args()
 
-    chart_maker = grohoviz.chartmaker.ChartMaker(
+    publisher = Publisher(
         datadir=pathlib.Path(args.datadir), plotting_file=pathlib.Path(args.plotfile)
     )
-
-    try:
-        while True:
-            plt.pause(0.01)
-            chart_maker.poll()
-    except KeyboardInterrupt:
-        pass
+    publisher.run()
 
 
 if __name__ == "__main__":

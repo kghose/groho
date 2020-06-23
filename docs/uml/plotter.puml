@@ -1,0 +1,75 @@
+@startuml plotterclasses
+
+class Chart {
+Manages plotting for one
+axes (subplot or inset)
+==
++ update_description()
++ replot()
+- axes_properties
+}
+
+class matplotlib::axes {
+}
+
+Chart *-- matplotlib::axes
+
+class Atlas {
+Manages plotting for one
+figure, which is a set of
+Charts
+==
++ update_description()
++ replot()
+- fig_properties
+}
+
+class matplotlib::figure {
+}
+
+
+Atlas "1" *-- "many" Chart
+Atlas *-- matplotlib::figure
+
+class Publisher {
+Manages polling of data
+and chart description on
+disk and triggering updates
+==
++ poll()
+- reload_descriptions()
+- replot()
+}
+
+Publisher "1" *-- "many" Atlas
+
+
+@enduml
+
+@startuml plotteractivity
+
+repeat 
+
+if (fresh data?) then (yes)
+:reload_data();
+:needs replotting = true;
+else (no)
+endif
+
+if (plot description\nchanged?) then (yes)
+:reload_plot_descriptions();
+:needs replotting = true;
+else (no)
+endif
+
+if (needs replotting?) then (yes)
+:replot();
+else (no)
+endif
+
+repeat while (interrupted?) is (no)
+->yes;
+stop
+
+
+@enduml

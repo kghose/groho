@@ -15,7 +15,7 @@ setup(
     entry_points={"console_scripts": [f"grohoviz = {name}.main:main"]},
     platforms=["POSIX", "MacOS", "Windows"],
     python_requires=">=3.7.0",
-    install_requires=["matplotlib>=3.1.1", "filelock"],
+    install_requires=["matplotlib>=3.1.1", "filelock", "pyyaml"],
     author="Kaushik Ghose",
     maintainer="Kaushik Ghose",
     maintainer_email="kaushik.ghose@gmail.com",
