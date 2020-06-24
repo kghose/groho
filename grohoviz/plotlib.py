@@ -55,6 +55,8 @@ class Chart:
             self.ax.remove()
 
         self.ax = self.fig.add_subplot(self.subplot)
+        self.ax.get_xaxis().set_visible(False)
+        self.ax.get_yaxis().set_visible(False)
         self._axis_properties.write_to(self.ax)
 
     def replot(self, trajectories):
@@ -68,7 +70,10 @@ class Chart:
             p = trajectories.get(k, self.ref, self.dt)
             if p is not None:
                 self.ax.plot(p.x, p.y, label=k)
+                self.ax.text(p.x[-1], p.y[-1], f"{k}", c="0.75", size=9)
 
+        self.ax.axhline(0, c="0.75", ls=":")
+        self.ax.axvline(0, c="0.75", ls=":")
         self.ax.set_aspect("equal")
         self._axis_properties.restore_or_set(self.ax)
         plt.draw()
@@ -90,6 +95,8 @@ class Atlas:
 
         if self.fig is None:
             self.fig = plt.figure(**desc.get("fig", {}))
+            self.fig.canvas.mpl_connect("button_press_event", self.reset)
+
         self.fig.set_size_inches(
             desc.get("fig", {}).get("figsize", [5.5, 2.8]), forward=True
         )
@@ -105,12 +112,9 @@ class Atlas:
             if name not in new_names:
                 self.charts.pop(name)
 
-        self.fig.canvas.mpl_connect("button_press_event", self.reset)
-
     def replot(self, trajectories):
         for k, chart in self.charts.items():
             chart.replot(trajectories)
-        plt.tight_layout()
 
     def reset(self, event):
         if event.dblclick:
