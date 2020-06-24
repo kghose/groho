@@ -73,11 +73,11 @@ class Chart:
         self._axis_properties.restore_or_set(self.ax)
         plt.draw()
 
+    def reset(self):
+        self.ax.autoscale()
 
-# For now each chart will appear in the same figure, in the future we might
-# be able to
-# TODO: Cleverly retain figure and axes properties
-# TODO: how to get Home button to zoom out to extents
+
+# For now each chart will appear in the same figure
 class Atlas:
     def __init__(self, plotfile):
         self.plotfile = plotfile
@@ -105,7 +105,16 @@ class Atlas:
             if name not in new_names:
                 self.charts.pop(name)
 
+        self.fig.canvas.mpl_connect("button_press_event", self.reset)
+
     def replot(self, trajectories):
         for k, chart in self.charts.items():
             chart.replot(trajectories)
         plt.tight_layout()
+
+    def reset(self, event):
+        if event.dblclick:
+            for k, chart in self.charts.items():
+                if event.inaxes == chart.ax:
+                    chart.reset()
+                    break
