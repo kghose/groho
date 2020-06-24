@@ -9,10 +9,37 @@ except ImportError:
     from yaml import Loader
 
 
+class AxisProperties:
+    def __init__(self):
+        self._axis_properties = None
+
+    def read_from(self, ax):
+        if self._axis_properties is not None:
+            self._axis_properties["lim"] = {
+                "x": ax.get_xlim(),
+                "y": ax.get_ylim(),
+            }
+
+    def write_to(self, ax):
+        if self._axis_properties is not None:
+            ax.set_xlim(self._axis_properties["lim"]["x"])
+            ax.set_ylim(self._axis_properties["lim"]["y"])
+
+    def restore_or_set(self, ax):
+        if self._axis_properties is None:
+            self._axis_properties = {}
+            self.read_from(ax)
+        else:
+            self.write_to(ax)
+
+
 class Chart:
     def __init__(self, fig, subplot, targets=None, ref=None, dt=None):
         self.fig = fig
-        self.subplot, self.ax, self._axis_properties = None, None, None
+        self.subplot = None
+        self.ax = None
+        self._axis_properties = AxisProperties()
+
         self.targets, self.ref, self.dt = targets, ref, dt
         self.update_description(subplot, targets, ref, dt)
 
@@ -24,15 +51,14 @@ class Chart:
         self.targets, self.ref, self.dt = targets, ref, dt
 
         if self.ax is not None:
+            self._axis_properties.read_from(self.ax)
             self.ax.remove()
+
         self.ax = self.fig.add_subplot(self.subplot)
+        self._axis_properties.write_to(self.ax)
 
     def replot(self, trajectories):
-        if self._axis_properties is not None:
-            self._axis_properties["lim"] = {
-                "x": self.ax.get_xlim(),
-                "y": self.ax.get_ylim(),
-            }
+        self._axis_properties.read_from(self.ax)
         self.ax.cla()
 
         for k in trajectories.bodies():
@@ -42,17 +68,9 @@ class Chart:
             p = trajectories.get(k, self.ref, self.dt)
             if p is not None:
                 self.ax.plot(p.x, p.y, label=k)
-        self.ax.set_aspect("equal")
 
-        if self._axis_properties is None:
-            self._axis_properties = {}
-            self._axis_properties["lim"] = {
-                "x": self.ax.get_xlim(),
-                "y": self.ax.get_ylim(),
-            }
-        else:
-            self.ax.set_xlim(self._axis_properties["lim"]["x"])
-            self.ax.set_ylim(self._axis_properties["lim"]["y"])
+        self.ax.set_aspect("equal")
+        self._axis_properties.restore_or_set(self.ax)
         plt.draw()
 
 
@@ -90,3 +108,4 @@ class Atlas:
     def replot(self, trajectories):
         for k, chart in self.charts.items():
             chart.replot(trajectories)
+        plt.tight_layout()
