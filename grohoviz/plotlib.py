@@ -74,7 +74,7 @@ class Chart:
 
         self.ax.axhline(0, c="0.75", ls=":")
         self.ax.axvline(0, c="0.75", ls=":")
-        self.ax.set_aspect("equal")
+        self.ax.set_aspect("equal", adjustable="datalim")
         self._axis_properties.restore_or_set(self.ax)
         plt.draw()
 
@@ -111,6 +111,8 @@ class Atlas:
         for name in list(self.charts.keys()):
             if name not in new_names:
                 self.charts.pop(name)
+
+        plt.subplots_adjust(top=1, bottom=0, right=1, left=0, wspace=0.01, hspace=0.01)
 
     def replot(self, trajectories):
         for k, chart in self.charts.items():
