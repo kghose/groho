@@ -60,9 +60,9 @@ class Publisher:
     def reload_data(self):
         lock = FileLock(self.datadir / lock_file)
         with lock:
-            self.trajectories = datalib.load_data(self.datadir)
+            self.atlas.update_data(datalib.load_data(self.datadir))
             sys.stderr.write("Reloading data\n")
 
     def replot(self):
-        self.atlas.replot(self.trajectories)
+        self.atlas.replot()
         sys.stderr.write("Replotting\n")

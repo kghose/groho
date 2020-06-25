@@ -2,6 +2,7 @@ import sys
 
 import yaml
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
 
 try:
     from yaml import CLoader as Loader
@@ -59,7 +60,7 @@ class Chart:
         self.ax.get_yaxis().set_visible(False)
         self._axis_properties.write_to(self.ax)
 
-    def replot(self, trajectories):
+    def replot(self, trajectories, t):
         self._axis_properties.read_from(self.ax)
         self.ax.cla()
 
@@ -69,8 +70,11 @@ class Chart:
                     continue
             p = trajectories.get(k, self.ref, self.dt)
             if p is not None:
-                self.ax.plot(p.x, p.y, label=k)
-                self.ax.text(p.x[-1], p.y[-1], f"{k}", c="0.75", size=9)
+                n1 = max(0, int(p.x.size * t) - 1)
+
+                self.ax.plot(p.x[:n1], p.y[:n1])
+                self.ax.text(p.x[n1], p.y[n1], f"{k}", c="0.75", size=9)
+                self.ax.plot(p.x[n1:], p.y[n1:], alpha=0.1)
 
         self.ax.axhline(0, c="0.75", ls=":")
         self.ax.axvline(0, c="0.75", ls=":")
@@ -88,6 +92,14 @@ class Atlas:
         self.plotfile = plotfile
         self.fig = None
         self.charts = {}
+
+        self.trajectories = None
+
+        self.t_slider = None
+        self.t = 1.0
+
+    def update_data(self, trajectories):
+        self.trajectories = trajectories
 
     def update_description(self):
         with open(self.plotfile, "r") as f:
@@ -112,11 +124,21 @@ class Atlas:
             if name not in new_names:
                 self.charts.pop(name)
 
-        plt.subplots_adjust(top=1, bottom=0, right=1, left=0, wspace=0.01, hspace=0.01)
+        plt.subplots_adjust(
+            top=1, bottom=0.03, right=1, left=0, wspace=0.01, hspace=0.01
+        )
 
-    def replot(self, trajectories):
+        if self.t_slider is None:
+            ax_slider = plt.axes([0.0, 0.0, 1.0, 0.03], facecolor="0.35")
+            self.t_slider = Slider(
+                ax_slider, "Time", 0.0, 1.0, valinit=1.0, valstep=1e-4, fc="yellow"
+            )
+            self.t_slider.on_changed(self.replot)
+
+    def replot(self, t=None):
+        self.t = t or self.t
         for k, chart in self.charts.items():
-            chart.replot(trajectories)
+            chart.replot(self.trajectories, self.t)
 
     def reset(self, event):
         if event.dblclick:
