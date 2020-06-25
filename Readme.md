@@ -14,6 +14,8 @@ descendants who set sail away from the home planet
 *Groho (গ্রহ) is the Bengali word for planet. Grohomondol (গ্রহমণ্ডল) is the
 word for planetary system but is more of a mouthful.*
 
+![Groho 2020.06.24 screenshot](https://i.imgur.com/IOIo7L5.png)
+
 
 # Quick start
 
@@ -78,125 +80,36 @@ This will start the simulator in "server" mode, which just means it runs the
 simulation and then sits watching for changes to the scenario described by
 `basic-scenario.txt` and reruns whenever the scenario is changed.
 
+> The `groho` executable has a few other modes that the CLI help will explain to
+you if you are interested. 
+
+
 In another terminal, in your Python 3.7 environment, start the visualizer code
 with 
 ```
-grohoviz simout exmples/basic-plotfile.txt
+grohoviz simout exmples/basic-plot-description.yml
 ```
 This starts the visualizer which will plot the simulation and then wait,
 watching for updates to the simulator output (which it will replot
 automatically) and for updates to the plotfile, which it will also replot,
 automatically. 
 
-At this point you should have the following plot:
+At this point you should have a plot that resembles the screenshot posted above.
+
+You can now edit the scenario file and/or the plot description file and the
+simulator will be rerun and the plot regenerated automatically.
+
+## Plot interaction
+
+Only two plot interactions are non-intuitive
+1. Double clicking on a panel will reset the axes limits to include all the
+   plotted data
+2. The yellow bar that spans the plot on the bottom is a time slider and that
+   can be clicked on or dragged to plot the simulation at different time points.
 
 
-- plot goes here -
-
-The `groho` executable has a few other modes that the CLI help will explain to
-you if you are interested. 
-
-# Scenario file manual
-
-The scenario file lists out the initial conditions for the simulation, the orrery
-model and the flight plans for any spacecraft in the simulation.
-
-The easiest way to learn about scenario files is to look at the annotated
-[example](examples/basic-scenario.txt) we just ran.
-
-To get a list of spacecraft programs and how to use them do
-```
-build/groho programs
-```
-
-## Orrery model
-You pass a list of kernel files to the simulator. Optionally, you can indicate a
-subset of NAIF codes that the simulator should load from the kernel file.
-
-```
-spk de432s.bsp ; load everything from this file
-
-pick 809 899
-spk nep086.bsp ; only load 809 and 899 from this file
-```
-
-A SPK file contains barycenters as well as physical bodies. Often ephemeris are
-stored relative a barycenter. For example:
-```
-301 -> 3 -> 0
-299 -> 2 -> 0
-809 -> 8 -> 0
-899 -> 8 -> 0
-```
-
-When loading objects the simulator follows the following rules
-
-1. If a barycenter and the main body of the barycenter are both loaded, the
-   barycenter is used for coordinate transforms but is not used for gravity
-   computations: the main body is used. The trajectory of the barycenter is
-   also, in this case, not saved.
-1. If a body encountered more than once, the ephemeris is loaded from the first
-   file it is encountered in.
-
-In the given example, the barycenter 8 is not used for gravity computations
-since 899 is loaded. 
-
-
-## Flight plans
-
-Flight plans start with a line indicating the name of the spacecraft
-
-```
-plan Durga
-```
-
-This is followed by a list of **events**. Each event specifies a start time,
-duration and, a spacecraft **program** and how it should run. For example the
-line: 
-
-```
-2050.01.01:0.5 3600 orbit 301 200x200
-```
-
-will turn on a program that thrusts the spaceship till it achieves a 200x200 km
-orbit around the moon or till the duration is up, whichever is earlier. (A
-duration is required because this makes restarts easier. It allows the simulator
-to more easily decide the time point upto which computations can be reused)
-
-Each program has access to the state of the solarsystem (modeling a perfect IMU
-and perfect knowledge of the solar system) and produces only one output: a
-thrust vector for the spaceship.
-
-Multiple programs can not run at the same time. If a program's event time occurs
-before the previous program has terminated, it will be put into a
-queue, so that they will run as soon as the earlier program has finished.
-
-To describe another spacecraft's flight plan, simply use another `plan`
-statement. All events coming after this, will be associated with this new
-spacecraft. 
-
-## The `insert` directive
-`insert` followed by a file path inserts the text of that file into the original
-file at that point. This can be done recursively. In this manner, multiple files
-can be combined to form the complete scenario file. For example 
-
-```
-start 2050.01.01:0.5
-end 2055.01.01:0.5
-
-spk de432s.bsp
-pick 809 899
-spk nep086.bsp 
-
-insert flightplan1.txt
-insert flightplan2.txt
-```
-is a neat way of splitting out the flightplans of the two spacecraft in the
-simulation into two additional files. This can make the writing of the
-simulation more manageable.
-
-# Plot file manual
-**WIP**
+# Scenario and plot file manuals
+These can be found [here](docs/manual.md)
 
 
 # Getting the data

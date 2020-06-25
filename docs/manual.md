@@ -1,149 +1,130 @@
-Flight Plan
-===========
-Spaceship commands are placed in a separate script file (called a "flight plan") 
-and a reference is put in the scenario file. Spaceship scripts are sequential 
-lists of actions. Each action has a time stamp. The action will not happen 
-before that time. Actions happen sequentially as they appear in the file. 
-It is illegal to have out of order time stamps in a flight plan. 
+# Scenario file manual
 
-## Header
+The scenario file lists out the initial conditions for the simulation, the orrery
+model and the flight plans for any spacecraft in the simulation.
 
-The flight plan starts with a header describing the spaceship
+The easiest way to learn about scenario files is to look at the annotated
+[example](examples/basic-scenario.txt) we just ran.
+
+To get a list of spacecraft programs and how to use them do
 ```
-ship-name: Durga
-max-acceleration: 10          # m/s^2 (a)
-max-fuel: 100                 # arbitrary units (u)
-fuel-consumption-rate: 0.1    # u / s / a 
+build/groho programs
 ```
 
-And initial state
-```
-state: Landed                 # One of Landed, Flying, Crashed
-pos: 150e6 0 0                # x, y, z in m relative to Solar System bary-center
-att: 1 0 0                    # attitude
-vel: 10 0 0                   # initial velocity
-gps: earth 38.728521, -77.251199  # Lat, Long relative to body
-                                  # only used if state is Landed 
-```
-
-Notes:
-1. If a `#` (octhrope) is encountered anywhere the rest of the line is ignored
-1. no variables can have spaces in them
-
-
-## Actions
-The header is followed by a list of actions in the following format
+## Orrery model
+You pass a list of kernel files to the simulator. Optionally, you can indicate a
+subset of NAIF codes that the simulator should load from the kernel file.
 
 ```
-<timestamp>: <action> <argument1> <argument2> ...
+spk de432s.bsp ; load everything from this file
+
+pick 809 899
+spk nep086.bsp ; only load 809 and 899 from this file
 ```
 
-1. Each field is separated by one or more white spaces
-2. If a `#` (octhrope) is encountered anywhere the rest of the line is ignored
-3. The timestamp is the [julian date](http://aa.usno.navy.mil/data/docs/JulianDate.php)
-
-
+A SPK file contains barycenters as well as physical bodies. Often ephemeris are
+stored relative a barycenter. For example:
 ```
-Action:        cancel
-Arguments:     NONE 
-Description:   If there is a currently ongoing blocking action, that action is
-               stopped. Otherwise, it has no effect.
+301 -> 3 -> 0
+299 -> 2 -> 0
+809 -> 8 -> 0
+899 -> 8 -> 0
 ```
 
+When loading objects the simulator follows the following rules
 
-```
-Action:        interaction-event
-Arguments:     spaceship s, float r, string id
-Description:   If the spaceship s comes within r m of us, on or after the action
-               timestamp create an event labeled with id
-Notes:         This causes this flight-plan to be *soft*-dependent on the 
-               flight-plan of s: If flight-plan s changes from a timestamp 
-               before this, this event check will be rerun.
-```
+1. If a barycenter and the main body of the barycenter are both loaded, the
+   barycenter is used for coordinate transforms but is not used for gravity
+   computations: the main body is used. The trajectory of the barycenter is
+   also, in this case, not saved.
+1. If a body encountered more than once, the ephemeris is loaded from the first
+   file it is encountered in.
 
-
-```
-Action:        interaction-deactivate-event
-Arguments:     spaceship s, float r, string id
-Description:   If the spaceship s comes within r m of us, on or after the action
-               timestamp remove us from the simulation. Effective on or after 
-               time stamp of action. This creates an event labeled with id
-Notes:         This causes this flight-plan to be *soft*-dependent on the 
-               flight-plan of s: If flight-plan s changes from a timestamp 
-               before this, this event check will be rerun and the simulation
-               will be clipped at this point if needed.   
-```
+In the given example, the barycenter 8 is not used for gravity computations
+since 899 is loaded. 
 
 
-```
-Action:        launch
-Arguments:     float h, float p
-Description:   If the spaceship is "landed" on a body, then it takes off 
-               vertically to a height h above the surface and then orients
-               tangentially and keeps thrusting till it's periapsis is at
-               least p. The reference is the body the spaceship was landed on.
-               Has no effect if the spaceship is not landed.
-Blocking:      This action blocks
-Termination:   This action terminates (stops blocking) when any of the following occurs
-               1. The periapsis is achieved
-               2. Fuel runs out
-               3. The spaceship is land-bound (landed, crashed, waiting for take off etc.)
-               4. A cancel command is encountered
-```
+## Flight plans
+
+Flight plans start with a line indicating the name of the spacecraft
 
 ```
-Action:        engine
-Arguments:     float l 
-Description:   Set engine level to l  [0.0, 1.0]
+plan Durga
 ```
 
-```
-Action:        attitude
-Arguments:     float x, float y, float z 
-Description:   Set attitude absolute direction to (x, y, z)
-```
+This is followed by a list of **events**. Each event specifies a start time,
+duration and, a spacecraft **program** and how it should run. For example the
+line: 
 
 ```
-Action:        rattitude
-Arguments:     body b, float t, float p 
-Description:   Set attitude relative to body b, at angle t degrees in 
-               orbital plane, p degrees out of orbital plane
+2050.01.01:0.5 3600 orbit 301 200x200
 ```
 
-```
-Action:        park
-Arguments:     body b, float p, float a 
-Description:   Park in orbit around body b with periapsis p and apoapsis a
-Blocking:      This action blocks
-Termination:   This action terminates (stops blocking) when any of the following occurs
-               1. The periapsis and apopasis are achieved
-               2. Fuel runs out
-               3. The spaceship is land-bound (landed, crashed, waiting for take off etc.)
-               4. A cancel command is encountered
-Notes:         This parks the spacecraft in the plane it currently is in.
-                
-```
+will turn on a program that thrusts the spaceship till it achieves a 200x200 km
+orbit around the moon or till the duration is up, whichever is earlier. (A
+duration is required because this makes restarts easier. It allows the simulator
+to more easily decide the time point upto which computations can be reused)
+
+Each program has access to the state of the solarsystem (modeling a perfect IMU
+and perfect knowledge of the solar system) and produces only one output: a
+thrust vector for the spaceship.
+
+Multiple programs can not run at the same time. If a program's event time occurs
+before the previous program has terminated, it will be put into a
+queue, so that they will run as soon as the earlier program has finished.
+
+To describe another spacecraft's flight plan, simply use another `plan`
+statement. All events coming after this, will be associated with this new
+spacecraft. 
+
+## The `insert` directive
+`insert` followed by a file path inserts the text of that file into the original
+file at that point. This can be done recursively. In this manner, multiple files
+can be combined to form the complete scenario file. For example 
 
 ```
-Action:        change-plane
-Arguments:     TBD 
-Description:   Change plane of orbit
-Blocking:      This action blocks
-Termination:   TBD
+start 2050.01.01:0.5
+end 2055.01.01:0.5
+
+spk de432s.bsp
+pick 809 899
+spk nep086.bsp 
+
+insert flightplan1.txt
+insert flightplan2.txt
+```
+is a neat way of splitting out the flightplans of the two spacecraft in the
+simulation into two additional files. This can make the writing of the
+simulation more manageable.
+
+# Plot description file manual
+
+```
+fig:
+  figsize: [6, 7]
+
+panels:
+  main:
+    subplot: 211
+  moon:
+    subplot: 212
+    ref: 399
+    targets: [-1000, 301]
+    dt: 60
 ```
 
-Notes:
+Description files are YAML files. They contain two top level sections: `fig` and
+`panels`. The `fig` section indicates overall figure properties.
 
-1. Blocking commands (like park) only release control if their termination condition
-   is met or a `cancel` command executes
+The `panels` section is a dictionary of suplots that we want drawn. The
+`subplot` command indicates where the plot should be placed on an imaginary
+grid. So `211` means, "on an imaginary grid 2 rows x 1 column, make this the
+first plot"
 
-C++ developer notes
-===================
+If nothing else is supplied this plots all the data in the simulation referenced
+to the solar system barycenter.
 
-A flight plan is stored internally as a list of command objects. Each command
-object takes as input the state of the simulation and produces as output
-changes to the attitude and engine level of the spaceship. Multiple command
-objects can be active at the same time and will be executed in the order in which
-they first became active. A command object becomes active once the simulation
-time crosses it's activation time. A command deactivates when it terminates.
-A `cancel` command will terminate all active commands.
+If `ref` is passed the plot is translated to have the body indicated by `ref` in
+the center. If `targets` is passed (this has to be a list), only that list of
+bodies are plotted. If `dt` is passed, the trajectories are spline interpolated
+with an interval of `dt` seconds.
