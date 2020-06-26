@@ -3,6 +3,7 @@ import argparse
 import sys
 from typing import List
 
+import yaml
 from filelock import FileLock
 
 import matplotlib.pyplot as plt
@@ -11,6 +12,11 @@ import matplotlib.animation as animation
 
 import grohoviz.datalib as datalib
 import grohoviz.plotlib as plotlib
+
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
 
 lock_file = "sim.lock"
 manifest_file = "manifest.yml"
@@ -23,7 +29,6 @@ class Publisher:
         self.datadir_last_changed = 0
         self.plotting_file_last_changed = 0
 
-        self.trajectories = None
         self.atlas = plotlib.Atlas(self.plotting_file)
         self._animator = None
         self.poll()
@@ -50,7 +55,9 @@ class Publisher:
             should_replot = True
 
         if should_reload_plotfile:
-            self.atlas.update_description()
+            self.atlas.update_description(
+                yaml.load(open(self.plotting_file, "r"), Loader=Loader)
+            )
             self.plotting_file_last_changed = plotting_file_last_changed
             should_replot = True
 
@@ -60,7 +67,12 @@ class Publisher:
     def reload_data(self):
         lock = FileLock(self.datadir / lock_file)
         with lock:
-            self.atlas.update_data(datalib.load_data(self.datadir))
+            self.atlas.update_data(
+                trajectories=datalib.load_data(self.datadir),
+                bodies=yaml.load(
+                    (self.datadir / manifest_file).open("r"), Loader=Loader
+                ),
+            )
             sys.stderr.write("Reloading data\n")
 
     def replot(self):

@@ -60,7 +60,7 @@ class Chart:
         self.ax.get_yaxis().set_visible(False)
         self._axis_properties.write_to(self.ax)
 
-    def replot(self, trajectories, t):
+    def replot(self, trajectories, bodies, t):
         self._axis_properties.read_from(self.ax)
         self.ax.cla()
 
@@ -75,6 +75,21 @@ class Chart:
                 self.ax.plot(p.x[:n1], p.y[:n1])
                 self.ax.text(p.x[n1], p.y[n1], f"{k}", c="0.75", size=9)
                 self.ax.plot(p.x[n1:], p.y[n1:], alpha=0.1)
+
+        if self.ref is not None:
+            center_body = bodies.get("bodies", {}).get(self.ref, {})
+            self.ax.add_artist(
+                plt.Circle((0, 0), center_body.get("r", 0), ec="k", color="0.8",)
+            )
+            self.ax.text(
+                0,
+                0,
+                center_body.get("name", f"{self.ref}"),
+                c="k",
+                size=9,
+                ha="center",
+                va="center",
+            )
 
         self.ax.axhline(0, c="0.75", ls=":")
         self.ax.axvline(0, c="0.75", ls=":")
@@ -94,17 +109,16 @@ class Atlas:
         self.charts = {}
 
         self.trajectories = None
+        self.bodies = {}
 
         self.t_slider = None
         self.t = 1.0
 
-    def update_data(self, trajectories):
+    def update_data(self, trajectories, bodies):
         self.trajectories = trajectories
+        self.bodies = bodies
 
-    def update_description(self):
-        with open(self.plotfile, "r") as f:
-            desc = yaml.load(f, Loader=Loader)
-
+    def update_description(self, desc):
         if self.fig is None:
             self.fig = plt.figure(**desc.get("fig", {}))
             self.fig.canvas.mpl_connect("button_press_event", self.reset)
@@ -138,7 +152,7 @@ class Atlas:
     def replot(self, t=None):
         self.t = t or self.t
         for k, chart in self.charts.items():
-            chart.replot(self.trajectories, self.t)
+            chart.replot(self.trajectories, self.bodies, self.t)
 
     def reset(self, event):
         if event.dblclick:

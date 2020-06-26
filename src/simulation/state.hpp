@@ -87,6 +87,7 @@ public:
     }
 
     size_t idx_of(NAIFbody naif) const { return naif_to_idx_.at(naif); }
+    size_t size() const { return bodies_.size(); }
     const BodyConstant& body(size_t i) const { return bodies_[i]; }
     const BodyConstant& body(NAIFbody naif) const
     {

@@ -70,11 +70,20 @@ void add_thrust_to_acceleration(
 
 void save_manifest(const State& state, std::string outdir)
 {
+    // The world's worst YAML serializer
     std::ofstream file(fs::path(outdir) / "manifest.yml", std::ios::out);
     file << "time: "
          << std::chrono::system_clock::to_time_t(
                 std::chrono::system_clock::now())
          << std::endl;
+
+    file << "bodies: \n";
+    for (size_t i = 0; i < state.orrery.size(); i++) {
+        const auto& body = state.orrery.body(i);
+        file << "  " << int(body.code) << ":\n";
+        file << "    name: \"" << body.name << "\"\n";
+        file << "    r: " << body.r << "\n";
+    }
 }
 
 Simulator::Simulator(
