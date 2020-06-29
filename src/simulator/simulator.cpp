@@ -53,9 +53,10 @@ void compute_gravitational_acceleration(const State& state, v3d_vec_t& ship_acc)
     for (size_t i = 0; i < ship_pos.size(); i++) {
         ship_acc[i] = { 0, 0, 0 };
         for (size_t g_idx : state.orrery.grav_body_idx()) {
-            auto r = orrery_pos[g_idx] - ship_pos[i];
-            auto f = state.orrery.body(g_idx).GM / r.norm_sq();
-            ship_acc[i] += r.normed() * f;
+            auto   r     = orrery_pos[g_idx] - ship_pos[i];
+            double r_bar = r.norm();
+            auto   f     = state.orrery.body(g_idx).GM / (r_bar * r_bar);
+            ship_acc[i] += r * (f / r_bar);
         }
     }
 }
