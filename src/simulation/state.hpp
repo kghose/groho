@@ -114,22 +114,33 @@ public:
         for (size_t i = 0; i < codes.size(); i++) {
             naif_to_idx_[codes[i]] = i;
         }
-        vec[0].resize(codes.size());
-        vec[1].resize(codes.size());
-        vec[2].resize(codes.size());
+        pos_.resize(codes.size());
+        vel_.resize(codes.size());
+        acc_[0].resize(codes.size());
+        acc_[1].resize(codes.size());
     }
 
-    v3d_vec_t&       pos() { return vec[0]; }
-    const v3d_vec_t& pos() const { return vec[0]; }
-    v3d_vec_t&       vel() { return vec[1]; }
-    const v3d_vec_t& vel() const { return vec[1]; }
-    v3d_vec_t&       acc() { return vec[2]; }
-    const v3d_vec_t& acc() const { return vec[2]; }
+    v3d_vec_t&       pos() { return pos_; }
+    const v3d_vec_t& pos() const { return pos_; }
+    v3d_vec_t&       vel() { return vel_; }
+    const v3d_vec_t& vel() const { return vel_; }
+    v3d_vec_t&       next_acc()
+    {
+        idx = 1 - idx;
+        return acc_[idx];
+    }
+    v3d_vec_t&       acc(int i) { return i == 0 ? acc_[idx] : acc_[1 - idx]; }
+    const v3d_vec_t& acc(int i) const
+    {
+        return i == 0 ? acc_[idx] : acc_[1 - idx];
+    }
 
     size_t idx_of(NAIFbody naif) const { return naif_to_idx_.at(naif); }
 
 private:
-    v3d_vec_t vec[3];
+    v3d_vec_t pos_, vel_;
+    v3d_vec_t acc_[2];
+    size_t    idx = 0;
 
     std::unordered_map<NAIFbody, size_t> naif_to_idx_;
 };
