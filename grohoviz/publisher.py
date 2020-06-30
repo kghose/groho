@@ -2,6 +2,9 @@ import pathlib
 import argparse
 import sys
 from typing import List
+import datetime
+
+from_ts = datetime.datetime.fromtimestamp
 
 import yaml
 from filelock import FileLock
@@ -73,7 +76,8 @@ class Publisher:
                     (self.datadir / manifest_file).open("r"), Loader=Loader
                 ),
             )
-            sys.stderr.write("Reloading data\n")
+            ts = from_ts(self.atlas.bodies.get("time"))
+            sys.stderr.write(f"Reloaded sim: {ts}\n")
 
     def replot(self):
         self.atlas.replot()
