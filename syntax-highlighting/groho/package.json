@@ -1,0 +1,29 @@
+{
+    "name": "groho",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": ">=0.9.0-pre.1"
+    },
+    "publisher": "Kaushik Ghose",
+    "contributes": {
+        "languages": [
+            {
+                "id": "groho",
+                "aliases": [
+                    "Groho",
+                    "groho"
+                ],
+                "extensions": [
+                    ".gro"
+                ]
+            }
+        ],
+        "grammars": [
+            {
+                "language": "groho",
+                "scopeName": "source.gro",
+                "path": "./syntaxes/groho.tmLanguage.json"
+            }
+        ]
+    }
+}

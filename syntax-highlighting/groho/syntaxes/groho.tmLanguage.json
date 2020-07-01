@@ -1,0 +1,34 @@
+{
+	"scopeName": "source.gro",
+	"name": "Groho",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#keywords"
+		}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.number-sign",
+					"match": ";.*$"
+				}
+			]
+		},
+		"keywords": {
+			"patterns": [
+				{
+					"name": "support.variable",
+					"match": "\\b(start|end|dt|spk|pick|plan)(?=\\b)"
+				},
+				{
+					"name": "entity.name.function",
+					"match": "\\b(orbiting)(?=\\b)"
+				}
+			]
+		}
+	}
+}

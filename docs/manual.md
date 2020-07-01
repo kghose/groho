@@ -11,6 +11,17 @@ To get a list of spacecraft programs and how to use them do
 build/groho programs
 ```
 
+## Syntax highlighting
+Very elementary syntax highlighting for `.gro` files can be found under
+`syntax-highlighting`. For VS Code copy (or link) the
+`syntax-highlighting/groho` folder to `~/.vscode/extensions/groho`, something
+like
+```
+ln -s ~/Code/groho/syntax-highlighting/groho/ ~/.vscode/extensions/groho
+```
+A Textmate grammar is found at `syntax-highlighting/groho/syntaxes/groho.tmLanguage.json`
+
+
 ## Orrery model
 You pass a list of kernel files to the simulator. Optionally, you can indicate a
 subset of NAIF codes that the simulator should load from the kernel file.
