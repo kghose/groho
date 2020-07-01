@@ -30,6 +30,7 @@ file(GLOB SOURCES
   ../src/simulator/*.cpp
   ../src/scenario/*.cpp
   ../src/simulation/*.cpp
+  ../src/commands/*.cpp
 )
 
 

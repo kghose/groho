@@ -31,6 +31,7 @@ file(GLOB GROHO_SOURCES
     src/simulator/*.cpp
     src/scenario/*.cpp
     src/simulation/*.cpp
+    src/commands/*.cpp
 )
 add_executable( groho ${GROHO_SOURCES} )
 

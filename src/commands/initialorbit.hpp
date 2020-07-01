@@ -4,45 +4,13 @@ Copyright (c) 2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 */
 #pragma once
 
-#include "commands.hpp"
-#include "orrery.hpp"
 #include "state.hpp"
+#include "tokens.hpp"
 #include "v3d.hpp"
-
-#define LOGURU_WITH_STREAMS 1
-#include "loguru.hpp"
 
 namespace groho {
 
 void set_initial_orbit(
-    double    GM,
-    double    r1,
-    double    r2,
-    const V3d Pbody,
-    const V3d Vbody,
-    V3d&      pos,
-    V3d&      vel)
-{
-    V3d U_hat = cross(Vbody, Pbody * -1).normed();
-    V3d V_hat = cross(Pbody * -1, U_hat).normed();
-    pos       = Pbody + (Pbody.normed() * r1);
-    vel       = (V_hat * std::sqrt(2 * GM * r2 / (r1 * (r1 + r2)))) + Vbody;
-}
-
-void set_initial_orbit(
-    const CommandToken& command, const State& state, V3d& pos, V3d& vel)
-{
-    auto orbit = OrbitalCommand(command.params);
-    // No error checking for now
-    size_t idx = state.orrery.idx_of(orbit.center);
-    set_initial_orbit(
-        state.orrery.body(idx).GM,
-        state.orrery.body(idx).r + orbit.a1,
-        state.orrery.body(idx).r + orbit.a2,
-        state.orrery.pos()[idx],
-        state.orrery.vel(idx),
-        pos,
-        vel);
-}
+    const CommandToken& command, const State& state, V3d& pos, V3d& vel);
 
 }
