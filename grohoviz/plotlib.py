@@ -79,7 +79,9 @@ class Chart:
         if self.ref is not None:
             center_body = bodies.get("bodies", {}).get(self.ref, {})
             self.ax.add_artist(
-                plt.Circle((0, 0), center_body.get("r", 0), ec="k", color="0.8",)
+                plt.Circle(
+                    (0, 0), center_body.get("r", 0), ec="k", ls="--", color="none"
+                )
             )
             self.ax.text(
                 0,
@@ -143,10 +145,12 @@ class Atlas:
         )
 
         if self.t_slider is None:
-            ax_slider = plt.axes([0.0, 0.0, 1.0, 0.03], facecolor="0.35")
+            ax_slider = plt.axes([0.1, 0.0, 0.8, 0.028], facecolor="0.35")
             self.t_slider = Slider(
                 ax_slider, "Time", 0.0, 1.0, valinit=1.0, valstep=1e-4, fc="yellow"
             )
+            self.t_slider.label.set_size(7)
+            self.t_slider.valtext.set_size(7)
             self.t_slider.on_changed(self.replot)
 
     def replot(self, t=None):
