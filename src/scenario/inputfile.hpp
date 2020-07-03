@@ -21,8 +21,4 @@ namespace groho {
 
 std::optional<Lines> load_input_file(const fs::path& path);
 
-const std::string wspace = " \t\n\r\f\v";
-
-std::vector<std::string>
-split_string(const std::string& s, const std::string& sep = wspace);
 }

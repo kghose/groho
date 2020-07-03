@@ -8,6 +8,7 @@ Copyright (c) 2017-2018 by Kaushik Ghose. Some rights reserved, see LICENSE
 #include <thread>
 
 #include "bodyconstant.hpp"
+#include "commands.hpp"
 #include "entrypoints.hpp"
 #include "simulator.hpp"
 #include "spk.hpp"
@@ -37,7 +38,7 @@ void simulate(
     simulator.quit();
 }
 
-void list_programs() {}
+void list_commands() { list_all_commands(); }
 
 void inspect(std::string kernel_file)
 {

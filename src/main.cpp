@@ -43,9 +43,9 @@ int main(int argc, char* argv[])
     loop->callback(
         [&]() { groho::simulate(scn_file, sim_folder, non_interactive); });
 
-    auto programs = app.add_subcommand(
-        "programs", "Describe spacecraft programs available");
-    programs->callback([&]() { groho::list_programs(); });
+    auto commands = app.add_subcommand(
+        "commands", "Describe spacecraft commands available");
+    commands->callback([&]() { groho::list_commands(); });
 
     auto inspect = app.add_subcommand("inspect", "Inspect kernel file");
     inspect->add_option("spk", kernel_file, "Kernel file")->required();

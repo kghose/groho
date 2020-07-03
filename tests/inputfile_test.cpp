@@ -1,6 +1,7 @@
 #include "catch.hpp"
 
 #include "inputfile.hpp"
+#include "parsing.hpp"
 
 using namespace groho;
 

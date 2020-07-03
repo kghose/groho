@@ -9,6 +9,7 @@ Some utilities for parsing input files.
 #include <iostream>
 
 #include "inputfile.hpp"
+#include "parsing.hpp"
 
 #define LOGURU_WITH_STREAMS 1
 #include "loguru.hpp"
@@ -26,21 +27,6 @@ bool lines_have_error(const Lines& lines, bool warnings_as_error = false)
         }
     }
     return false;
-}
-
-inline std::string trim_whitespace(const std::string& line)
-{
-    size_t start = line.find_first_not_of(wspace);
-    if (start == std::string::npos) {
-        return "";
-    }
-
-    size_t stop = line.find_last_not_of(wspace);
-    if (stop == std::string::npos) {
-        stop = line.length();
-    }
-
-    return line.substr(start, stop + 1);
 }
 
 inline std::string trim_comment(const std::string& line)
@@ -103,19 +89,4 @@ std::optional<Lines> load_input_file(const fs::path& path)
     return lines;
 }
 
-std::vector<std::string>
-split_string(const std::string& s, const std::string& sep)
-{
-    std::vector<std::string> tokens;
-
-    size_t start = 0, stop = 0;
-    for (;;) {
-        start = s.find_first_not_of(sep, stop);
-        if (start == std::string::npos)
-            break;
-        stop = std::min(s.find_first_of(sep, start), s.length());
-        tokens.push_back(trim_whitespace(s.substr(start, stop - start)));
-    }
-    return tokens;
-}
 }

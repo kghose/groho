@@ -159,6 +159,7 @@ struct State {
 
     DiffableState orrery;
     ExplicitState spacecraft;
+    double        t;
 };
 
 }

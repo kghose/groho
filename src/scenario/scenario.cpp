@@ -7,6 +7,7 @@ Parse scenario input file and return Scenario struct
 #include <algorithm>
 #include <iostream>
 
+#include "parsing.hpp"
 #include "scenario.hpp"
 
 #define LOGURU_WITH_STREAMS 1

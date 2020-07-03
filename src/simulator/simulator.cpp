@@ -7,6 +7,7 @@ This file defines the simulator code
 #include <chrono>
 #include <filesystem>
 
+#include "commands.hpp"
 #include "filelock.hpp"
 #include "initialorbit.hpp"
 #include "simulation.hpp"
@@ -64,11 +65,11 @@ void compute_gravitational_acceleration(const State& state, v3d_vec_t& ship_acc)
 }
 
 void add_thrust_to_acceleration(
-    const State&            state,
-    const Serialize&        solar_system,
-    const SpacecraftTokens& spacecraft_tokens,
-    v3d_vec_t&              ship_acc)
+    std::vector<Plan>& plans, const State& state, v3d_vec_t& ship_acc)
 {
+    for (size_t i = 0; i < plans.size(); i++) {
+        plans[i].execute(state, ship_acc[i]);
+    }
 }
 
 void save_manifest(const State& state, std::string outdir)
@@ -170,17 +171,19 @@ void Simulator::run()
         compute_gravitational_acceleration(state, state.spacecraft.next_acc());
     }
 
+    std::vector<Plan> plans;
+    for (size_t i = 0; i < simulation.scenario.spacecraft_tokens.size(); i++) {
+        plans.emplace_back(simulation.scenario.spacecraft_tokens[i], state, i);
+    }
+
     // Main sim
     for (; t < sim.end && keep_running; t += sim.dt, steps++) {
+        state.t = t;
         update_ship_pos(t, sim.dt, state, state.spacecraft.pos());
         simulation.orrery.pos_at(t, state.orrery.next_pos());
         auto& ship_acc = state.spacecraft.next_acc();
         compute_gravitational_acceleration(state, ship_acc);
-        add_thrust_to_acceleration(
-            state,
-            simulation.solar_system,
-            simulation.scenario.spacecraft_tokens,
-            ship_acc);
+        add_thrust_to_acceleration(plans, state, ship_acc);
         update_ship_vel(t, sim.dt, state, state.spacecraft.vel());
 
         simulation.solar_system.append(state.orrery.pos());

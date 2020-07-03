@@ -9,34 +9,45 @@ commands.
 
 #include <string>
 
-#include "inputfile.hpp" // for splitstring, move this to lib
 #include "naifbody.hpp"
+#include "parsing.hpp"
 #include "state.hpp"
 #include "tokens.hpp"
 #include "v3d.hpp"
 
 namespace groho {
 
-class Command {
-public:
-    Command(CommandToken& token);
-    bool execute(const State&, V3d& acc);
+struct Command {
+
+    Command(const CommandToken& token)
+    {
+        start = token.start;
+        end   = token.start + token.duration;
+    }
+    virtual ~Command() { ; }
+
+    static std::string usage();
+
+    bool        ready(J2000_s t) { return start < t; }
+    bool        expired(J2000_s t) { return end < t; }
+    virtual V3d execute(const State&) = 0;
+
+    J2000_s start;
+    J2000_s end;
 };
 
-struct OrbitalCommand {
+void list_all_commands();
 
-    OrbitalCommand(std::vector<std::string> params)
-    {
-        // No error checking for now
-        center          = std::stoi(params[0]);
-        auto components = split_string(params[1], "x");
-        a1              = std::stod(components[0]);
-        a2              = std::stod(components[1]);
-    }
+class Plan {
+public:
+    Plan(
+        const SpacecraftToken& plan_token, const State& state, size_t self_idx);
+    void execute(const State&, V3d& acc);
 
-    NAIFbody center;
-    double   a1;
-    double   a2;
+private:
+    std::vector<std::unique_ptr<Command>> commands;
+
+    size_t command_idx = 0;
 };
 
 }

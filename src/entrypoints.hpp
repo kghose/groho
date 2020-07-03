@@ -9,7 +9,7 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 namespace groho {
 
 void simulate(std::string scn_file, std::string sim_folder, bool);
-void list_programs();
+void list_commands();
 void inspect(std::string kernel_file);
 
 }

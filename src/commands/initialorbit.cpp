@@ -6,7 +6,7 @@ Implements the initial orbiting state for spaceships
 */
 
 #include "initialorbit.hpp"
-#include "inputfile.hpp" // for splitstring, move this to lib
+#include "parsing.hpp"
 
 namespace groho {
 
