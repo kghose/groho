@@ -22,6 +22,7 @@ class PathT:
 
 class Trajectories:
     def __init__(self):
+        self._t_range = None
         self._trajectories: Dict[(int, int, float), PathT] = {}
         self._splrep = {}
         self._a_interp_to_b = {}
@@ -30,6 +31,9 @@ class Trajectories:
 
         self._refpath = {}
         self._interp_path = {}
+
+    def get_t(self, t_frac):
+        return t_frac * (self._t_range[1] - self._t_range[0]) + self._t_range[0]
 
     def bodies(self):
         return set(k[0] for k in self._trajectories.keys())
@@ -114,6 +118,7 @@ def load_data(folder: pathlib.Path):
     for f in glob.glob(str(folder / "pos*.bin")):
         naif = int(pathlib.Path(f).name[3:-4])
         x = np.fromfile(f, dtype=dtype)
+        trajectories._t_range = (x["t"][0], x["t"][-1])
         if x.size:
             s = rot.apply(x.view(np.float64).reshape(x.shape + (-1,))[:, :3])
             trajectories.set(naif, PathT(x=s[:, 0], y=s[:, 1], z=s[:, 2], t=x["t"]))

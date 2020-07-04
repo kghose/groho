@@ -1,4 +1,8 @@
 import sys
+import datetime
+
+from_ts = datetime.datetime.utcfromtimestamp
+OFFSET = datetime.datetime(2000, 1, 1, 12) - datetime.datetime(1970, 1, 1)
 
 import yaml
 import matplotlib.pyplot as plt
@@ -145,7 +149,7 @@ class Atlas:
         )
 
         if self.t_slider is None:
-            ax_slider = plt.axes([0.1, 0.0, 0.8, 0.028], facecolor="0.35")
+            ax_slider = plt.axes([0.1, 0.0, 0.7, 0.028], facecolor="0.35")
             self.t_slider = Slider(
                 ax_slider, "Time", 0.0, 1.0, valinit=1.0, valstep=1e-4, fc="yellow"
             )
@@ -157,6 +161,9 @@ class Atlas:
         self.t = t or self.t
         for k, chart in self.charts.items():
             chart.replot(self.trajectories, self.bodies, self.t)
+
+        ts = from_ts(self.trajectories.get_t(self.t)) + OFFSET
+        self.t_slider.valtext.set_text(ts)
 
     def reset(self, event):
         if event.dblclick:
