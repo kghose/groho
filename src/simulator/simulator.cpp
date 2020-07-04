@@ -20,76 +20,6 @@ namespace groho {
 
 namespace fs = std::filesystem;
 
-void initialize_ships(Simulation& simulation)
-{
-    auto& pos = simulation.state.spacecraft.pos();
-    auto& vel = simulation.state.spacecraft.vel();
-    for (size_t i = 0; i < pos.size(); i++) {
-        set_initial_orbit(
-            simulation.scenario.spacecraft_tokens[i].initial_condition,
-            simulation.state,
-            pos[i],
-            vel[i]);
-    }
-}
-
-/*
-void update_ship_state(double t, const double dt, State& state)
-{
-    auto& pos = state.spacecraft.pos();
-    auto& vel = state.spacecraft.vel();
-    auto& acc = state.spacecraft.acc();
-
-    for (size_t i = 0; i < pos.size(); i++) {
-        vel[i] += acc[i] * dt;
-        pos[i] += vel[i] * dt;
-        pos[i].t = t;
-    }
-}
-*/
-
-void compute_gravitational_acceleration(const State& state, v3d_vec_t& ship_acc)
-{
-    const auto& ship_pos   = state.spacecraft.pos();
-    const auto& orrery_pos = state.orrery.pos();
-
-    for (size_t i = 0; i < ship_pos.size(); i++) {
-        ship_acc[i] = { 0, 0, 0 };
-        for (size_t g_idx : state.orrery.grav_body_idx()) {
-            auto   r     = orrery_pos[g_idx] - ship_pos[i];
-            double r_bar = r.norm();
-            auto   f     = state.orrery.body(g_idx).GM / (r_bar * r_bar);
-            ship_acc[i] += r * (f / r_bar);
-        }
-    }
-}
-
-void add_thrust_to_acceleration(
-    std::vector<Plan>& plans, const State& state, v3d_vec_t& ship_acc)
-{
-    for (size_t i = 0; i < plans.size(); i++) {
-        plans[i].execute(state, ship_acc[i]);
-    }
-}
-
-void save_manifest(const State& state, std::string outdir)
-{
-    // The world's worst YAML serializer
-    std::ofstream file(fs::path(outdir) / "manifest.yml", std::ios::out);
-    file << "time: "
-         << std::chrono::system_clock::to_time_t(
-                std::chrono::system_clock::now())
-         << std::endl;
-
-    file << "bodies: \n";
-    for (size_t i = 0; i < state.orrery.size(); i++) {
-        const auto& body = state.orrery.body(i);
-        file << "  " << int(body.code) << ":\n";
-        file << "    name: \"" << body.name << "\"\n";
-        file << "    r: " << body.r << "\n";
-    }
-}
-
 Simulator::Simulator(
     std::string scn_file, std::string outdir, bool non_interactive)
     : scn_file(scn_file)
@@ -133,11 +63,12 @@ void Simulator::quit()
     main_loop_thread.join();
 }
 
-void update_ship_pos(
-    double t, const double dt, const State& state, v3d_vec_t& ship_pos);
-
-void update_ship_vel(
-    double t, const double dt, const State& state, v3d_vec_t& ship_vel);
+void initialize_ships(Simulation& simulation);
+void velocity_vertlet_pt1(const double dt, State& state);
+void compute_gravitational_acceleration(State& state);
+void add_thrust_to_acceleration(std::vector<Plan>& plans, State& state);
+void velocity_vertlet_pt2(const double dt, State& state);
+void save_manifest(const State& state, std::string outdir);
 
 void Simulator::run()
 {
@@ -168,7 +99,7 @@ void Simulator::run()
 
         // Initialize ships state
         initialize_ships(simulation);
-        compute_gravitational_acceleration(state, state.spacecraft.next_acc());
+        compute_gravitational_acceleration(state);
     }
 
     std::vector<Plan> plans;
@@ -179,42 +110,84 @@ void Simulator::run()
     // Main sim
     for (; t < sim.end && keep_running; t += sim.dt, steps++) {
         state.t = t;
-        update_ship_pos(t, sim.dt, state, state.spacecraft.pos());
+        velocity_vertlet_pt1(sim.dt, state);
         simulation.orrery.pos_at(t, state.orrery.next_pos());
-        auto& ship_acc = state.spacecraft.next_acc();
-        compute_gravitational_acceleration(state, ship_acc);
-        add_thrust_to_acceleration(plans, state, ship_acc);
-        update_ship_vel(t, sim.dt, state, state.spacecraft.vel());
+        compute_gravitational_acceleration(state);
+        add_thrust_to_acceleration(plans, state);
+        velocity_vertlet_pt2(sim.dt, state);
 
         simulation.solar_system.append(state.orrery.pos());
-        simulation.spacecraft.append(state.spacecraft.pos());
+        simulation.spacecraft.append(state.spacecraft.pos);
     }
     LOG_S(INFO) << steps << " steps";
 
     save_manifest(state, outdir);
 }
 
-void update_ship_pos(
-    double t, const double dt, const State& state, v3d_vec_t& pos)
+void initialize_ships(Simulation& simulation)
 {
-    const auto& vel = state.spacecraft.vel();
-    const auto& acc = state.spacecraft.acc(0);
-
+    auto& pos = simulation.state.spacecraft.pos;
+    auto& vel = simulation.state.spacecraft.vel;
     for (size_t i = 0; i < pos.size(); i++) {
-        pos[i] += (vel[i] + 0.5 * acc[i] * dt) * dt;
-        pos[i].t = t;
+        set_initial_orbit(
+            simulation.scenario.spacecraft_tokens[i].initial_condition,
+            simulation.state,
+            pos[i],
+            vel[i]);
     }
 }
 
-void update_ship_vel(
-    double t, const double dt, const State& state, v3d_vec_t& vel)
+void velocity_vertlet_pt1(const double dt, State& state)
 {
-    auto& acc1 = state.spacecraft.acc(0);
-    auto& acc0 = state.spacecraft.acc(-1);
+    for (size_t i = 0; i < state.spacecraft.pos.size(); i++) {
+        state.spacecraft.vel[i] += 0.5 * state.spacecraft.acc[i] * dt;
+        state.spacecraft.pos[i] += state.spacecraft.vel[i] * dt;
+        state.spacecraft.pos[i].t = state.t;
+    }
+}
 
-    for (size_t i = 0; i < vel.size(); i++) {
-        vel[i] += 0.5 * (acc0[i] + acc1[i]) * dt;
-        vel[i].t = t;
+void compute_gravitational_acceleration(State& state)
+{
+    for (size_t i = 0; i < state.spacecraft.pos.size(); i++) {
+        state.spacecraft.acc[i] = { 0, 0, 0 };
+        for (size_t g_idx : state.orrery.grav_body_idx()) {
+            auto   r     = state.orrery.pos(g_idx) - state.spacecraft.pos[i];
+            double r_bar = r.norm();
+            auto   f     = state.orrery.body(g_idx).GM / (r_bar * r_bar);
+            state.spacecraft.acc[i] += r * (f / r_bar);
+        }
+    }
+}
+
+void add_thrust_to_acceleration(std::vector<Plan>& plans, State& state)
+{
+    for (size_t i = 0; i < plans.size(); i++) {
+        plans[i].execute(state, state.spacecraft.acc[i]);
+    }
+}
+
+void velocity_vertlet_pt2(const double dt, State& state)
+{
+    for (size_t i = 0; i < state.spacecraft.pos.size(); i++) {
+        state.spacecraft.vel[i] += 0.5 * state.spacecraft.acc[i] * dt;
+    }
+}
+
+void save_manifest(const State& state, std::string outdir)
+{
+    // The world's worst YAML serializer
+    std::ofstream file(fs::path(outdir) / "manifest.yml", std::ios::out);
+    file << "time: "
+         << std::chrono::system_clock::to_time_t(
+                std::chrono::system_clock::now())
+         << std::endl;
+
+    file << "bodies: \n";
+    for (size_t i = 0; i < state.orrery.size(); i++) {
+        const auto& body = state.orrery.body(i);
+        file << "  " << int(body.code) << ":\n";
+        file << "    name: \"" << body.name << "\"\n";
+        file << "    r: " << body.r << "\n";
     }
 }
 

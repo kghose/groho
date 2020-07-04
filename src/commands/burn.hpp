@@ -46,8 +46,8 @@ struct Burn : public Command {
 
     V3d execute(const State& state)
     {
-        R = state.spacecraft.pos()[self_idx] - state.orrery.pos()[target_idx];
-        X = (state.spacecraft.vel()[self_idx] - state.orrery.vel(target_idx))
+        R = state.spacecraft.pos[self_idx] - state.orrery.pos(target_idx);
+        X = (state.spacecraft.vel[self_idx] - state.orrery.vel(target_idx))
                 .normed();
         Y = cross(R, X).normed();
         Z = cross(X, Y).normed();

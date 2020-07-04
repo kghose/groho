@@ -39,7 +39,7 @@ void set_initial_orbit(
         state.orrery.body(idx).GM,
         state.orrery.body(idx).r + a1,
         state.orrery.body(idx).r + a2,
-        state.orrery.pos()[idx],
+        state.orrery.pos(idx),
         state.orrery.vel(idx),
         pos,
         vel);
