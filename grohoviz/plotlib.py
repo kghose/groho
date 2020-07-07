@@ -7,6 +7,7 @@ OFFSET = datetime.datetime(2000, 1, 1, 12) - datetime.datetime(1970, 1, 1)
 import yaml
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+import numpy as np
 
 try:
     from yaml import CLoader as Loader
@@ -74,11 +75,13 @@ class Chart:
                     continue
             p = trajectories.get(k, self.ref, self.dt)
             if p is not None:
-                n1 = max(0, int(p.x.size * t) - 1)
-
-                self.ax.plot(p.x[:n1], p.y[:n1])
+                n1 = max(0, np.searchsorted(p.t, t))
+                # n0 = max(0, np.searchsorted(p.t, t - 360000))
+                n0 = max(0, n1 - 1000)
+                self.ax.plot(p.x[n0:n1], p.y[n0:n1], ls="none", marker="s", ms=1)
                 self.ax.text(p.x[n1], p.y[n1], f"{k}", c="0.75", size=9)
-                self.ax.plot(p.x[n1:], p.y[n1:], alpha=0.1)
+                self.ax.plot(p.x[n1], p.y[n1], ".")
+                # self.ax.plot(p.x[n1:], p.y[n1:], alpha=0.1)
 
         if self.ref is not None:
             center_body = bodies.get("bodies", {}).get(self.ref, {})
@@ -118,7 +121,7 @@ class Atlas:
         self.bodies = {}
 
         self.t_slider = None
-        self.t = 1.0
+        self.t_frac = 1.0
 
     def update_data(self, trajectories, bodies):
         self.trajectories = trajectories
@@ -149,20 +152,22 @@ class Atlas:
         )
 
         if self.t_slider is None:
+            valstep = 1.0 / self.trajectories.get_t_span()
             ax_slider = plt.axes([0.1, 0.0, 0.7, 0.028], facecolor="0.35")
             self.t_slider = Slider(
-                ax_slider, "Time", 0.0, 1.0, valinit=1.0, valstep=1e-4, fc="yellow"
+                ax_slider, "Time", 0.0, 1.0, valinit=1.0, valstep=valstep, fc="yellow"
             )
             self.t_slider.label.set_size(7)
             self.t_slider.valtext.set_size(7)
             self.t_slider.on_changed(self.replot)
 
-    def replot(self, t=None):
-        self.t = t or self.t
+    def replot(self, t_frac=None):
+        self.t_frac = t_frac or self.t_frac
+        t = self.trajectories.get_t(self.t_frac)
         for k, chart in self.charts.items():
-            chart.replot(self.trajectories, self.bodies, self.t)
+            chart.replot(self.trajectories, self.bodies, t)
 
-        ts = from_ts(self.trajectories.get_t(self.t)) + OFFSET
+        ts = from_ts(t) + OFFSET
         self.t_slider.valtext.set_text(ts)
 
     def reset(self, event):

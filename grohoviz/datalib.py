@@ -35,6 +35,9 @@ class Trajectories:
     def get_t(self, t_frac):
         return t_frac * (self._t_range[1] - self._t_range[0]) + self._t_range[0]
 
+    def get_t_span(self):
+        return self._t_range[1] - self._t_range[0]
+
     def bodies(self):
         return set(k[0] for k in self._trajectories.keys())
 
