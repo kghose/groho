@@ -131,10 +131,9 @@ class Atlas:
         if self.fig is None:
             self.fig = plt.figure(**desc.get("fig", {}))
             self.fig.canvas.mpl_connect("button_press_event", self.reset)
-
-        self.fig.set_size_inches(
-            desc.get("fig", {}).get("figsize", [5.5, 2.8]), forward=True
-        )
+            self.fig.set_size_inches(
+                desc.get("fig", {}).get("figsize", [5.5, 2.8]), forward=True
+            )
 
         for name, chart_desc in desc.get("panels", {}).items():
             if name in self.charts:
