@@ -40,20 +40,22 @@ class AxisProperties:
 
 
 class Chart:
-    def __init__(self, fig, subplot, targets=None, ref=None, dt=None):
+    def __init__(self, fig, subplot, plane="xy", targets=None, ref=None, dt=None):
         self.fig = fig
         self.subplot = None
+        self.plane = None
         self.ax = None
         self._axis_properties = AxisProperties()
 
         self.targets, self.ref, self.dt = targets, ref, dt
-        self.update_description(subplot, targets, ref, dt)
+        self.update_description(subplot, plane, targets, ref, dt)
 
     def __del__(self):
         self.ax.remove()
 
-    def update_description(self, subplot, targets=None, ref=None, dt=None):
+    def update_description(self, subplot, plane="xy", targets=None, ref=None, dt=None):
         self.subplot = subplot
+        self.plane = plane
         self.targets, self.ref, self.dt = targets, ref, dt
 
         if self.ax is not None:
@@ -78,9 +80,14 @@ class Chart:
                 n1 = max(0, np.searchsorted(p.t, t))
                 # n0 = max(0, np.searchsorted(p.t, t - 360000))
                 n0 = max(0, n1 - 1000)
-                self.ax.plot(p.x[n0:n1], p.y[n0:n1], ls="none", marker="s", ms=1)
-                self.ax.text(p.x[n1], p.y[n1], f"{k}", c="0.75", size=9)
-                self.ax.plot(p.x[n1], p.y[n1], ".")
+                if self.plane == "xy":
+                    x, y = p.x, p.y
+                else:
+                    x, y = p.x, p.z
+
+                self.ax.plot(x[n0:n1], y[n0:n1], ls="none", marker="s", ms=1)
+                self.ax.text(x[n1], y[n1], f"{k}", c="0.75", size=9)
+                self.ax.plot(x[n1], y[n1], ".")
                 # self.ax.plot(p.x[n1:], p.y[n1:], alpha=0.1)
 
         if self.ref is not None:

@@ -79,6 +79,7 @@ class Trajectories:
                 self._a_interp_to_b[(ref, target)] = PathT(
                     x=interpolate.splev(t, ref_splrep.x),
                     y=interpolate.splev(t, ref_splrep.y),
+                    z=interpolate.splev(t, ref_splrep.z),
                     t=t,
                 )
         return self._a_interp_to_b[(ref, target)]
@@ -97,6 +98,7 @@ class Trajectories:
                 self._a_interp_to_dt[(ref, dt)] = PathT(
                     x=interpolate.splev(t, ref_splrep.x),
                     y=interpolate.splev(t, ref_splrep.y),
+                    z=interpolate.splev(t, ref_splrep.z),
                     t=t,
                 )
         return self._a_interp_to_dt[(ref, dt)]
@@ -108,6 +110,7 @@ class Trajectories:
                 self._splrep[_id] = SplRep(
                     x=interpolate.splrep(_id_pt.t, _id_pt.x),
                     y=interpolate.splrep(_id_pt.t, _id_pt.y),
+                    z=interpolate.splrep(_id_pt.t, _id_pt.z),
                 )
             except TypeError as e:
                 self._splrep[_id] = None
