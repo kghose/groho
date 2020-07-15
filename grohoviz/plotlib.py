@@ -86,8 +86,8 @@ class Chart:
                     x, y = p.x, p.z
 
                 self.ax.plot(x[n0:n1], y[n0:n1], ls="none", marker="s", ms=1)
-                self.ax.text(x[n1], y[n1], f"{k}", c="0.75", size=9)
-                self.ax.plot(x[n1], y[n1], ".")
+                self.ax.text(x[n1 - 1], y[n1 - 1], f"{k}", c="0.75", size=9)
+                self.ax.plot(x[n1 - 1], y[n1 - 1], ".")
                 # self.ax.plot(p.x[n1:], p.y[n1:], alpha=0.1)
 
         if self.ref is not None:
