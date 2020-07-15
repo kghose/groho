@@ -25,7 +25,7 @@ struct Burn : public Command {
 
     parameters:
     center:<..> - NAIF id of target body  
-    acc:10  - Acceleration
+    acc:10  - Acceleration m/s^2
     yaw:0   - Angle (degrees right or left) perpendicular to the orbit plane
     pitch:0 - Angle (degrees up or down) in the plane of the orbit
 )";
@@ -39,7 +39,7 @@ struct Burn : public Command {
 
         target_idx
             = state.orrery.idx_of(std::stoi(params.get("center", "399")));
-        acc_val = std::stod(params.get("acc", "10"));
+        acc_val = std::stod(params.get("acc", "10")) / 1000.0;
         yaw     = std::stod(params.get("yaw", "0"));
         pitch   = std::stod(params.get("pitch", "0"));
     }
