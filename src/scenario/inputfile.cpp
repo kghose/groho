@@ -5,6 +5,7 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE.
 Some utilities for parsing input files.
 */
 
+#include <cstring> // gcc needs this for strerror
 #include <fstream>
 #include <iostream>
 
@@ -54,7 +55,8 @@ std::optional<Lines> load_input_file(const fs::path& path)
     std::string   line, key, value;
 
     if (cfile.fail()) {
-        LOG_S(ERROR) << "Input file '" << path << "' not found";
+        LOG_S(ERROR) << std::strerror(errno);
+        LOG_S(ERROR) << "Could not open input file";
         return {};
     }
 

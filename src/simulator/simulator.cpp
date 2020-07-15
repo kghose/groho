@@ -5,6 +5,7 @@ Copyright (c) 2017-2020 by Kaushik Ghose. Some rights reserved, see LICENSE
 This file defines the simulator code
 */
 #include <chrono>
+#include <cstring> // gcc needs this for strerror
 #include <filesystem>
 
 #include "commands.hpp"
@@ -177,6 +178,12 @@ void save_manifest(const State& state, std::string outdir)
 {
     // The world's worst YAML serializer
     std::ofstream file(fs::path(outdir) / "manifest.yml", std::ios::out);
+    if (file.fail()) {
+        LOG_S(ERROR) << std::strerror(errno);
+        LOG_S(ERROR) << "Could not write manifest file";
+        return;
+    }
+
     file << "time: "
          << std::chrono::system_clock::to_time_t(
                 std::chrono::system_clock::now())
